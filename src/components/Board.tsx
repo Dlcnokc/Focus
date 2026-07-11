@@ -183,12 +183,16 @@ export function Board({
       <DragOverlay dropAnimation={null} modifiers={[snapCenterToCursor]}>
         {overlayCard ? (
           <div className="card card--overlay">
-            <div className="card__body">
+            <div className="card__top">
               <h3 className="card__title">{overlayCard.title}</h3>
-              {overlayCard.notes ? (
-                <p className="card__notes">{overlayCard.notes}</p>
-              ) : null}
             </div>
+            {overlayCard.notes ? (
+              <div className="card__notes-block">
+                <p className="card__notes card__notes--collapsed">
+                  {overlayCard.notes}
+                </p>
+              </div>
+            ) : null}
           </div>
         ) : null}
       </DragOverlay>

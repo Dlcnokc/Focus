@@ -18,12 +18,14 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 - Four columns, CRUD cards, centered modals, drag with live preview, browser persistence  
 - Design: calm dark greyscale, white accent, Source Code Pro  
+- **Live deploy:** https://coruscating-travesseiro-be1b90.netlify.app/ (GitHub `main` → Netlify auto-build)  
+- Code: private repo https://github.com/Dlcnokc/Focus  
 
 **Not built yet (good candidates for next sessions):**
 
 - Export / import backup  
 - Search, archive, mobile polish  
-- Deploy, multi-user / cooperative features  
+- Multi-user / cooperative features  
 
 See **Roadmap** and **README → Resume tomorrow**.
 
@@ -90,8 +92,11 @@ One board only in v1.
 - [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas)  
 - [x] Edit card (title + notes) — **centered** themed modal, blurred backdrop  
 - [x] Delete card — **custom** centered confirm modal (no browser alert)  
+- [x] Card actions as top-right **icons** (copy notes, edit, delete)  
+- [x] Long notes **collapse** by default; bold Expand/Collapse under notes  
+- [x] **Copy notes** to clipboard from the card  
 - [x] Board starts empty (no sample/seed cards)  
-- [x] Drag entire card (Edit/Delete buttons excluded from drag start)  
+- [x] Drag entire card (action icons / Expand excluded from drag start)  
 - [x] Move between columns + reorder within column  
 - [x] Live drag preview (other cards make room for insert position)  
 - [x] Column drop highlight under cursor (including source column)  
@@ -151,6 +156,7 @@ One board only in v1.
 - Add/edit: centered modal (not side panel); **Cancel** + backdrop click close; no extra Close button  
 - Delete: themed modal, not `window.confirm`  
 - Drag: whole card surface; live reorder preview; all columns can highlight  
+- Card chrome: top-right icons (copy / edit / delete); long notes collapse with bold Expand under notes  
 - Global Add → **Ideas** by default  
 
 ### Theme flexibility
@@ -178,7 +184,8 @@ One board only in v1.
 | **Phase 2 / 2.1** | CRUD + centered modals + empty board | Done |
 | **Phase 3** | Persist + drag move/reorder + live preview | Done |
 | **v1.1** | Export/import, search, mobile polish | Next candidates |
-| **v2** | Deploy / stronger persistence if needed | Later |
+| **v2** | Stronger persistence if needed (beyond localStorage) | Later |
+| **Deploy** | Static host + GitHub auto-deploy | **Done** (Netlify) |
 | **v3+** | Cooperative features if still wanted | Later |
 
 ---
@@ -195,7 +202,9 @@ One board only in v1.
 | Columns | Ideas / Ready / Focus / Done | Decided |
 | Stack | Vite + React + TypeScript + @dnd-kit | Decided |
 | Global add default column | Ideas | Decided |
-| Deploy | Local first | Open |
+| Deploy | Netlify + GitHub `main` auto-deploy | Decided |
+| Live URL | https://coruscating-travesseiro-be1b90.netlify.app/ | Decided |
+| Code host | https://github.com/Dlcnokc/Focus (private) | Decided |
 | Export format | JSON (likely) | Suggested, not built |
 
 ---
@@ -217,3 +226,5 @@ One board only in v1.
 | 2026-07-09 | Font: Source Code Pro. Phase 2 CRUD. Phase 2.1 centered modals + custom delete + empty board. |
 | 2026-07-09 | Phase 3: localStorage, full-card drag, live preview, column highlight (incl. source), snap center to cursor. |
 | 2026-07-09 | Docs handoff for next session: README/AGENTS/PRODUCT updated to match shipped v1 core. |
+| 2026-07-11 | Deployed to Netlify; private GitHub repo; push to `main` auto-builds. Live URL recorded in README. |
+| 2026-07-11 | Card UI: top-right icon actions (copy/edit/delete); long notes collapse/expand; copy notes to clipboard. |

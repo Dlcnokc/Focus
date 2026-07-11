@@ -62,7 +62,8 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Font: **Source Code Pro** — titles/labels **700**, body/notes **400** (avoid ultra-thin weights).  
 - Header shows **Focus** only (no marketing subtitle).  
 - Columns quieter than cards; cards use subtle fill + box-shadow.  
-- Whole **card** is draggable; Edit/Delete must remain clickable (`pointerdown` stop on buttons).  
+- Whole **card** is draggable; action icons (copy/edit/delete) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
+- Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via top-right icon.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
 - Design changes: update tokens first, then layout if needed.
 
