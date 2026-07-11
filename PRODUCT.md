@@ -96,7 +96,7 @@ One board only in v1.
 ### Shipped (v1 core)
 
 - [x] Four-column board layout  
-- [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas)  
+- [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas). Completed has no direct add — cards only arrive there by drag  
 - [x] Edit card (title + notes) — **centered** themed modal, blurred backdrop  
 - [x] Delete card — **custom** centered confirm modal (no browser alert)  
 - [x] Card actions as top-right **icons** (copy notes, edit, delete)  
@@ -252,3 +252,4 @@ One board only in v1.
 | 2026-07-11 | Renamed columns Focus → **Priority**, Done → **Completed** (labels only; ids stable). Create modal titled "New {Idea / Ready Task / Priority Task / Completed Task}"; required/optional text replaced with red asterisk. |
 | 2026-07-11 | Card `priority` (Low → Immediate, 6 levels): dropdown on create/edit, prompt when dragged into Priority (Cancel defaults Medium), colored badge on card, Priority column auto-sorts by rank. |
 | 2026-07-11 | Package manager: npm → **pnpm** (`pnpm-lock.yaml`, `packageManager` pinned in package.json, build-script allowlist in `pnpm-workspace.yaml`). Netlify auto-detects pnpm from the lockfile. |
+| 2026-07-11 | Completed cannot be added to directly (no **+** / empty-state add); cards reach it only by dragging from other columns. |

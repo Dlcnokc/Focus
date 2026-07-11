@@ -42,6 +42,8 @@ export function Column({
       ? cards.slice().sort(comparePriorityThenOrder)
       : cards.slice().sort((a, b) => a.order - b.order)
   const itemIds = sorted.map((c) => c.id)
+  // Completed only receives cards by dragging them in — no direct add.
+  const canAdd = column.id !== 'done'
 
   return (
     <section
@@ -59,15 +61,17 @@ export function Column({
               {sorted.length}
             </span>
           </div>
-          <button
-            type="button"
-            className="btn btn--ghost btn--icon"
-            onClick={() => onAdd(column.id)}
-            aria-label={`Add card to ${column.label}`}
-            title={`Add to ${column.label}`}
-          >
-            +
-          </button>
+          {canAdd ? (
+            <button
+              type="button"
+              className="btn btn--ghost btn--icon"
+              onClick={() => onAdd(column.id)}
+              aria-label={`Add card to ${column.label}`}
+              title={`Add to ${column.label}`}
+            >
+              +
+            </button>
+          ) : null}
         </div>
         <p className="column__hint">{column.hint}</p>
       </header>
@@ -77,13 +81,15 @@ export function Column({
           {sorted.length === 0 ? (
             <div className="column__empty">
               <p className="column__empty-text">Nothing here yet</p>
-              <button
-                type="button"
-                className="btn btn--ghost btn--compact"
-                onClick={() => onAdd(column.id)}
-              >
-                Add card
-              </button>
+              {canAdd ? (
+                <button
+                  type="button"
+                  className="btn btn--ghost btn--compact"
+                  onClick={() => onAdd(column.id)}
+                >
+                  Add card
+                </button>
+              ) : null}
             </div>
           ) : (
             sorted.map((card) => (
