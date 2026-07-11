@@ -1,13 +1,16 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ChangeEvent } from 'react'
 import { Board } from './components/Board'
 import { CardFormPanel } from './components/CardFormPanel'
 import { DeleteConfirmModal } from './components/DeleteConfirmModal'
+import { ImportBoardModal } from './components/ImportBoardModal'
+import { ImportErrorModal } from './components/ImportErrorModal'
 import { DEFAULT_NEW_COLUMN } from './data/placeholderBoard'
 import { useBoard } from './hooks/useBoard'
-import type { ColumnId, EditorMode } from './types'
+import { downloadBoardJson, parseBoardFileJson } from './lib/boardFile'
+import type { Card, ColumnId, EditorMode } from './types'
 
 /**
- * Phase 3: create / edit / delete + localStorage save + drag reorder.
+ * Solo board: CRUD, localStorage, drag, export/import JSON.
  */
 function App() {
   const {
@@ -15,6 +18,8 @@ function App() {
     addCard,
     updateCard,
     deleteCard,
+    replaceBoard,
+    mergeBoard,
     previewMove,
     beginDrag,
     commitDrag,
@@ -23,14 +28,21 @@ function App() {
   } = useBoard()
   const [editor, setEditor] = useState<EditorMode>({ type: 'closed' })
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [pendingImport, setPendingImport] = useState<Card[] | null>(null)
+  const [importError, setImportError] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function openCreate(column: ColumnId = DEFAULT_NEW_COLUMN) {
     setPendingDeleteId(null)
+    setPendingImport(null)
+    setImportError(null)
     setEditor({ type: 'create', column })
   }
 
   function openEdit(cardId: string) {
     setPendingDeleteId(null)
+    setPendingImport(null)
+    setImportError(null)
     setEditor({ type: 'edit', cardId })
   }
 
@@ -40,6 +52,8 @@ function App() {
 
   function requestDelete(cardId: string) {
     setEditor({ type: 'closed' })
+    setPendingImport(null)
+    setImportError(null)
     setPendingDeleteId(cardId)
   }
 
@@ -52,6 +66,57 @@ function App() {
       deleteCard(pendingDeleteId)
       setPendingDeleteId(null)
     }
+  }
+
+  function handleExport() {
+    downloadBoardJson(cards)
+  }
+
+  function openImportPicker() {
+    setEditor({ type: 'closed' })
+    setPendingDeleteId(null)
+    setImportError(null)
+    setPendingImport(null)
+    fileInputRef.current?.click()
+  }
+
+  async function onImportFileChange(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0]
+    // Allow re-selecting the same file later
+    event.target.value = ''
+    if (!file) return
+
+    let text: string
+    try {
+      text = await file.text()
+    } catch {
+      setImportError('Could not read that file.')
+      return
+    }
+
+    const result = parseBoardFileJson(text)
+    if (!result.ok) {
+      setImportError(result.error)
+      return
+    }
+
+    setPendingImport(result.cards)
+  }
+
+  function cancelImport() {
+    setPendingImport(null)
+  }
+
+  function confirmReplace() {
+    if (!pendingImport) return
+    replaceBoard(pendingImport)
+    setPendingImport(null)
+  }
+
+  function confirmMerge() {
+    if (!pendingImport) return
+    mergeBoard(pendingImport)
+    setPendingImport(null)
   }
 
   const editingCard =
@@ -79,14 +144,42 @@ function App() {
           <span className="app__mark" aria-hidden="true" />
           <h1 className="app__title">Focus</h1>
         </div>
-        <button
-          type="button"
-          className="btn btn--primary"
-          onClick={() => openCreate(DEFAULT_NEW_COLUMN)}
-        >
-          Add card
-        </button>
+        <div className="app__header-actions">
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={handleExport}
+            title="Download board as JSON"
+          >
+            Export
+          </button>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={openImportPicker}
+            title="Import board from JSON"
+          >
+            Import
+          </button>
+          <button
+            type="button"
+            className="btn btn--primary"
+            onClick={() => openCreate(DEFAULT_NEW_COLUMN)}
+          >
+            Add card
+          </button>
+        </div>
       </header>
+
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json,.json"
+        className="visually-hidden"
+        aria-hidden="true"
+        tabIndex={-1}
+        onChange={(e) => void onImportFileChange(e)}
+      />
 
       <main className="app__main">
         <Board
@@ -136,6 +229,23 @@ function App() {
           cardTitle={pendingDeleteCard.title}
           onConfirm={confirmDelete}
           onCancel={cancelDelete}
+        />
+      ) : null}
+
+      {pendingImport ? (
+        <ImportBoardModal
+          importCount={pendingImport.length}
+          currentCount={cards.length}
+          onReplace={confirmReplace}
+          onMerge={confirmMerge}
+          onCancel={cancelImport}
+        />
+      ) : null}
+
+      {importError ? (
+        <ImportErrorModal
+          message={importError}
+          onClose={() => setImportError(null)}
         />
       ) : null}
     </div>

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { applyCardMove, boardsEqual, type MoveHint } from '../lib/boardMove'
+import { mergeCardLists } from '../lib/boardFile'
 import {
   cardsInColumn,
   loadCards,
@@ -85,6 +86,16 @@ export function useBoard() {
     setCards((prev) => reindexOrders(prev.filter((card) => card.id !== id)))
   }, [])
 
+  /** Import: wipe board and use only the imported list. */
+  const replaceBoard = useCallback((next: Card[]) => {
+    setCards(reindexOrders(next.map((c) => ({ ...c }))))
+  }, [])
+
+  /** Import: keep current cards; same id overwritten; new ids added. */
+  const mergeBoard = useCallback((imported: Card[]) => {
+    setCards((prev) => reindexOrders(mergeCardLists(prev, imported)))
+  }, [])
+
   const beginDrag = useCallback(() => {
     dragSnapshotRef.current = cardsRef.current.map((c) => ({ ...c }))
   }, [])
@@ -126,6 +137,8 @@ export function useBoard() {
     addCard,
     updateCard,
     deleteCard,
+    replaceBoard,
+    mergeBoard,
     previewMove,
     beginDrag,
     commitDrag,

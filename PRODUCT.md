@@ -23,7 +23,6 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 **Not built yet (good candidates for next sessions):**
 
-- Export / import backup  
 - Search, archive, mobile polish  
 - Multi-user / cooperative features  
 
@@ -107,10 +106,10 @@ One board only in v1.
 - [x] Empty column states  
 - [x] Error boundary (reload UI on crash)  
 - [x] Runs locally (`npm run dev`)  
+- [x] Export / import JSON backup (download + replace or merge confirm)  
 
 ### Nice-to-have (v1.1)
 
-- [ ] Export / import JSON backup (**recommended next** — protects against cleared site data)  
 - [ ] Search / filter by title  
 - [ ] Archive done cards (optional alternative to delete)  
 - [ ] Responsive / phone polish  
@@ -183,7 +182,7 @@ One board only in v1.
 | **Phase 1** | Design shell, tokens, columns | Done |
 | **Phase 2 / 2.1** | CRUD + centered modals + empty board | Done |
 | **Phase 3** | Persist + drag move/reorder + live preview | Done |
-| **v1.1** | Export/import, search, mobile polish | Next candidates |
+| **v1.1** | Search, mobile polish, archive | Next candidates |
 | **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **Deploy** | Static host + GitHub auto-deploy | **Done** (Netlify) |
 | **v3+** | Cooperative features if still wanted | Later |
@@ -205,7 +204,7 @@ One board only in v1.
 | Deploy | Netlify + GitHub `main` auto-deploy | Decided |
 | Live URL | https://coruscating-travesseiro-be1b90.netlify.app/ | Decided |
 | Code host | https://github.com/Dlcnokc/Focus (private) | Decided |
-| Export format | JSON (likely) | Suggested, not built |
+| Export format | JSON (`version` 1 + `cards` array) | Decided |
 
 ---
 
@@ -228,3 +227,4 @@ One board only in v1.
 | 2026-07-09 | Docs handoff for next session: README/AGENTS/PRODUCT updated to match shipped v1 core. |
 | 2026-07-11 | Deployed to Netlify; private GitHub repo; push to `main` auto-builds. Live URL recorded in README. |
 | 2026-07-11 | Card UI: top-right icon actions (copy/edit/delete); long notes collapse/expand; copy notes to clipboard. |
+| 2026-07-11 | Export/import JSON: download all cards; import with Replace or Merge confirm; centered modals. |

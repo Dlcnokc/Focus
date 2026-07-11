@@ -84,6 +84,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 |---------|----------|
 | Card CRUD + persist hooks | `src/hooks/useBoard.ts` |
 | localStorage load/save | `src/lib/storage.ts` |
+| Export/import JSON | `src/lib/boardFile.ts` + header + import modals |
 | Drag collision helpers | `src/lib/dnd.ts` |
 | Pure move/reorder | `src/lib/boardMove.ts` |
 | DnD UI / overlay / highlight | `src/components/Board.tsx` |

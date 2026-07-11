@@ -2,7 +2,7 @@
 
 A calm, personal four-column board: **Ideas → Ready → Focus → Done**.
 
-**Status (as of last session):** Core v1 loop works — create / edit / delete, drag move & reorder with live preview, save in the browser on refresh. Cards: long notes collapse/expand, copy notes, top-right icon actions. Solo only. **Live on Netlify.** No export or multi-user yet.
+**Status (as of last session):** Core v1 loop works — create / edit / delete, drag, localStorage, card note collapse/copy, **export/import JSON**. Solo only. **Live on Netlify.** No multi-user yet.
 
 ### Live site
 
@@ -47,7 +47,6 @@ Read these in order when starting a new session:
 
 | Priority | Idea | Notes |
 |----------|------|--------|
-| High | **Export / import JSON backup** | Protects against clearing site data |
 | Medium | Search / filter by title | v1.1 nice-to-have |
 | Medium | Mobile / small-screen polish | Desktop-first today |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
@@ -90,12 +89,13 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 | **Save** | Auto-saves to `localStorage` key `focus.board.v1` |
 | **Empty start** | No sample cards; board empty until you add some |
 | **Crash recovery** | `ErrorBoundary` shows reload UI instead of a blank page |
+| **Export** | Header **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards) |
+| **Import** | Header **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
 
 ### Known limits
 
-- Data is **this browser only** on this machine. Clearing site data can wipe the board.
-- No export/import yet.
-- No accounts, sync, or second device.
+- Data is **this browser only** on this machine. Clearing site data can wipe the board — use **Export** as a backup.
+- No accounts, sync, or second device (export/import is the cross-device path).
 - Phone layout is usable-ish, not polished.
 - No keyboard shortcuts (by choice so far).
 
@@ -108,6 +108,8 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 5. Drag between columns; confirm live reordering  
 6. Refresh page → board still there  
 7. Delete with confirm (trash icon) → Cancel and confirm both work  
+8. Export → open the JSON file → should list cards  
+9. Import same file → Merge and Replace both work; bad file shows error modal  
 
 ---
 
@@ -159,6 +161,7 @@ Focus/
     │   └── useBoard.ts        State: CRUD, persist, drag preview API
     ├── lib/
     │   ├── storage.ts         load/save localStorage (`focus.board.v1`)
+    │   ├── boardFile.ts       Export/import JSON parse, merge, download
     │   ├── dnd.ts             Collision detection, column helpers
     │   └── boardMove.ts       Pure move/reorder for live preview + drop
     ├── data/
@@ -166,11 +169,26 @@ Focus/
     └── components/
         ├── Board.tsx              DndContext, overlay, column highlight
         ├── Column.tsx             Droppable column + list
-        ├── Card.tsx               Sortable card + Edit/Delete
+        ├── Card.tsx               Sortable card + icons + notes expand
         ├── CardFormPanel.tsx      Centered add/edit modal
         ├── DeleteConfirmModal.tsx Centered delete confirm
+        ├── ImportBoardModal.tsx   Replace vs merge confirm
+        ├── ImportErrorModal.tsx   Bad import file message
         └── ErrorBoundary.tsx      Crash → reload message
 ```
+
+### Export file shape
+
+```json
+{
+  "version": 1,
+  "exportedAt": "2026-07-11T…",
+  "cards": [ { "id", "title", "notes", "column", "order" } ]
+}
+```
+
+Import also accepts a bare JSON array of cards (same fields). Invalid cards are skipped; if none are valid, import fails with an error modal.
+
 
 ### Mental model
 
@@ -178,7 +196,7 @@ Focus/
 2. `useBoard` owns the card list; saves to `localStorage` on change  
 3. `Board` handles drag (preview + drop); columns/cards render the list  
 4. Add/Edit → `CardFormPanel`; Delete → `DeleteConfirmModal`  
-5. No server, no login  
+5. Export/Import → `boardFile.ts` + import modals; still no server/login  
 
 ### Card shape (code)
 
