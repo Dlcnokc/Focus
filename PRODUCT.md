@@ -85,7 +85,7 @@ One board only in v1.
 | `column` | yes | One of the four column ids |
 | `order` | yes | Position within the column (drag reorder) |
 | `archived` | yes | `false` by default; soft-removed from the board when `true` |
-| `priority` | no* | One of Low / Medium Low / Medium / Medium High / High / Immediate. *Always set for cards in Priority (picked on create, or prompted on drop; defaults Medium). Shown as a colored badge; Priority column auto-sorts by it. |
+| `priority` | no* | One of Low / Medium Low / Medium / Medium High / High / Immediate. *Always set for cards in Priority (picked on create, or prompted on drop; defaults Medium). Shown as a colored badge; Priority column auto-sorts by it. Cleared when a card enters Completed — moving it back to Priority prompts fresh. |
 
 **Not implemented yet** (optional later): `createdAt`, `updatedAt`, assignees, tags, due dates, attachments, comments, subtasks, multiple boards.
 
@@ -253,3 +253,4 @@ One board only in v1.
 | 2026-07-11 | Card `priority` (Low → Immediate, 6 levels): dropdown on create/edit, prompt when dragged into Priority (Cancel defaults Medium), colored badge on card, Priority column auto-sorts by rank. |
 | 2026-07-11 | Package manager: npm → **pnpm** (`pnpm-lock.yaml`, `packageManager` pinned in package.json, build-script allowlist in `pnpm-workspace.yaml`). Netlify auto-detects pnpm from the lockfile. |
 | 2026-07-11 | Completed cannot be added to directly (no **+** / empty-state add); cards reach it only by dragging from other columns. |
+| 2026-07-11 | Entering Completed clears a card's `priority` (edit form hides the field there); dragging back to Priority prompts for a fresh rank. |

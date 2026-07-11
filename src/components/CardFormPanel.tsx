@@ -52,6 +52,8 @@ export function CardFormPanel(props: Props) {
     props.mode === 'create' ? props.column : props.card.column
   // Cards in the Priority column must always carry a priority.
   const priorityRequired = targetColumn === 'focus'
+  // Completed cards are past prioritizing — no priority field at all.
+  const priorityHidden = targetColumn === 'done'
 
   const [title, setTitle] = useState(
     props.mode === 'edit' ? props.card.title : '',
@@ -77,8 +79,9 @@ export function CardFormPanel(props: Props) {
       return
     }
 
-    const chosenPriority: Priority | undefined =
-      priority === NO_PRIORITY
+    const chosenPriority: Priority | undefined = priorityHidden
+      ? undefined
+      : priority === NO_PRIORITY
         ? priorityRequired
           ? DEFAULT_PRIORITY
           : undefined
@@ -163,32 +166,34 @@ export function CardFormPanel(props: Props) {
             />
           </div>
 
-          <div className="field">
-            <label className="field__label" htmlFor={priorityId}>
-              Priority
-              {priorityRequired ? (
-                <span className="field__asterisk" aria-hidden="true">
-                  *
-                </span>
-              ) : null}
-            </label>
-            <select
-              id={priorityId}
-              className="field__select"
-              value={priority}
-              onChange={(e) => setPriority(e.target.value as Priority | '')}
-              aria-required={priorityRequired ? 'true' : undefined}
-            >
-              {priorityRequired ? null : (
-                <option value={NO_PRIORITY}>No priority</option>
-              )}
-              {PRIORITY_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
-          </div>
+          {priorityHidden ? null : (
+            <div className="field">
+              <label className="field__label" htmlFor={priorityId}>
+                Priority
+                {priorityRequired ? (
+                  <span className="field__asterisk" aria-hidden="true">
+                    *
+                  </span>
+                ) : null}
+              </label>
+              <select
+                id={priorityId}
+                className="field__select"
+                value={priority}
+                onChange={(e) => setPriority(e.target.value as Priority | '')}
+                aria-required={priorityRequired ? 'true' : undefined}
+              >
+                {priorityRequired ? null : (
+                  <option value={NO_PRIORITY}>No priority</option>
+                )}
+                {PRIORITY_OPTIONS.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="modal__actions">
             <button type="button" className="btn btn--ghost" onClick={props.onClose}>

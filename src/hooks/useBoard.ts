@@ -226,6 +226,20 @@ export function useBoard() {
       if (entered) {
         setPriorityPromptCardId(entered.id)
       }
+
+      // Completed cards drop their priority; returning to Priority re-prompts.
+      const completed = cardsRef.current.find((card) => {
+        if (card.column !== 'done' || card.priority == null) return false
+        const before = snapshot.find((s) => s.id === card.id)
+        return before != null && before.column !== 'done'
+      })
+      if (completed) {
+        setCards((prev) =>
+          prev.map((card) =>
+            card.id === completed.id ? { ...card, priority: undefined } : card,
+          ),
+        )
+      }
     }
   }, [])
 

@@ -39,7 +39,10 @@ export function normalizeCards(raw: unknown): Card[] {
             ? rec.order
             : index,
         archived: rec.archived === true,
-        ...(isPriority(rec.priority) ? { priority: rec.priority } : {}),
+        // Completed cards never carry a priority (cleared on entering the column)
+        ...(isPriority(rec.priority) && rec.column !== 'done'
+          ? { priority: rec.priority }
+          : {}),
       } satisfies Card
     })
     .filter((c): c is Card => c !== null)
