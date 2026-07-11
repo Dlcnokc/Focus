@@ -36,11 +36,9 @@ export function Column({
     data: columnDroppableData(column.id),
   })
 
-  // Priority column auto-sorts by importance; others keep manual drag order.
-  const sorted =
-    column.id === 'focus'
-      ? cards.slice().sort(comparePriorityThenOrder)
-      : cards.slice().sort((a, b) => a.order - b.order)
+  // Every column auto-sorts by importance first; cards without a priority
+  // stay below ranked ones and keep manual drag order among themselves.
+  const sorted = cards.slice().sort(comparePriorityThenOrder)
   const itemIds = sorted.map((c) => c.id)
   // Completed only receives cards by dragging them in — no direct add.
   const canAdd = column.id !== 'done'

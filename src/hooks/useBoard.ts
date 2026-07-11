@@ -218,8 +218,10 @@ export function useBoard() {
     }
 
     if (snapshot) {
+      // Prompt only when the card arrives in Priority without a rank already.
       const entered = cardsRef.current.find((card) => {
         if (card.column !== 'focus' || card.archived) return false
+        if (card.priority != null) return false
         const before = snapshot.find((s) => s.id === card.id)
         return before != null && before.column !== 'focus'
       })
