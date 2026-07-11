@@ -25,6 +25,8 @@ import { Column } from './Column'
 
 type Props = {
   cards: Card[]
+  /** When true, cards are not draggable (e.g. title search is active). */
+  dragDisabled?: boolean
   onAdd: (columnId: ColumnId) => void
   onEdit: (cardId: string) => void
   onRequestDelete: (cardId: string) => void
@@ -57,6 +59,7 @@ function moveHintFromEvent(
 
 export function Board({
   cards,
+  dragDisabled = false,
   onAdd,
   onEdit,
   onRequestDelete,
@@ -77,7 +80,10 @@ export function Board({
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: { distance: 8 },
+      // Huge distance effectively disables drag while search is filtering
+      activationConstraint: {
+        distance: dragDisabled ? 99999 : 8,
+      },
     }),
   )
 
@@ -86,6 +92,7 @@ export function Board({
   }
 
   function handleDragStart(event: DragStartEvent) {
+    if (dragDisabled) return
     const id = String(event.active.id)
     const card = cardsRef.current.find((c) => c.id === id) ?? null
     lastPreviewSigRef.current = null
@@ -173,6 +180,7 @@ export function Board({
               key={column.id}
               column={column}
               cards={cardsInColumn(cards, column.id)}
+              dragDisabled={dragDisabled}
               showDropHighlight={showDropHighlight}
               onAdd={onAdd}
               onEdit={onEdit}

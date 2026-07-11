@@ -10,7 +10,8 @@ import { Card } from './Card'
 type Props = {
   column: ColumnDef
   cards: CardType[]
-  /** Light up as a valid drop target (other columns while dragging). */
+  dragDisabled?: boolean
+  /** Light up as a valid drop target while dragging (includes source column). */
   showDropHighlight: boolean
   onAdd: (columnId: ColumnDef['id']) => void
   onEdit: (cardId: string) => void
@@ -21,6 +22,7 @@ type Props = {
 export function Column({
   column,
   cards,
+  dragDisabled = false,
   showDropHighlight,
   onAdd,
   onEdit,
@@ -83,6 +85,7 @@ export function Column({
               <Card
                 key={card.id}
                 card={card}
+                dragDisabled={dragDisabled}
                 onEdit={onEdit}
                 onRequestDelete={onRequestDelete}
                 onRequestArchive={

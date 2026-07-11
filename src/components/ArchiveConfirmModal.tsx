@@ -26,15 +26,15 @@ export function ArchiveConfirmModal({ cardTitle, onConfirm, onCancel }: Props) {
           can restore it later.
         </p>
         <div className="modal__actions">
-          <button type="button" className="btn btn--ghost" onClick={onCancel}>
-            Cancel
-          </button>
           <button
             type="button"
-            className="btn btn--primary"
-            onClick={onConfirm}
+            className="btn btn--ghost"
+            onClick={onCancel}
             autoFocus
           >
+            Cancel
+          </button>
+          <button type="button" className="btn btn--primary" onClick={onConfirm}>
             Archive
           </button>
         </div>

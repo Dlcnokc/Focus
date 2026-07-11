@@ -5,6 +5,7 @@ import type { Card as CardType } from '../types'
 
 type Props = {
   card: CardType
+  dragDisabled?: boolean
   onEdit: (cardId: string) => void
   onRequestDelete: (cardId: string) => void
   /** Done column only — opens archive confirm. */
@@ -102,7 +103,13 @@ async function writeClipboard(text: string): Promise<boolean> {
   }
 }
 
-export function Card({ card, onEdit, onRequestDelete, onRequestArchive }: Props) {
+export function Card({
+  card,
+  dragDisabled = false,
+  onEdit,
+  onRequestDelete,
+  onRequestArchive,
+}: Props) {
   const canArchive = card.column === 'done' && !card.archived && onRequestArchive
   const {
     attributes,
@@ -113,6 +120,7 @@ export function Card({ card, onEdit, onRequestDelete, onRequestArchive }: Props)
     isDragging,
   } = useSortable({
     id: card.id,
+    disabled: dragDisabled,
     data: { type: 'card', cardId: card.id, column: card.column },
   })
 
@@ -146,10 +154,10 @@ export function Card({ card, onEdit, onRequestDelete, onRequestArchive }: Props)
     <article
       ref={setNodeRef}
       style={style}
-      className={`card${isDragging ? ' card--dragging' : ''}`}
+      className={`card${isDragging ? ' card--dragging' : ''}${dragDisabled ? ' card--no-drag' : ''}`}
       aria-label={card.title}
       {...attributes}
-      {...listeners}
+      {...(dragDisabled ? {} : listeners)}
     >
       <div className="card__top">
         <h3 className="card__title">{card.title}</h3>

@@ -1,6 +1,8 @@
 import type { Card, ColumnId } from '../types'
 
 export const BOARD_STORAGE_KEY = 'focus.board.v1'
+/** Last good raw payload when the main key fails to parse. */
+export const BOARD_STORAGE_BACKUP_KEY = 'focus.board.v1.bak'
 
 const COLUMN_IDS: ColumnId[] = ['ideas', 'ready', 'focus', 'done']
 
@@ -10,7 +12,8 @@ function isColumnId(value: unknown): value is ColumnId {
 
 /**
  * Parse and normalize stored board data.
- * Older cards without `order` get stable orders assigned.
+ * Older cards without `order` / `archived` get defaults.
+ * Empty titles dropped; duplicate ids keep the last occurrence.
  */
 export function normalizeCards(raw: unknown): Card[] {
   if (!Array.isArray(raw)) return []
@@ -22,19 +25,30 @@ export function normalizeCards(raw: unknown): Card[] {
       if (typeof rec.id !== 'string' || typeof rec.title !== 'string') return null
       if (!isColumnId(rec.column)) return null
 
+      const title = rec.title.trim()
+      if (!title) return null
+
       return {
         id: rec.id,
-        title: rec.title,
+        title,
         notes: typeof rec.notes === 'string' ? rec.notes : '',
         column: rec.column,
-        order: typeof rec.order === 'number' && Number.isFinite(rec.order) ? rec.order : index,
+        order:
+          typeof rec.order === 'number' && Number.isFinite(rec.order)
+            ? rec.order
+            : index,
         archived: rec.archived === true,
       } satisfies Card
     })
     .filter((c): c is Card => c !== null)
 
-  // Re-pack orders per column so gaps stay clean after load
-  return reindexOrders(partial)
+  // Last write wins on duplicate ids
+  const byId = new Map<string, Card>()
+  for (const card of partial) {
+    byId.set(card.id, card)
+  }
+
+  return reindexOrders([...byId.values()])
 }
 
 /** Assign 0..n-1 order within each column (active and archived separately). */
@@ -61,21 +75,92 @@ export function reindexOrders(cards: Card[]): Card[] {
   return next
 }
 
-export function loadCards(): Card[] {
+export type LoadBoardResult = {
+  cards: Card[]
+  /**
+   * When false, do not write `cards` back to storage yet —
+   * load failed and saving would wipe recoverable data.
+   */
+  allowPersist: boolean
+  /** Human-readable reason when allowPersist is false. */
+  loadError: string | null
+}
+
+function backupRaw(raw: string): void {
   try {
-    const raw = localStorage.getItem(BOARD_STORAGE_KEY)
-    if (!raw) return []
-    return normalizeCards(JSON.parse(raw))
+    localStorage.setItem(BOARD_STORAGE_BACKUP_KEY, raw)
   } catch {
-    return []
+    // Ignore backup failures
   }
 }
 
-export function saveCards(cards: Card[]): void {
+/**
+ * Load board from localStorage without overwriting corrupt data.
+ */
+export function loadBoard(): LoadBoardResult {
+  try {
+    const raw = localStorage.getItem(BOARD_STORAGE_KEY)
+    if (raw == null || raw === '') {
+      return { cards: [], allowPersist: true, loadError: null }
+    }
+
+    let parsed: unknown
+    try {
+      parsed = JSON.parse(raw)
+    } catch {
+      backupRaw(raw)
+      return {
+        cards: [],
+        allowPersist: false,
+        loadError:
+          'Saved board data could not be read (invalid JSON). A backup was kept so a blank save will not overwrite it. Use Import to restore a file, or add cards to start fresh.',
+      }
+    }
+
+    if (!Array.isArray(parsed)) {
+      backupRaw(raw)
+      return {
+        cards: [],
+        allowPersist: false,
+        loadError:
+          'Saved board data was not a card list. A backup was kept. Use Import or add cards to start fresh.',
+      }
+    }
+
+    const cards = normalizeCards(parsed)
+    if (parsed.length > 0 && cards.length === 0) {
+      backupRaw(raw)
+      return {
+        cards: [],
+        allowPersist: false,
+        loadError:
+          'Saved board had entries, but none were valid cards. A backup was kept. Use Import or add cards to start fresh.',
+      }
+    }
+
+    return { cards, allowPersist: true, loadError: null }
+  } catch {
+    return {
+      cards: [],
+      allowPersist: false,
+      loadError:
+        'Could not access browser storage. The board may not save until storage is available.',
+    }
+  }
+}
+
+/** @deprecated Prefer loadBoard(); kept for narrow call sites if any. */
+export function loadCards(): Card[] {
+  return loadBoard().cards
+}
+
+export function saveCards(cards: Card[]): boolean {
   try {
     localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(cards))
+    return true
   } catch {
     // Quota / private mode — fail quietly; board still works in-session
+    return false
   }
 }
 
@@ -92,5 +177,7 @@ export function listArchivedCards(cards: Card[]): Card[] {
   return cards
     .filter((c) => c.archived)
     .slice()
-    .sort((a, b) => a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }))
+    .sort((a, b) =>
+      a.title.localeCompare(b.title, undefined, { sensitivity: 'base' }),
+    )
 }

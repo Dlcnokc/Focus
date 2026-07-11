@@ -115,6 +115,7 @@ export function applyCardMove(
   return mergeActiveWithArchived(prev, rebuildFromLists(lists))
 }
 
+/** Layout equality for drag previews (id / column / order / archived only). */
 export function boardsEqual(a: Card[], b: Card[]): boolean {
   if (a === b) return true
   if (a.length !== b.length) return false

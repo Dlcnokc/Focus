@@ -24,6 +24,8 @@ import type { Card, ColumnId, EditorMode } from './types'
 function App() {
   const {
     cards,
+    loadError,
+    dismissLoadError,
     addCard,
     updateCard,
     deleteCard,
@@ -47,6 +49,7 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const archivedCards = useMemo(() => listArchivedCards(cards), [cards])
+  const searchActive = titleQuery.trim().length > 0
 
   /** Active board only; title filter is display-only. */
   const visibleCards = useMemo(() => {
@@ -272,9 +275,23 @@ function App() {
         onChange={(e) => void onImportFileChange(e)}
       />
 
+      {loadError ? (
+        <div className="app__banner" role="status">
+          <p className="app__banner-text">{loadError}</p>
+          <button
+            type="button"
+            className="btn btn--ghost btn--compact"
+            onClick={dismissLoadError}
+          >
+            Dismiss
+          </button>
+        </div>
+      ) : null}
+
       <main className="app__main">
         <Board
           cards={visibleCards}
+          dragDisabled={searchActive}
           onAdd={openCreate}
           onEdit={openEdit}
           onRequestDelete={requestDelete}

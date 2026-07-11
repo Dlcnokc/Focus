@@ -98,6 +98,9 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Prefer `npm run build` when touching types or drag logic.  
 - Drag order and column placement must **survive refresh**.  
 - **Never wipe** `localStorage` user data without migration or explicit approval.  
+- Corrupt load: backup raw to `focus.board.v1.bak`, **block save** until the user changes the board (do not write `[]` over bad data).  
+- Do **not** persist live drag previews — save on drag commit / cancel restore / non-drag mutations only.  
+- Title search: disable drag while a filter is active (filtered list ≠ full board for DnD).  
 - Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; do not reshuffle when hovering same-column chrome only.  
 - No secrets in the repo.
 
@@ -121,7 +124,9 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Title search | **Done** |
 | Archive Done cards | **Done** |
 | v1.1 Mobile polish | **Done** (CSS) |
+| Storage / drag safety hardening | **Done** |
 | Cooperative / multi-user | **Not started** — ask first |
+| External tools hub / tax app | **Out of repo** — do not build here unless asked |
 
 ---
 

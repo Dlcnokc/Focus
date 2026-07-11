@@ -44,18 +44,18 @@ export function ImportBoardModal({
           </li>
         </ul>
         <div className="modal__actions modal__actions--wrap">
-          <button type="button" className="btn btn--ghost" onClick={onCancel}>
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={onCancel}
+            autoFocus
+          >
             Cancel
           </button>
           <button type="button" className="btn btn--ghost" onClick={onMerge}>
             Merge
           </button>
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={onReplace}
-            autoFocus
-          >
+          <button type="button" className="btn btn--primary" onClick={onReplace}>
             Replace
           </button>
         </div>

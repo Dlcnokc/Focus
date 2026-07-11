@@ -14,19 +14,21 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 ## Current status (handoff)
 
-**Core solo v1 is largely shipped and usable daily:**
+**Solo v1 is shipped and usable daily** (use the live site; export weekly).
 
-- Four columns, CRUD cards, centered modals, drag with live preview, browser persistence  
-- Card UI: top-right icons, long-notes collapse/expand, copy notes  
-- Export / import JSON (replace or merge); title search (display-only)  
+- Four columns, CRUD, drag + live preview, localStorage  
+- Card icons, notes collapse/copy, title search (drag off while searching)  
+- Export/import JSON; Done-only archive + list search  
+- Mobile CSS polish; themed scrollbars  
+- Storage safety: corrupt-load backup (`focus.board.v1.bak`), no mid-drag disk writes, confirm Cancel focused  
 - Design: calm dark greyscale, white accent, Source Code Pro  
-- **Live deploy:** https://coruscating-travesseiro-be1b90.netlify.app/ (GitHub `main` → Netlify auto-build; use `[skip ci]` in commit message for docs-only pushes)  
-- Code: private repo https://github.com/Dlcnokc/Focus  
+- **Live:** https://coruscating-travesseiro-be1b90.netlify.app/  
+- **Code:** https://github.com/Dlcnokc/Focus (private); push `main` → Netlify; docs-only: `[skip ci]`  
 
-**Not built yet (good candidates for next sessions):**
+**Not built / park for later:**
 
-- Expand archive later if needed  
-- Multi-user / cooperative features  
+- Archive extras, multi-user, backend/cloud sync  
+- Separate “tools hub” / tax calculator (other repos later; leave Focus alone)  
 
 See **Roadmap** and **README → Resume tomorrow**.
 
@@ -104,6 +106,8 @@ One board only in v1.
 - [x] Column drop highlight under cursor (including source column)  
 - [x] Floating card snaps center to cursor while dragging  
 - [x] Persist to `localStorage` (`focus.board.v1`) — survives refresh  
+- [x] Storage safety: corrupt load backup + block overwrite; no persist mid-drag; drag disabled during title search  
+- [x] Destructive confirms focus **Cancel** first (delete / archive / import)  
 - [x] Calm dark greyscale + white accent + Source Code Pro (700 titles / 400 body)  
 - [x] Theme tokens in CSS  
 - [x] Empty column states  
@@ -135,11 +139,17 @@ One board only in v1.
 
 ## Data & storage (v1)
 
-**Browser `localStorage` only** — key: `focus.board.v1`
+**Browser `localStorage` only**
+
+| Key | Purpose |
+|-----|---------|
+| `focus.board.v1` | Card array JSON |
+| `focus.board.v1.bak` | Raw backup if main key fails to parse (do not overwrite main until user acts) |
 
 - No account required  
-- Data lives in this browser profile on this machine  
-- Clearing site data can wipe the board → export is the safety net  
+- Data lives in this browser profile on this origin (localhost ≠ Netlify)  
+- Clearing site data can wipe the board → **Export** is the safety net  
+- Live drag previews are **not** written until drop (or cancel restore)
 
 ---
 
@@ -235,3 +245,4 @@ One board only in v1.
 | 2026-07-11 | Docs: document Netlify `[skip ci]` for non-app commits. |
 | 2026-07-11 | Archive Done cards: confirm modal, header Archive list, restore/delete; `archived` on card. |
 | 2026-07-11 | Mobile / small-screen polish via CSS tokens + media queries; four columns swipe on phone. |
+| 2026-07-11 | Hardening: corrupt-load backup, no mid-drag save, drag off while search, Cancel-first confirms, normalize titles/ids. |

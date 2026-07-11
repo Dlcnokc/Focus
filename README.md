@@ -2,7 +2,11 @@
 
 A calm, personal four-column board: **Ideas → Ready → Focus → Done**.
 
-**Status (as of last session):** Core v1 loop works — create / edit / delete, drag, localStorage, card note collapse/copy, **export/import JSON**, **title search**. Solo only. **Live on Netlify.** No multi-user yet.
+**Status (handoff):** Solo v1 is **usable daily** and live on Netlify.
+
+Shipped: board CRUD + drag, notes collapse/copy, icons, **export/import**, **title search**, **Done archive**, **mobile CSS**, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, safer confirm focus).
+
+Not multi-user. Next: daily use + friction fixes; multi-user only if asked.
 
 ### Live site
 
@@ -51,11 +55,14 @@ Read these in order when starting a new session:
 2. **`AGENTS.md`** — how agents should behave in this repo  
 3. **This file** — how to run, folder map, current behavior  
 
-### Suggested next work (not started — pick with the owner)
+### Suggested next work (pick with the owner)
 
 | Priority | Idea | Notes |
 |----------|------|--------|
+| Habit | Weekly **Export** backup | Browser-only data |
+| From use | Fix real friction only | Phone drag, archive extras, etc. |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
+| Out of scope for now | Separate tax/tools hub site | Owner may do later in another repo — leave Focus alone |
 
 Do **not** start multi-user, auth, or a backend unless the owner asks.
 
@@ -101,20 +108,23 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Live preview** | Other cards shift while dragging to show insert order |
 | **Column highlight** | Column under cursor lights up (including source column) |
 | **Cursor snap** | Floating card centers under the pointer (`snapCenterToCursor`) |
-| **Save** | Auto-saves to `localStorage` key `focus.board.v1` |
+| **Save** | Auto-saves to `localStorage` key `focus.board.v1` (not during live drag preview; saves on drop / other edits) |
+| **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner, **no overwrite** until user edits/imports |
 | **Empty start** | No sample cards; board empty until you add some |
 | **Crash recovery** | `ErrorBoundary` shows reload UI instead of a blank page |
 | **Export** | Header **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards) |
 | **Import** | Header **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
-| **Search** | Header **Search titles…** — filters visible cards by title only (case-insensitive); full board still saved |
+| **Search** | Header **Search titles…** — filters visible cards by title only (case-insensitive); full board still saved; **drag disabled** while search is active |
 | **Archive** | Done cards only: archive icon → confirm → leaves board. Header **Archive (N)** lists Restore / permanent Delete; search titles in that modal. Export includes archived |
 
 ### Known limits
 
-- Data is **this browser only** on this machine. Clearing site data can wipe the board — use **Export** as a backup.
+- Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
+- `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
 - Phone: four columns swipe horizontally; header stacks; desktop unchanged.
 - No keyboard shortcuts (by choice so far).
+- Multi-tab: last write wins (no live sync between tabs).
 
 ### Manual smoke test
 
@@ -122,13 +132,13 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 2. Reject empty title (validation message)  
 3. Edit notes → Save (pencil icon)  
 4. Long notes: collapsed preview, **Expand** / **Collapse**, **Copy** icon pastes notes  
-5. Drag between columns; confirm live reordering  
-6. Refresh page → board still there  
-7. Delete with confirm (trash icon) → Cancel and confirm both work  
-8. Export → open the JSON file → should list cards  
-9. Import same file → Merge and Replace both work; bad file shows error modal  
-10. Search titles → only matching cards show; clear search → full board returns  
-11. Move a card to Done → archive icon → confirm → gone from board; Archive list → Restore / Delete  
+5. Drag between columns (search empty); confirm live reordering; refresh → order kept  
+6. Search on → drag disabled; clear search → drag works  
+7. Delete / Archive / Import confirms → **Cancel** is focused first  
+8. Export → open the JSON file → should list cards (incl. archived if any)  
+9. Import → Merge and Replace both work; bad file shows error modal  
+10. Done → archive icon → confirm → Archive list → Restore / Delete  
+11. Phone/narrow: swipe columns; header stacks  
 
 ---
 
@@ -179,7 +189,7 @@ Focus/
     ├── hooks/
     │   └── useBoard.ts        State: CRUD, persist, drag preview API
     ├── lib/
-    │   ├── storage.ts         load/save localStorage (`focus.board.v1`)
+    │   ├── storage.ts         loadBoard/saveCards (`focus.board.v1` + `.bak`)
     │   ├── boardFile.ts       Export/import JSON parse, merge, download
     │   ├── dnd.ts             Collision detection, column helpers
     │   └── boardMove.ts       Pure move/reorder for live preview + drop
@@ -191,6 +201,8 @@ Focus/
         ├── Card.tsx               Sortable card + icons + notes expand
         ├── CardFormPanel.tsx      Centered add/edit modal
         ├── DeleteConfirmModal.tsx Centered delete confirm
+        ├── ArchiveConfirmModal.tsx  Archive confirm
+        ├── ArchiveListModal.tsx   Archived list + search
         ├── ImportBoardModal.tsx   Replace vs merge confirm
         ├── ImportErrorModal.tsx   Bad import file message
         └── ErrorBoundary.tsx      Crash → reload message
@@ -202,7 +214,7 @@ Focus/
 {
   "version": 1,
   "exportedAt": "2026-07-11T…",
-  "cards": [ { "id", "title", "notes", "column", "order" } ]
+  "cards": [ { "id", "title", "notes", "column", "order", "archived" } ]
 }
 ```
 
@@ -212,10 +224,10 @@ Import also accepts a bare JSON array of cards (same fields). Invalid cards are 
 ### Mental model
 
 1. Browser loads `index.html` → `main.tsx` → `App`  
-2. `useBoard` owns the card list; saves to `localStorage` on change  
-3. `Board` handles drag (preview + drop); columns/cards render the list  
-4. Add/Edit → `CardFormPanel`; Delete → `DeleteConfirmModal`  
-5. Export/Import → `boardFile.ts` + import modals; still no server/login  
+2. `useBoard` owns the card list; persists when allowed (not mid-drag; not after corrupt load until user acts)  
+3. `Board` handles drag (preview + drop); columns/cards render active (non-archived) list  
+4. Add/Edit → `CardFormPanel`; Delete / Archive / Import → centered modals  
+5. Export/Import → `boardFile.ts`; still no server/login  
 
 ### Card shape (code)
 
@@ -226,6 +238,7 @@ Import also accepts a bare JSON array of cards (same fields). Invalid cards are 
   notes: string
   column: 'ideas' | 'ready' | 'focus' | 'done'
   order: number   // position within column
+  archived: boolean
 }
 ```
 
@@ -236,8 +249,9 @@ Import also accepts a bare JSON array of cards (same fields). Invalid cards are 
 | Key | Value |
 |-----|--------|
 | `focus.board.v1` | JSON array of cards |
+| `focus.board.v1.bak` | Raw backup if main key is corrupt |
 
-Load/normalize: `src/lib/storage.ts` (adds `order` if missing, reindexes per column).
+Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defaults, trim titles, dedupe ids, reindex per column.
 
 ---
 

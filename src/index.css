@@ -210,6 +210,28 @@ p {
   gap: var(--space-2);
 }
 
+/* Storage load warning (corrupt data / blocked save) */
+.app__banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--layout-pad-x);
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.app__banner-text {
+  margin: 0;
+  flex: 1;
+  min-width: 12rem;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-body);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+}
+
 /* Hidden file input for Import (still in DOM for the picker) */
 .visually-hidden {
   position: absolute;
@@ -415,6 +437,15 @@ p {
 
 .card:active {
   cursor: grabbing;
+}
+
+.card--no-drag {
+  cursor: default;
+  touch-action: auto;
+}
+
+.card--no-drag:active {
+  cursor: default;
 }
 
 /* Placeholder in the list while the real card follows the cursor */
