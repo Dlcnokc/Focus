@@ -2,7 +2,7 @@
 
 A calm, personal four-column board: **Ideas → Ready → Focus → Done**.
 
-**Status (as of last session):** Core v1 loop works — create / edit / delete, drag, localStorage, card note collapse/copy, **export/import JSON**. Solo only. **Live on Netlify.** No multi-user yet.
+**Status (as of last session):** Core v1 loop works — create / edit / delete, drag, localStorage, card note collapse/copy, **export/import JSON**, **title search**. Solo only. **Live on Netlify.** No multi-user yet.
 
 ### Live site
 
@@ -47,7 +47,6 @@ Read these in order when starting a new session:
 
 | Priority | Idea | Notes |
 |----------|------|--------|
-| Medium | Search / filter by title | v1.1 nice-to-have |
 | Medium | Mobile / small-screen polish | Desktop-first today |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
 
@@ -91,6 +90,7 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 | **Crash recovery** | `ErrorBoundary` shows reload UI instead of a blank page |
 | **Export** | Header **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards) |
 | **Import** | Header **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
+| **Search** | Header **Search titles…** — filters visible cards by title only (case-insensitive); full board still saved |
 
 ### Known limits
 
@@ -110,6 +110,7 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 7. Delete with confirm (trash icon) → Cancel and confirm both work  
 8. Export → open the JSON file → should list cards  
 9. Import same file → Merge and Replace both work; bad file shows error modal  
+10. Search titles → only matching cards show; clear search → full board returns  
 
 ---
 

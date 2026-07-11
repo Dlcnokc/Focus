@@ -1,4 +1,10 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react'
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from 'react'
 import { Board } from './components/Board'
 import { CardFormPanel } from './components/CardFormPanel'
 import { DeleteConfirmModal } from './components/DeleteConfirmModal'
@@ -10,7 +16,7 @@ import { downloadBoardJson, parseBoardFileJson } from './lib/boardFile'
 import type { Card, ColumnId, EditorMode } from './types'
 
 /**
- * Solo board: CRUD, localStorage, drag, export/import JSON.
+ * Solo board: CRUD, localStorage, drag, export/import, title search.
  */
 function App() {
   const {
@@ -30,7 +36,15 @@ function App() {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const [pendingImport, setPendingImport] = useState<Card[] | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
+  const [titleQuery, setTitleQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  /** Filter is display-only; full board stays in useBoard / localStorage. */
+  const visibleCards = useMemo(() => {
+    const q = titleQuery.trim().toLowerCase()
+    if (!q) return cards
+    return cards.filter((card) => card.title.toLowerCase().includes(q))
+  }, [cards, titleQuery])
 
   function openCreate(column: ColumnId = DEFAULT_NEW_COLUMN) {
     setPendingDeleteId(null)
@@ -144,6 +158,18 @@ function App() {
           <span className="app__mark" aria-hidden="true" />
           <h1 className="app__title">Focus</h1>
         </div>
+        <label className="app__search">
+          <span className="visually-hidden">Search cards by title</span>
+          <input
+            type="search"
+            className="app__search-input"
+            placeholder="Search titles…"
+            value={titleQuery}
+            onChange={(e) => setTitleQuery(e.target.value)}
+            autoComplete="off"
+            spellCheck={false}
+          />
+        </label>
         <div className="app__header-actions">
           <button
             type="button"
@@ -183,7 +209,7 @@ function App() {
 
       <main className="app__main">
         <Board
-          cards={cards}
+          cards={visibleCards}
           onAdd={openCreate}
           onEdit={openEdit}
           onRequestDelete={requestDelete}

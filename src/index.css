@@ -105,7 +105,8 @@ p {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-4);
+  flex-wrap: wrap;
+  gap: var(--space-3) var(--space-4);
   min-height: var(--header-height);
   padding: var(--space-3) var(--space-6);
   border-bottom: 1px solid var(--color-border-subtle);
@@ -135,6 +136,56 @@ p {
   font-weight: var(--font-weight-title);
   letter-spacing: -0.02em;
   line-height: 1.2;
+}
+
+.app__search {
+  flex: 1 1 12rem;
+  min-width: 10rem;
+  max-width: 18rem;
+  margin-left: auto;
+}
+
+.app__search-input {
+  width: 100%;
+  box-sizing: border-box;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem 0.75rem;
+  line-height: 1.3;
+  transition:
+    border-color 0.12s ease,
+    background 0.12s ease;
+}
+
+.app__search-input::placeholder {
+  color: var(--color-text-faint);
+}
+
+.app__search-input:hover {
+  border-color: var(--color-accent-ring);
+}
+
+.app__search-input:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  background: var(--color-surface);
+}
+
+.app__search-input:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Native clear (x) on type=search — keep it readable on dark */
+.app__search-input::-webkit-search-cancel-button {
+  cursor: pointer;
+  filter: invert(1);
+  opacity: 0.65;
 }
 
 .app__header-actions {
