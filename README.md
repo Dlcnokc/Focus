@@ -99,6 +99,7 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 | **Export** | Header **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards) |
 | **Import** | Header **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
 | **Search** | Header **Search titles…** — filters visible cards by title only (case-insensitive); full board still saved |
+| **Archive** | Done cards only: archive icon → confirm → leaves board. Header **Archive (N)** lists Restore / permanent Delete; search titles in that modal. Export includes archived |
 
 ### Known limits
 
@@ -119,6 +120,7 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 8. Export → open the JSON file → should list cards  
 9. Import same file → Merge and Replace both work; bad file shows error modal  
 10. Search titles → only matching cards show; clear search → full board returns  
+11. Move a card to Done → archive icon → confirm → gone from board; Archive list → Restore / Delete  
 
 ---
 

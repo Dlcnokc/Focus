@@ -7,6 +7,8 @@ type Props = {
   card: CardType
   onEdit: (cardId: string) => void
   onRequestDelete: (cardId: string) => void
+  /** Done column only — opens archive confirm. */
+  onRequestArchive?: (cardId: string) => void
 }
 
 /** Long enough that full notes would crowd the column. */
@@ -68,6 +70,16 @@ function IconTrash() {
   )
 }
 
+function IconArchive() {
+  return (
+    <Icon>
+      <path d="M21 8v13H3V8" />
+      <path d="M1 3h22v5H1z" />
+      <path d="M10 12h4" />
+    </Icon>
+  )
+}
+
 async function writeClipboard(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text)
@@ -90,7 +102,8 @@ async function writeClipboard(text: string): Promise<boolean> {
   }
 }
 
-export function Card({ card, onEdit, onRequestDelete }: Props) {
+export function Card({ card, onEdit, onRequestDelete, onRequestArchive }: Props) {
+  const canArchive = card.column === 'done' && !card.archived && onRequestArchive
   const {
     attributes,
     listeners,
@@ -151,6 +164,18 @@ export function Card({ card, onEdit, onRequestDelete }: Props) {
               title={copied ? 'Copied' : 'Copy notes'}
             >
               {copied ? <IconCheck /> : <IconCopy />}
+            </button>
+          ) : null}
+          {canArchive ? (
+            <button
+              type="button"
+              className="btn btn--ghost btn--icon"
+              onClick={() => onRequestArchive(card.id)}
+              onPointerDown={(e) => e.stopPropagation()}
+              aria-label="Archive card"
+              title="Archive"
+            >
+              <IconArchive />
             </button>
           ) : null}
           <button

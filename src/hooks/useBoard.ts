@@ -59,6 +59,7 @@ export function useBoard() {
         notes: input.notes.trim(),
         column: input.column,
         order,
+        archived: false,
       }
       return [...prev, card]
     })
@@ -84,6 +85,28 @@ export function useBoard() {
 
   const deleteCard = useCallback((id: string) => {
     setCards((prev) => reindexOrders(prev.filter((card) => card.id !== id)))
+  }, [])
+
+  /** Soft-remove from the board (recoverable). */
+  const archiveCard = useCallback((id: string) => {
+    setCards((prev) =>
+      reindexOrders(
+        prev.map((card) =>
+          card.id === id ? { ...card, archived: true } : card,
+        ),
+      ),
+    )
+  }, [])
+
+  /** Put an archived card back on the board (same column). */
+  const restoreCard = useCallback((id: string) => {
+    setCards((prev) =>
+      reindexOrders(
+        prev.map((card) =>
+          card.id === id ? { ...card, archived: false } : card,
+        ),
+      ),
+    )
   }, [])
 
   /** Import: wipe board and use only the imported list. */
@@ -137,6 +160,8 @@ export function useBoard() {
     addCard,
     updateCard,
     deleteCard,
+    archiveCard,
+    restoreCard,
     replaceBoard,
     mergeBoard,
     previewMove,

@@ -5,6 +5,8 @@ import {
   useState,
   type ChangeEvent,
 } from 'react'
+import { ArchiveConfirmModal } from './components/ArchiveConfirmModal'
+import { ArchiveListModal } from './components/ArchiveListModal'
 import { Board } from './components/Board'
 import { CardFormPanel } from './components/CardFormPanel'
 import { DeleteConfirmModal } from './components/DeleteConfirmModal'
@@ -13,10 +15,11 @@ import { ImportErrorModal } from './components/ImportErrorModal'
 import { DEFAULT_NEW_COLUMN } from './data/placeholderBoard'
 import { useBoard } from './hooks/useBoard'
 import { downloadBoardJson, parseBoardFileJson } from './lib/boardFile'
+import { listArchivedCards } from './lib/storage'
 import type { Card, ColumnId, EditorMode } from './types'
 
 /**
- * Solo board: CRUD, localStorage, drag, export/import, title search.
+ * Solo board: CRUD, archive, localStorage, drag, export/import, title search.
  */
 function App() {
   const {
@@ -24,6 +27,8 @@ function App() {
     addCard,
     updateCard,
     deleteCard,
+    archiveCard,
+    restoreCard,
     replaceBoard,
     mergeBoard,
     previewMove,
@@ -34,29 +39,38 @@ function App() {
   } = useBoard()
   const [editor, setEditor] = useState<EditorMode>({ type: 'closed' })
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
+  const [pendingArchiveId, setPendingArchiveId] = useState<string | null>(null)
+  const [archiveListOpen, setArchiveListOpen] = useState(false)
   const [pendingImport, setPendingImport] = useState<Card[] | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [titleQuery, setTitleQuery] = useState('')
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  /** Filter is display-only; full board stays in useBoard / localStorage. */
+  const archivedCards = useMemo(() => listArchivedCards(cards), [cards])
+
+  /** Active board only; title filter is display-only. */
   const visibleCards = useMemo(() => {
+    const active = cards.filter((card) => !card.archived)
     const q = titleQuery.trim().toLowerCase()
-    if (!q) return cards
-    return cards.filter((card) => card.title.toLowerCase().includes(q))
+    if (!q) return active
+    return active.filter((card) => card.title.toLowerCase().includes(q))
   }, [cards, titleQuery])
 
-  function openCreate(column: ColumnId = DEFAULT_NEW_COLUMN) {
+  function closeOverlays() {
     setPendingDeleteId(null)
+    setPendingArchiveId(null)
     setPendingImport(null)
     setImportError(null)
+    setArchiveListOpen(false)
+  }
+
+  function openCreate(column: ColumnId = DEFAULT_NEW_COLUMN) {
+    closeOverlays()
     setEditor({ type: 'create', column })
   }
 
   function openEdit(cardId: string) {
-    setPendingDeleteId(null)
-    setPendingImport(null)
-    setImportError(null)
+    closeOverlays()
     setEditor({ type: 'edit', cardId })
   }
 
@@ -66,8 +80,10 @@ function App() {
 
   function requestDelete(cardId: string) {
     setEditor({ type: 'closed' })
+    setPendingArchiveId(null)
     setPendingImport(null)
     setImportError(null)
+    // Keep archive list open when deleting from it; confirm stacks on top
     setPendingDeleteId(cardId)
   }
 
@@ -82,6 +98,35 @@ function App() {
     }
   }
 
+  function requestArchive(cardId: string) {
+    setEditor({ type: 'closed' })
+    setPendingDeleteId(null)
+    setArchiveListOpen(false)
+    setPendingImport(null)
+    setImportError(null)
+    setPendingArchiveId(cardId)
+  }
+
+  function cancelArchive() {
+    setPendingArchiveId(null)
+  }
+
+  function confirmArchive() {
+    if (pendingArchiveId) {
+      archiveCard(pendingArchiveId)
+      setPendingArchiveId(null)
+    }
+  }
+
+  function openArchiveList() {
+    setEditor({ type: 'closed' })
+    setPendingDeleteId(null)
+    setPendingArchiveId(null)
+    setPendingImport(null)
+    setImportError(null)
+    setArchiveListOpen(true)
+  }
+
   function handleExport() {
     downloadBoardJson(cards)
   }
@@ -89,6 +134,8 @@ function App() {
   function openImportPicker() {
     setEditor({ type: 'closed' })
     setPendingDeleteId(null)
+    setPendingArchiveId(null)
+    setArchiveListOpen(false)
     setImportError(null)
     setPendingImport(null)
     fileInputRef.current?.click()
@@ -138,6 +185,9 @@ function App() {
   const pendingDeleteCard = pendingDeleteId
     ? getCard(pendingDeleteId)
     : undefined
+  const pendingArchiveCard = pendingArchiveId
+    ? getCard(pendingArchiveId)
+    : undefined
 
   useEffect(() => {
     if (editor.type === 'edit' && !editingCard) {
@@ -150,6 +200,12 @@ function App() {
       setPendingDeleteId(null)
     }
   }, [pendingDeleteId, pendingDeleteCard])
+
+  useEffect(() => {
+    if (pendingArchiveId && !pendingArchiveCard) {
+      setPendingArchiveId(null)
+    }
+  }, [pendingArchiveId, pendingArchiveCard])
 
   return (
     <div className="app">
@@ -171,6 +227,15 @@ function App() {
           />
         </label>
         <div className="app__header-actions">
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={openArchiveList}
+            title="View archived cards"
+          >
+            Archive
+            {archivedCards.length > 0 ? ` (${archivedCards.length})` : ''}
+          </button>
           <button
             type="button"
             className="btn btn--ghost"
@@ -213,6 +278,7 @@ function App() {
           onAdd={openCreate}
           onEdit={openEdit}
           onRequestDelete={requestDelete}
+          onRequestArchive={requestArchive}
           onBeginDrag={beginDrag}
           onPreviewMove={previewMove}
           onCommitDrag={commitDrag}
@@ -247,6 +313,23 @@ function App() {
             })
             return result.ok ? null : result.error
           }}
+        />
+      ) : null}
+
+      {pendingArchiveCard ? (
+        <ArchiveConfirmModal
+          cardTitle={pendingArchiveCard.title}
+          onConfirm={confirmArchive}
+          onCancel={cancelArchive}
+        />
+      ) : null}
+
+      {archiveListOpen ? (
+        <ArchiveListModal
+          cards={archivedCards}
+          onRestore={restoreCard}
+          onRequestDelete={requestDelete}
+          onClose={() => setArchiveListOpen(false)}
         />
       ) : null}
 

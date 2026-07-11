@@ -25,7 +25,7 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 **Not built yet (good candidates for next sessions):**
 
-- Archive done cards, mobile / small-screen polish  
+- Mobile / small-screen polish; expand archive later if needed  
 - Multi-user / cooperative features  
 
 See **Roadmap** and **README → Resume tomorrow**.
@@ -80,6 +80,7 @@ One board only in v1.
 | `notes` | no | Plain text string (may be `""`) |
 | `column` | yes | One of the four column ids |
 | `order` | yes | Position within the column (drag reorder) |
+| `archived` | yes | `false` by default; soft-removed from the board when `true` |
 
 **Not implemented yet** (optional later): `createdAt`, `updatedAt`, assignees, tags, due dates, priorities, attachments, comments, subtasks, multiple boards.
 
@@ -110,10 +111,10 @@ One board only in v1.
 - [x] Runs locally (`npm run dev`)  
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
+- [x] Archive Done cards (confirm + Archive list modal; restore or permanent delete)  
 
 ### Nice-to-have (v1.1)
 
-- [ ] Archive done cards (optional alternative to delete)  
 - [ ] Responsive / phone polish  
 - [ ] Keyboard shortcuts (only if owner wants them)  
 
@@ -232,3 +233,4 @@ One board only in v1.
 | 2026-07-11 | Export/import JSON: download all cards; import with Replace or Merge confirm; centered modals. |
 | 2026-07-11 | Search/filter cards by title in header (display-only; does not delete data). |
 | 2026-07-11 | Docs: document Netlify `[skip ci]` for non-app commits. |
+| 2026-07-11 | Archive Done cards: confirm modal, header Archive list, restore/delete; `archived` on card. |

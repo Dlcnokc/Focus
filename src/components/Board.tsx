@@ -28,6 +28,7 @@ type Props = {
   onAdd: (columnId: ColumnId) => void
   onEdit: (cardId: string) => void
   onRequestDelete: (cardId: string) => void
+  onRequestArchive: (cardId: string) => void
   onBeginDrag: () => void
   onPreviewMove: (activeId: string, overId: string, hint?: MoveHint) => void
   onCommitDrag: () => void
@@ -59,6 +60,7 @@ export function Board({
   onAdd,
   onEdit,
   onRequestDelete,
+  onRequestArchive,
   onBeginDrag,
   onPreviewMove,
   onCommitDrag,
@@ -175,6 +177,7 @@ export function Board({
               onAdd={onAdd}
               onEdit={onEdit}
               onRequestDelete={onRequestDelete}
+              onRequestArchive={onRequestArchive}
             />
           )
         })}

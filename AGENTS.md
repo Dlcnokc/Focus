@@ -85,6 +85,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Card CRUD + persist hooks | `src/hooks/useBoard.ts` |
 | localStorage load/save | `src/lib/storage.ts` |
 | Export/import JSON | `src/lib/boardFile.ts` + header + import modals |
+| Archive / restore | `useBoard` + Archive confirm/list modals; Done-only archive icon |
 | Drag collision helpers | `src/lib/dnd.ts` |
 | Pure move/reorder | `src/lib/boardMove.ts` |
 | DnD UI / overlay / highlight | `src/components/Board.tsx` |
@@ -118,7 +119,8 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Deploy (Netlify + GitHub) | **Done** |
 | Export / import JSON | **Done** |
 | Title search | **Done** |
-| v1.1 Mobile polish, archive | **Not started** |
+| Archive Done cards | **Done** |
+| v1.1 Mobile polish | **Not started** |
 | Cooperative / multi-user | **Not started** — ask first |
 
 ---

@@ -7,8 +7,10 @@ export type Card = {
   title: string
   notes: string
   column: ColumnId
-  /** Lower = higher in the column. Used for drag reorder. */
+  /** Lower = higher in the column. Used for drag reorder (active cards). */
   order: number
+  /** Soft-removed from the board; only Done is archived in v1 UI. */
+  archived: boolean
 }
 
 export type ColumnDef = {

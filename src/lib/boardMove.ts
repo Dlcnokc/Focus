@@ -1,18 +1,19 @@
 import { arrayMove } from '@dnd-kit/sortable'
 import type { Card, ColumnId } from '../types'
 import { COLUMN_IDS, isColumnId } from './dnd'
-import { cardsInColumn } from './storage'
+import { cardsInColumn, reindexOrders } from './storage'
 
 function rebuildFromLists(lists: Record<ColumnId, Card[]>): Card[] {
   const next: Card[] = []
   for (const id of COLUMN_IDS) {
     lists[id].forEach((card, index) => {
-      next.push({ ...card, column: id, order: index })
+      next.push({ ...card, column: id, order: index, archived: false })
     })
   }
   return next
 }
 
+/** Active cards only — archived stay out of drag lists. */
 function listsFromCards(cards: Card[]): Record<ColumnId, Card[]> {
   const lists: Record<ColumnId, Card[]> = {
     ideas: [],
@@ -26,6 +27,12 @@ function listsFromCards(cards: Card[]): Record<ColumnId, Card[]> {
   return lists
 }
 
+function mergeActiveWithArchived(prev: Card[], nextActive: Card[]): Card[] {
+  const archived = prev.filter((c) => c.archived)
+  if (archived.length === 0) return nextActive
+  return reindexOrders([...nextActive, ...archived])
+}
+
 export type MoveHint = {
   pointerY?: number
   overTop?: number
@@ -35,6 +42,7 @@ export type MoveHint = {
 /**
  * Pure move for live drag preview and final drop.
  * Returns the same array reference when nothing changes.
+ * Archived cards are preserved and not part of drag reordering.
  */
 export function applyCardMove(
   prev: Card[],
@@ -43,7 +51,7 @@ export function applyCardMove(
   hint?: MoveHint,
 ): Card[] {
   const active = prev.find((c) => c.id === activeId)
-  if (!active || activeId === overId) return prev
+  if (!active || active.archived || activeId === overId) return prev
 
   const lists = listsFromCards(prev)
 
@@ -60,12 +68,12 @@ export function applyCardMove(
     lists[active.column] = lists[active.column].filter((c) => c.id !== activeId)
     lists[target] = [
       ...lists[target].filter((c) => c.id !== activeId),
-      { ...active, column: target },
+      { ...active, column: target, archived: false },
     ]
-    return rebuildFromLists(lists)
+    return mergeActiveWithArchived(prev, rebuildFromLists(lists))
   }
 
-  const overCard = prev.find((c) => c.id === overId)
+  const overCard = prev.find((c) => c.id === overId && !c.archived)
   if (!overCard) return prev
 
   const targetColumn = overCard.column
@@ -77,7 +85,7 @@ export function applyCardMove(
     const newIndex = list.findIndex((c) => c.id === overId)
     if (oldIndex < 0 || newIndex < 0 || oldIndex === newIndex) return prev
     lists[targetColumn] = arrayMove(list, oldIndex, newIndex)
-    return rebuildFromLists(lists)
+    return mergeActiveWithArchived(prev, rebuildFromLists(lists))
   }
 
   // Cross-column: insert before/after hovered card
@@ -86,7 +94,7 @@ export function applyCardMove(
   let insertAt = targetList.findIndex((c) => c.id === overId)
 
   if (insertAt < 0) {
-    targetList.push({ ...active, column: targetColumn })
+    targetList.push({ ...active, column: targetColumn, archived: false })
   } else {
     if (
       hint?.pointerY !== undefined &&
@@ -96,11 +104,15 @@ export function applyCardMove(
     ) {
       insertAt += 1
     }
-    targetList.splice(insertAt, 0, { ...active, column: targetColumn })
+    targetList.splice(insertAt, 0, {
+      ...active,
+      column: targetColumn,
+      archived: false,
+    })
   }
 
   lists[targetColumn] = targetList
-  return rebuildFromLists(lists)
+  return mergeActiveWithArchived(prev, rebuildFromLists(lists))
 }
 
 export function boardsEqual(a: Card[], b: Card[]): boolean {
@@ -110,7 +122,8 @@ export function boardsEqual(a: Card[], b: Card[]): boolean {
     if (
       a[i].id !== b[i].id ||
       a[i].column !== b[i].column ||
-      a[i].order !== b[i].order
+      a[i].order !== b[i].order ||
+      a[i].archived !== b[i].archived
     ) {
       return false
     }

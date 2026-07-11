@@ -15,6 +15,7 @@ type Props = {
   onAdd: (columnId: ColumnDef['id']) => void
   onEdit: (cardId: string) => void
   onRequestDelete: (cardId: string) => void
+  onRequestArchive: (cardId: string) => void
 }
 
 export function Column({
@@ -24,6 +25,7 @@ export function Column({
   onAdd,
   onEdit,
   onRequestDelete,
+  onRequestArchive,
 }: Props) {
   // Whole column is the droppable so the cursor anywhere inside counts.
   const { setNodeRef } = useDroppable({
@@ -83,6 +85,9 @@ export function Column({
                 card={card}
                 onEdit={onEdit}
                 onRequestDelete={onRequestDelete}
+                onRequestArchive={
+                  column.id === 'done' ? onRequestArchive : undefined
+                }
               />
             ))
           )}
