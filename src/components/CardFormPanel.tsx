@@ -1,6 +1,6 @@
 import { useId, useState, type FormEvent } from 'react'
 import { COLUMNS } from '../data/placeholderBoard'
-import { DEFAULT_PRIORITY, PRIORITY_OPTIONS } from '../data/priorities'
+import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
 import type { Card, ColumnId, Priority } from '../types'
 
 type CreateProps = {
@@ -186,7 +186,7 @@ export function CardFormPanel(props: Props) {
                 {priorityRequired ? null : (
                   <option value={NO_PRIORITY}>No priority</option>
                 )}
-                {PRIORITY_OPTIONS.map((opt) => (
+                {PRIORITY_OPTIONS_DESC.map((opt) => (
                   <option key={opt.value} value={opt.value}>
                     {opt.label}
                   </option>

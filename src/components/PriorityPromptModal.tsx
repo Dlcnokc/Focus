@@ -1,5 +1,5 @@
 import { useId, useState } from 'react'
-import { DEFAULT_PRIORITY, PRIORITY_OPTIONS } from '../data/priorities'
+import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
 import type { Priority } from '../types'
 
 type Props = {
@@ -53,7 +53,7 @@ export function PriorityPromptModal({
             onChange={(e) => setPriority(e.target.value as Priority)}
             autoFocus
           >
-            {PRIORITY_OPTIONS.map((opt) => (
+            {PRIORITY_OPTIONS_DESC.map((opt) => (
               <option key={opt.value} value={opt.value}>
                 {opt.label}
               </option>

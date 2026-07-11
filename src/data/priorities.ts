@@ -10,6 +10,9 @@ export const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
   { value: 'immediate', label: 'Immediate' },
 ]
 
+/** Dropdown display order: most urgent first, matching the board's sort. */
+export const PRIORITY_OPTIONS_DESC = [...PRIORITY_OPTIONS].reverse()
+
 /** Sensible middle default when a card needs a priority but none was picked. */
 export const DEFAULT_PRIORITY: Priority = 'medium'
 
