@@ -103,7 +103,8 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 ### Git & risk
 
 - Do not force-push or rewrite published history without asking.  
-- Prefer small commits when the user wants version control.
+- Prefer small commits when the user wants version control.  
+- Docs-only pushes: include **`[skip ci]`** in the commit message so Netlify does not rebuild (see README → Deploy).
 
 ---
 
@@ -114,7 +115,10 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | 1 Shell + design tokens | **Done** |
 | 2 / 2.1 CRUD + centered modals + empty board | **Done** |
 | 3 Persist + drag + live preview | **Done** |
-| v1.1 Export, search, mobile polish | **Not started** (export recommended next) |
+| Deploy (Netlify + GitHub) | **Done** |
+| Export / import JSON | **Done** |
+| Title search | **Done** |
+| v1.1 Mobile polish, archive | **Not started** |
 | Cooperative / multi-user | **Not started** — ask first |
 
 ---

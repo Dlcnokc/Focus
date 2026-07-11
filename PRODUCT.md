@@ -17,13 +17,15 @@ A simple four-column board where work moves from ideas → ready → in progress
 **Core solo v1 is largely shipped and usable daily:**
 
 - Four columns, CRUD cards, centered modals, drag with live preview, browser persistence  
+- Card UI: top-right icons, long-notes collapse/expand, copy notes  
+- Export / import JSON (replace or merge); title search (display-only)  
 - Design: calm dark greyscale, white accent, Source Code Pro  
-- **Live deploy:** https://coruscating-travesseiro-be1b90.netlify.app/ (GitHub `main` → Netlify auto-build)  
+- **Live deploy:** https://coruscating-travesseiro-be1b90.netlify.app/ (GitHub `main` → Netlify auto-build; use `[skip ci]` in commit message for docs-only pushes)  
 - Code: private repo https://github.com/Dlcnokc/Focus  
 
 **Not built yet (good candidates for next sessions):**
 
-- Archive, mobile polish  
+- Archive done cards, mobile / small-screen polish  
 - Multi-user / cooperative features  
 
 See **Roadmap** and **README → Resume tomorrow**.
@@ -229,3 +231,4 @@ One board only in v1.
 | 2026-07-11 | Card UI: top-right icon actions (copy/edit/delete); long notes collapse/expand; copy notes to clipboard. |
 | 2026-07-11 | Export/import JSON: download all cards; import with Replace or Merge confirm; centered modals. |
 | 2026-07-11 | Search/filter cards by title in header (display-only; does not delete data). |
+| 2026-07-11 | Docs: document Netlify `[skip ci]` for non-app commits. |

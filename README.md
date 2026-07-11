@@ -24,6 +24,14 @@ Use this URL for daily planning (not only `npm run dev`). Data is still **this b
 
 No drag-and-drop of `dist` needed after the GitHub link is set up. Check Netlify **Deploys** if a push did not appear live.
 
+**Docs-only (or other non-app) commits — skip Netlify build:** put `[skip ci]` in the commit message. Example:
+
+```text
+Update README and PRODUCT handoff. [skip ci]
+```
+
+GitHub still gets the commit; Netlify **does not** rebuild the site. Use this for documentation-only changes. For real app changes, leave `[skip ci]` out so the live site updates.
+
 **Rebuild locally (without deploying):**
 
 ```powershell
@@ -67,7 +75,7 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 | `npm run dev` | Dev server + live reload |
 | `npm run build` | Production build → `dist/` |
 | `npm run preview` | Preview production build |
-| `git push origin main` | Triggers Netlify deploy (after commit) |
+| `git push origin main` | Triggers Netlify deploy (after commit), unless message has `[skip ci]` |
 
 ---
 
