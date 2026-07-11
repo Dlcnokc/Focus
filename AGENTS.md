@@ -120,7 +120,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Export / import JSON | **Done** |
 | Title search | **Done** |
 | Archive Done cards | **Done** |
-| v1.1 Mobile polish | **Not started** |
+| v1.1 Mobile polish | **Done** (CSS) |
 | Cooperative / multi-user | **Not started** — ask first |
 
 ---

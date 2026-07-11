@@ -55,7 +55,6 @@ Read these in order when starting a new session:
 
 | Priority | Idea | Notes |
 |----------|------|--------|
-| Medium | Mobile / small-screen polish | Desktop-first today |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
 
 Do **not** start multi-user, auth, or a backend unless the owner asks.
@@ -70,9 +69,18 @@ npm run dev
 
 Open the URL Vite prints (usually `http://localhost:5173`). For the **public** site, use the Netlify URL above.
 
+**Phone on the same Wi‑Fi (no deploy needed):**
+
+```powershell
+npm run dev -- --host
+```
+
+Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on your phone. PC and phone must be on the same network. Or use the live Netlify URL after a push.
+
 | Command | What it does |
 |---------|----------------|
-| `npm run dev` | Dev server + live reload |
+| `npm run dev` | Dev server + live reload (this PC only) |
+| `npm run dev -- --host` | Dev server reachable from phone on LAN |
 | `npm run build` | Production build → `dist/` |
 | `npm run preview` | Preview production build |
 | `git push origin main` | Triggers Netlify deploy (after commit), unless message has `[skip ci]` |
@@ -105,7 +113,7 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 
 - Data is **this browser only** on this machine. Clearing site data can wipe the board — use **Export** as a backup.
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Phone layout is usable-ish, not polished.
+- Phone: four columns swipe horizontally; header stacks; desktop unchanged.
 - No keyboard shortcuts (by choice so far).
 
 ### Manual smoke test

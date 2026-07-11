@@ -58,6 +58,10 @@
     0 2px 4px rgba(0, 0, 0, 0.35),
     0 10px 28px rgba(0, 0, 0, 0.45);
   --header-height: 3.75rem;
+  --layout-pad-x: var(--space-6);
+  --layout-pad-y: var(--space-5);
+  --board-col-min: 240px;
+  --board-gap: var(--space-4);
 
   /* Scrollbars — thin, greyscale, still findable */
   --scrollbar-size: 6px;
@@ -114,7 +118,11 @@ p {
   flex-wrap: wrap;
   gap: var(--space-3) var(--space-4);
   min-height: var(--header-height);
-  padding: var(--space-3) var(--space-6);
+  padding: var(--space-3) var(--layout-pad-x);
+  /* Notched phones: keep chrome clear of the status bar / home indicator */
+  padding-top: max(var(--space-3), env(safe-area-inset-top));
+  padding-left: max(var(--layout-pad-x), env(safe-area-inset-left));
+  padding-right: max(var(--layout-pad-x), env(safe-area-inset-right));
   border-bottom: 1px solid var(--color-border-subtle);
   background: rgba(10, 10, 10, 0.85);
   backdrop-filter: blur(8px);
@@ -217,8 +225,12 @@ p {
 
 .app__main {
   flex: 1;
-  padding: var(--space-5) var(--space-6) var(--space-5);
+  padding: var(--layout-pad-y) var(--layout-pad-x);
+  padding-bottom: max(var(--layout-pad-y), env(safe-area-inset-bottom));
+  padding-left: max(var(--layout-pad-x), env(safe-area-inset-left));
+  padding-right: max(var(--layout-pad-x), env(safe-area-inset-right));
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   scrollbar-width: thin;
   scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
@@ -243,11 +255,12 @@ p {
 /* Board */
 .board {
   display: grid;
-  grid-template-columns: repeat(4, minmax(240px, 1fr));
-  gap: var(--space-4);
+  grid-template-columns: repeat(4, minmax(var(--board-col-min), 1fr));
+  gap: var(--board-gap);
   align-items: start;
-  min-width: min(100%, 1100px);
-  height: calc(100vh - var(--header-height) - var(--space-5) * 2);
+  min-width: min(100%, calc(var(--board-col-min) * 4 + var(--board-gap) * 3));
+  /* dvh = dynamic viewport height — better on mobile browser chrome */
+  height: calc(100dvh - var(--header-height) - var(--layout-pad-y) * 2);
   min-height: 420px;
 }
 
@@ -257,6 +270,7 @@ p {
   flex-direction: column;
   min-height: 100%;
   max-height: 100%;
+  min-width: 0;
   background: var(--color-column);
   border: 1px solid var(--color-column-border);
   border-radius: var(--radius-lg);
@@ -876,19 +890,145 @@ p {
   white-space: pre-wrap;
 }
 
-/* Narrow screens */
-@media (max-width: 900px) {
-  .app__header,
-  .app__main {
-    padding-left: var(--space-4);
-    padding-right: var(--space-4);
-  }
+/* ---------------------------------------------------------------------------
+   Responsive — still four columns; polish layout for tablet / phone.
+   Desktop rules above stay the default; these only tighten smaller viewports.
+   --------------------------------------------------------------------------- */
 
-  .board {
-    grid-template-columns: repeat(4, minmax(220px, 1fr));
+/* Tablet and down */
+@media (max-width: 900px) {
+  :root {
+    --layout-pad-x: var(--space-4);
+    --layout-pad-y: var(--space-4);
+    --board-col-min: 220px;
+    --board-gap: var(--space-3);
   }
 
   .modal {
     width: 100%;
+  }
+
+  .modal--archive {
+    width: 100%;
+  }
+}
+
+/* Phone / small screens */
+@media (max-width: 640px) {
+  :root {
+    --layout-pad-x: var(--space-3);
+    --layout-pad-y: var(--space-3);
+    /* One primary column in view; swipe for the other three */
+    --board-col-min: min(18.5rem, calc(100vw - var(--layout-pad-x) * 2 - 1.25rem));
+    --board-gap: var(--space-3);
+    --header-height: auto;
+  }
+
+  .app__header {
+    align-items: stretch;
+    gap: var(--space-2) var(--space-3);
+    padding-bottom: var(--space-3);
+  }
+
+  .app__brand {
+    flex: 0 0 auto;
+  }
+
+  .app__title {
+    font-size: var(--font-size-lg);
+  }
+
+  .app__search {
+    flex: 1 1 100%;
+    max-width: none;
+    min-width: 0;
+    margin-left: 0;
+    order: 3;
+  }
+
+  /* 16px avoids iOS zoom-on-focus for search fields */
+  .app__search-input {
+    font-size: 1rem;
+    padding: 0.55rem 0.75rem;
+  }
+
+  .app__header-actions {
+    flex: 1 1 auto;
+    justify-content: flex-start;
+  }
+
+  .app__header-actions .btn {
+    padding: 0.5rem 0.65rem;
+  }
+
+  .app__main {
+    /* Horizontal swipe through columns */
+    scroll-snap-type: x proximity;
+    scroll-padding-inline: max(var(--layout-pad-x), env(safe-area-inset-left));
+  }
+
+  .board {
+    grid-template-columns: repeat(4, var(--board-col-min));
+    min-width: calc(var(--board-col-min) * 4 + var(--board-gap) * 3);
+    /* Fill remaining viewport under sticky header */
+    height: calc(100dvh - 8.5rem);
+    min-height: 280px;
+  }
+
+  .column {
+    scroll-snap-align: start;
+  }
+
+  .column__header {
+    padding: var(--space-3);
+  }
+
+  .column__hint {
+    display: none; /* reclaim vertical space on short phones */
+  }
+
+  .column__body {
+    padding: var(--space-2);
+    gap: var(--space-2);
+  }
+
+  .card {
+    padding: var(--space-3);
+  }
+
+  .card__actions .btn--icon {
+    width: 2rem;
+    height: 2rem;
+  }
+
+  .modal-backdrop {
+    padding: var(--space-3);
+    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
+    align-items: flex-end; /* easier reach on tall phones */
+  }
+
+  .modal,
+  .modal--form,
+  .modal--confirm,
+  .modal--archive {
+    width: 100%;
+    max-height: min(88dvh, 640px);
+    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
+  }
+
+  .archive-list {
+    max-height: min(40dvh, 280px);
+  }
+
+  .archive-list__search .app__search-input {
+    font-size: 1rem;
+  }
+}
+
+/* Very narrow phones */
+@media (max-width: 380px) {
+  .app__header-actions .btn {
+    font-size: 0.7rem;
+    padding: 0.45rem 0.5rem;
   }
 }

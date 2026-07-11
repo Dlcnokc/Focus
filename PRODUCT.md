@@ -25,7 +25,7 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 **Not built yet (good candidates for next sessions):**
 
-- Mobile / small-screen polish; expand archive later if needed  
+- Expand archive later if needed  
 - Multi-user / cooperative features  
 
 See **Roadmap** and **README → Resume tomorrow**.
@@ -115,7 +115,7 @@ One board only in v1.
 
 ### Nice-to-have (v1.1)
 
-- [ ] Responsive / phone polish  
+- [x] Responsive / phone polish (CSS; four columns, horizontal swipe)  
 - [ ] Keyboard shortcuts (only if owner wants them)  
 
 ### Explicitly later
@@ -234,3 +234,4 @@ One board only in v1.
 | 2026-07-11 | Search/filter cards by title in header (display-only; does not delete data). |
 | 2026-07-11 | Docs: document Netlify `[skip ci]` for non-app commits. |
 | 2026-07-11 | Archive Done cards: confirm modal, header Archive list, restore/delete; `archived` on card. |
+| 2026-07-11 | Mobile / small-screen polish via CSS tokens + media queries; four columns swipe on phone. |
