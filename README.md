@@ -12,7 +12,7 @@ Not multi-user. Next: daily use + friction fixes; multi-user only if asked.
 
 **https://coruscating-travesseiro-be1b90.netlify.app/**
 
-Use this URL for daily planning (not only `npm run dev`). Data is still **this browser only** on that site (`localStorage`).
+Use this URL for daily planning (not only `pnpm run dev`). Data is still **this browser only** on that site (`localStorage`).
 
 | Source | Location |
 |--------|----------|
@@ -24,7 +24,7 @@ Use this URL for daily planning (not only `npm run dev`). Data is still **this b
 1. Change code locally  
 2. Commit  
 3. Push to **`main`** on GitHub  
-4. Netlify auto-runs `npm run build` and publishes `dist`  
+4. Netlify auto-runs the build (it detects `pnpm-lock.yaml` and uses pnpm) and publishes `dist`  
 
 No drag-and-drop of `dist` needed after the GitHub link is set up. Check Netlify **Deploys** if a push did not appear live.
 
@@ -39,11 +39,11 @@ GitHub still gets the commit; Netlify **does not** rebuild the site. Use this fo
 **Rebuild locally (without deploying):**
 
 ```powershell
-cd C:\Users\accou\Desktop\Projects\Grok_Projects\Focus
-npm run build
+cd <your local clone>
+pnpm run build
 ```
 
-That writes production files to `dist/` only. Preview with `npm run preview`, or push `main` to publish.
+That writes production files to `dist/` only. Preview with `pnpm run preview`, or push `main` to publish.
 
 ---
 
@@ -68,10 +68,12 @@ Do **not** start multi-user, auth, or a backend unless the owner asks.
 
 ### Quick start (Windows)
 
+This repo uses **pnpm** (`packageManager` is pinned in package.json). One-time setup if you don't have it: `npm install -g pnpm` or `corepack enable`.
+
 ```powershell
-cd C:\Users\accou\Desktop\Projects\Grok_Projects\Focus
-npm install
-npm run dev
+cd <your local clone>
+pnpm install
+pnpm run dev
 ```
 
 Open the URL Vite prints (usually `http://localhost:5173`). For the **public** site, use the Netlify URL above.
@@ -79,17 +81,17 @@ Open the URL Vite prints (usually `http://localhost:5173`). For the **public** s
 **Phone on the same Wi‑Fi (no deploy needed):**
 
 ```powershell
-npm run dev -- --host
+pnpm run dev --host
 ```
 
 Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on your phone. PC and phone must be on the same network. Or use the live Netlify URL after a push.
 
 | Command | What it does |
 |---------|----------------|
-| `npm run dev` | Dev server + live reload (this PC only) |
-| `npm run dev -- --host` | Dev server reachable from phone on LAN |
-| `npm run build` | Production build → `dist/` |
-| `npm run preview` | Preview production build |
+| `pnpm run dev` | Dev server + live reload (this PC only) |
+| `pnpm run dev --host` | Dev server reachable from phone on LAN |
+| `pnpm run build` | Production build → `dist/` |
+| `pnpm run preview` | Preview production build |
 | `git push origin main` | Triggers Netlify deploy (after commit), unless message has `[skip ci]` |
 
 ---

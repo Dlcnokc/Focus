@@ -1,0 +1,4 @@
+# pnpm settings (pnpm 10+ reads these from here, not package.json)
+# esbuild's install script fetches/validates its platform binary — allow it.
+onlyBuiltDependencies:
+  - esbuild

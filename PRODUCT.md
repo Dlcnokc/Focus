@@ -251,3 +251,4 @@ One board only in v1.
 | 2026-07-11 | Hardening: corrupt-load backup, no mid-drag save, drag off while search, Cancel-first confirms, normalize titles/ids. |
 | 2026-07-11 | Renamed columns Focus → **Priority**, Done → **Completed** (labels only; ids stable). Create modal titled "New {Idea / Ready Task / Priority Task / Completed Task}"; required/optional text replaced with red asterisk. |
 | 2026-07-11 | Card `priority` (Low → Immediate, 6 levels): dropdown on create/edit, prompt when dragged into Priority (Cancel defaults Medium), colored badge on card, Priority column auto-sorts by rank. |
+| 2026-07-11 | Package manager: npm → **pnpm** (`pnpm-lock.yaml`, `packageManager` pinned in package.json, build-script allowlist in `pnpm-workspace.yaml`). Netlify auto-detects pnpm from the lockfile. |

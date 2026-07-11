@@ -9,7 +9,7 @@ Instructions for any coding agent working in this repository. Follow these every
 1. Read **`PRODUCT.md`** — especially current status, shipped checklist, non-goals.  
 2. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
 3. Skim this file.  
-4. Run the app if changing code: `npm run dev` from `Focus/`.  
+4. Run the app if changing code: `pnpm run dev` from the repo root.  
 5. Implement the **smallest** requested slice; do not invent multi-user or backend work.
 
 ---
@@ -73,7 +73,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 
 ### Keep it simple
 
-- Stack is already chosen: **Vite + React + TypeScript + @dnd-kit + localStorage**.  
+- Stack is already chosen: **Vite + React + TypeScript + @dnd-kit + localStorage**; package manager is **pnpm** (lockfile: `pnpm-lock.yaml`).  
 - Do not add dependencies without a clear need.  
 - Prefer readable code over clever code.  
 - No microservices, no heavy state libraries unless complexity forces it.
@@ -95,7 +95,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 ### Quality bar
 
 - After meaningful changes: app must **run**; say exactly how to open/test.  
-- Prefer `npm run build` when touching types or drag logic.  
+- Prefer `pnpm run build` when touching types or drag logic.  
 - Drag order and column placement must **survive refresh**.  
 - **Never wipe** `localStorage` user data without migration or explicit approval.  
 - Corrupt load: backup raw to `focus.board.v1.bak`, **block save** until the user changes the board (do not write `[]` over bad data).  
@@ -171,8 +171,8 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 ## Useful commands
 
 ```powershell
-cd C:\Users\accou\Desktop\Projects\Grok_Projects\Focus
-npm install
-npm run dev
-npm run build
+cd <your local clone>
+pnpm install
+pnpm run dev
+pnpm run build
 ```
