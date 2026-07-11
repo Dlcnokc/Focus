@@ -1,3 +1,4 @@
+import { isPriority } from '../data/priorities'
 import type { Card, ColumnId } from '../types'
 
 export const BOARD_STORAGE_KEY = 'focus.board.v1'
@@ -38,6 +39,7 @@ export function normalizeCards(raw: unknown): Card[] {
             ? rec.order
             : index,
         archived: rec.archived === true,
+        ...(isPriority(rec.priority) ? { priority: rec.priority } : {}),
       } satisfies Card
     })
     .filter((c): c is Card => c !== null)

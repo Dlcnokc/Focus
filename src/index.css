@@ -31,6 +31,17 @@
   --color-accent-soft: rgba(255, 255, 255, 0.08);
   --color-accent-ring: rgba(255, 255, 255, 0.22);
 
+  /* Required-field marker */
+  --color-required: #e5484d;
+
+  /* Priority badge colors — muted ramp, calm against the greyscale theme */
+  --color-priority-low: #9ca3af;
+  --color-priority-medium-low: #86b98f;
+  --color-priority-medium: #d4b64f;
+  --color-priority-medium-high: #dd9a4b;
+  --color-priority-high: #e0704a;
+  --color-priority-immediate: #e5484d;
+
   /* Shape & type
      Source Code Pro — monospace with clear weight range.
      Weights: 700 titles, 500 UI labels, 400 body (readable, not ultra-thin). */
@@ -490,6 +501,44 @@ p {
   padding-top: 0.15rem; /* optical align with icon row */
 }
 
+/* Priority badge — colored text on a soft tint of the same color */
+.card__priority {
+  align-self: flex-start;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+  padding: 0.3rem 0.5rem;
+  border-radius: 999px;
+  color: var(--priority-color, var(--color-text-muted));
+  background: color-mix(in srgb, var(--priority-color, var(--color-text-muted)) 14%, transparent);
+}
+
+.card__priority--low {
+  --priority-color: var(--color-priority-low);
+}
+
+.card__priority--medium-low {
+  --priority-color: var(--color-priority-medium-low);
+}
+
+.card__priority--medium {
+  --priority-color: var(--color-priority-medium);
+}
+
+.card__priority--medium-high {
+  --priority-color: var(--color-priority-medium-high);
+}
+
+.card__priority--high {
+  --priority-color: var(--color-priority-high);
+}
+
+.card__priority--immediate {
+  --priority-color: var(--color-priority-immediate);
+}
+
 .card__notes-block {
   display: flex;
   flex-direction: column;
@@ -833,22 +882,14 @@ p {
   text-transform: uppercase;
 }
 
-.field__required {
-  color: var(--color-text-faint);
-  font-weight: var(--font-weight-body);
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.field__optional {
-  color: var(--color-text-faint);
-  font-weight: var(--font-weight-body);
-  text-transform: none;
-  letter-spacing: 0;
+.field__asterisk {
+  color: var(--color-required);
+  margin-left: 0.15em;
 }
 
 .field__input,
-.field__textarea {
+.field__textarea,
+.field__select {
   font-family: var(--font-sans);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-body);
@@ -861,10 +902,20 @@ p {
 }
 
 .field__input:focus,
-.field__textarea:focus {
+.field__textarea:focus,
+.field__select:focus {
   outline: none;
   border-color: var(--color-accent-ring);
   box-shadow: 0 0 0 1px var(--color-accent-ring);
+}
+
+.field__select {
+  cursor: pointer;
+}
+
+.field__select option {
+  background: var(--color-surface);
+  color: var(--color-text);
 }
 
 .field__input--error {

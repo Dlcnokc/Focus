@@ -12,7 +12,9 @@ import { CardFormPanel } from './components/CardFormPanel'
 import { DeleteConfirmModal } from './components/DeleteConfirmModal'
 import { ImportBoardModal } from './components/ImportBoardModal'
 import { ImportErrorModal } from './components/ImportErrorModal'
+import { PriorityPromptModal } from './components/PriorityPromptModal'
 import { DEFAULT_NEW_COLUMN } from './data/placeholderBoard'
+import { DEFAULT_PRIORITY } from './data/priorities'
 import { useBoard } from './hooks/useBoard'
 import { downloadBoardJson, parseBoardFileJson } from './lib/boardFile'
 import { listArchivedCards } from './lib/storage'
@@ -26,8 +28,11 @@ function App() {
     cards,
     loadError,
     dismissLoadError,
+    priorityPromptCardId,
+    dismissPriorityPrompt,
     addCard,
     updateCard,
+    setCardPriority,
     deleteCard,
     archiveCard,
     restoreCard,
@@ -191,6 +196,9 @@ function App() {
   const pendingArchiveCard = pendingArchiveId
     ? getCard(pendingArchiveId)
     : undefined
+  const priorityPromptCard = priorityPromptCardId
+    ? getCard(priorityPromptCardId)
+    : undefined
 
   useEffect(() => {
     if (editor.type === 'edit' && !editingCard) {
@@ -209,6 +217,12 @@ function App() {
       setPendingArchiveId(null)
     }
   }, [pendingArchiveId, pendingArchiveCard])
+
+  useEffect(() => {
+    if (priorityPromptCardId && !priorityPromptCard) {
+      dismissPriorityPrompt()
+    }
+  }, [priorityPromptCardId, priorityPromptCard, dismissPriorityPrompt])
 
   return (
     <div className="app">
@@ -309,8 +323,8 @@ function App() {
           mode="create"
           column={editor.column}
           onClose={closeEditor}
-          onSubmit={({ title, notes, column }) => {
-            const result = addCard({ title, notes, column })
+          onSubmit={({ title, notes, column, priority }) => {
+            const result = addCard({ title, notes, column, priority })
             return result.ok ? null : result.error
           }}
         />
@@ -322,13 +336,32 @@ function App() {
           mode="edit"
           card={editingCard}
           onClose={closeEditor}
-          onSubmit={({ title, notes }) => {
+          onSubmit={({ title, notes, priority }) => {
             const result = updateCard({
               id: editingCard.id,
               title,
               notes,
+              priority,
             })
             return result.ok ? null : result.error
+          }}
+        />
+      ) : null}
+
+      {priorityPromptCard ? (
+        <PriorityPromptModal
+          cardTitle={priorityPromptCard.title}
+          currentPriority={priorityPromptCard.priority}
+          onConfirm={(priority) => {
+            setCardPriority(priorityPromptCard.id, priority)
+            dismissPriorityPrompt()
+          }}
+          onCancel={() => {
+            // Priority column stays fully ranked even when the prompt is dismissed
+            if (!priorityPromptCard.priority) {
+              setCardPriority(priorityPromptCard.id, DEFAULT_PRIORITY)
+            }
+            dismissPriorityPrompt()
           }}
         />
       ) : null}

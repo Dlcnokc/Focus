@@ -1,6 +1,7 @@
 import { useId, useState, type FormEvent } from 'react'
 import { COLUMNS } from '../data/placeholderBoard'
-import type { Card, ColumnId } from '../types'
+import { DEFAULT_PRIORITY, PRIORITY_OPTIONS } from '../data/priorities'
+import type { Card, ColumnId, Priority } from '../types'
 
 type CreateProps = {
   mode: 'create'
@@ -9,6 +10,7 @@ type CreateProps = {
     title: string
     notes: string
     column: ColumnId
+    priority?: Priority
   }) => string | null
   onClose: () => void
 }
@@ -16,25 +18,40 @@ type CreateProps = {
 type EditProps = {
   mode: 'edit'
   card: Card
-  onSubmit: (values: { title: string; notes: string }) => string | null
+  onSubmit: (values: {
+    title: string
+    notes: string
+    priority?: Priority
+  }) => string | null
   onClose: () => void
 }
 
 type Props = CreateProps | EditProps
 
-function columnLabel(id: ColumnId): string {
-  return COLUMNS.find((c) => c.id === id)?.label ?? id
+/** Select value for "no priority" (empty string keeps <select> simple). */
+const NO_PRIORITY = ''
+
+function columnDef(id: ColumnId) {
+  return COLUMNS.find((c) => c.id === id)
 }
 
 /**
  * Centered modal for creating or editing a card.
- * Title is required (validated on submit).
+ * Title is required (validated on submit, marked with a red asterisk).
+ * Priority is pickable in any column; in the Priority column it is
+ * always set (no "none" choice there).
  * Remount via parent `key` when target changes so form state resets cleanly.
  */
 export function CardFormPanel(props: Props) {
   const titleId = useId()
   const notesId = useId()
+  const priorityId = useId()
   const errorId = useId()
+
+  const targetColumn: ColumnId =
+    props.mode === 'create' ? props.column : props.card.column
+  // Cards in the Priority column must always carry a priority.
+  const priorityRequired = targetColumn === 'focus'
 
   const [title, setTitle] = useState(
     props.mode === 'edit' ? props.card.title : '',
@@ -42,11 +59,15 @@ export function CardFormPanel(props: Props) {
   const [notes, setNotes] = useState(
     props.mode === 'edit' ? props.card.notes : '',
   )
+  const [priority, setPriority] = useState<Priority | ''>(() => {
+    if (props.mode === 'edit' && props.card.priority) return props.card.priority
+    return priorityRequired ? DEFAULT_PRIORITY : NO_PRIORITY
+  })
   const [error, setError] = useState<string | null>(null)
 
   const heading =
     props.mode === 'create'
-      ? `New card · ${columnLabel(props.column)}`
+      ? (columnDef(props.column)?.newLabel ?? 'New card')
       : 'Edit card'
 
   function handleSubmit(event: FormEvent) {
@@ -56,10 +77,22 @@ export function CardFormPanel(props: Props) {
       return
     }
 
+    const chosenPriority: Priority | undefined =
+      priority === NO_PRIORITY
+        ? priorityRequired
+          ? DEFAULT_PRIORITY
+          : undefined
+        : priority
+
     const result =
       props.mode === 'create'
-        ? props.onSubmit({ title, notes, column: props.column })
-        : props.onSubmit({ title, notes })
+        ? props.onSubmit({
+            title,
+            notes,
+            column: props.column,
+            priority: chosenPriority,
+          })
+        : props.onSubmit({ title, notes, priority: chosenPriority })
 
     if (result) {
       setError(result)
@@ -88,7 +121,10 @@ export function CardFormPanel(props: Props) {
         <form className="modal__form" onSubmit={handleSubmit} noValidate>
           <div className="field">
             <label className="field__label" htmlFor={titleId}>
-              Title <span className="field__required">required</span>
+              Title
+              <span className="field__asterisk" aria-hidden="true">
+                *
+              </span>
             </label>
             <input
               id={titleId}
@@ -101,6 +137,8 @@ export function CardFormPanel(props: Props) {
               }}
               placeholder="What needs doing?"
               autoFocus
+              required
+              aria-required="true"
               aria-invalid={error ? true : undefined}
               aria-describedby={error ? errorId : undefined}
             />
@@ -113,7 +151,7 @@ export function CardFormPanel(props: Props) {
 
           <div className="field">
             <label className="field__label" htmlFor={notesId}>
-              Notes <span className="field__optional">optional</span>
+              Notes
             </label>
             <textarea
               id={notesId}
@@ -123,6 +161,33 @@ export function CardFormPanel(props: Props) {
               placeholder="Details, links, thoughts…"
               rows={5}
             />
+          </div>
+
+          <div className="field">
+            <label className="field__label" htmlFor={priorityId}>
+              Priority
+              {priorityRequired ? (
+                <span className="field__asterisk" aria-hidden="true">
+                  *
+                </span>
+              ) : null}
+            </label>
+            <select
+              id={priorityId}
+              className="field__select"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as Priority | '')}
+              aria-required={priorityRequired ? 'true' : undefined}
+            >
+              {priorityRequired ? null : (
+                <option value={NO_PRIORITY}>No priority</option>
+              )}
+              {PRIORITY_OPTIONS.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
 
           <div className="modal__actions">

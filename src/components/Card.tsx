@@ -1,6 +1,7 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useEffect, useState, type ReactNode, type SVGProps } from 'react'
+import { priorityLabel } from '../data/priorities'
 import type { Card as CardType } from '../types'
 
 type Props = {
@@ -208,6 +209,11 @@ export function Card({
           </button>
         </div>
       </div>
+      {card.priority ? (
+        <span className={`card__priority card__priority--${card.priority}`}>
+          {priorityLabel(card.priority)}
+        </span>
+      ) : null}
       {hasNotes ? (
         <div className="card__notes-block">
           <p

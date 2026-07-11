@@ -11,6 +11,7 @@ import {
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
 import { useRef, useState } from 'react'
 import { COLUMNS } from '../data/placeholderBoard'
+import { priorityLabel } from '../data/priorities'
 import {
   moveSignature,
   type MoveHint,
@@ -197,6 +198,13 @@ export function Board({
             <div className="card__top">
               <h3 className="card__title">{overlayCard.title}</h3>
             </div>
+            {overlayCard.priority ? (
+              <span
+                className={`card__priority card__priority--${overlayCard.priority}`}
+              >
+                {priorityLabel(overlayCard.priority)}
+              </span>
+            ) : null}
             {overlayCard.notes ? (
               <div className="card__notes-block">
                 <p className="card__notes card__notes--collapsed">

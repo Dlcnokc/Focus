@@ -18,8 +18,8 @@ Instructions for any coding agent working in this repository. Follow these every
 
 **Focus** is a solo-first personal kanban board:
 
-- Columns: **Ideas → Ready → Focus → Done**  
-- Cards: title + notes  
+- Columns: **Ideas → Ready → Priority → Completed** (storage ids stay `ideas/ready/focus/done`)  
+- Cards: title + notes + optional priority (Low → Immediate; always set in Priority column, which auto-sorts by it)  
 - Drag to move/reorder with **live preview**  
 - Persist in **`localStorage`** key `focus.board.v1`  
 

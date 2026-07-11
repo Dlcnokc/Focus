@@ -7,7 +7,7 @@ import {
   reindexOrders,
   saveCards,
 } from '../lib/storage'
-import type { Card, ColumnId } from '../types'
+import type { Card, ColumnId, Priority } from '../types'
 
 function newId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
@@ -20,12 +20,14 @@ export type AddCardInput = {
   title: string
   notes: string
   column: ColumnId
+  priority?: Priority
 }
 
 export type UpdateCardInput = {
   id: string
   title: string
   notes: string
+  priority?: Priority
 }
 
 /**
@@ -38,6 +40,10 @@ export function useBoard() {
   const [loadError, setLoadError] = useState<string | null>(
     () => initial.loadError,
   )
+  /** Card just dragged into Priority — the UI should ask for its rank. */
+  const [priorityPromptCardId, setPriorityPromptCardId] = useState<
+    string | null
+  >(null)
 
   /** Always mirrors latest cards for sync snapshot on drag start. */
   const cardsRef = useRef(cards)
@@ -86,6 +92,7 @@ export function useBoard() {
           column: input.column,
           order,
           archived: false,
+          priority: input.priority,
         }
         return [...prev, card]
       })
@@ -106,11 +113,22 @@ export function useBoard() {
       setCards((prev) =>
         prev.map((card) =>
           card.id === input.id
-            ? { ...card, title, notes: input.notes.trim() }
+            ? { ...card, title, notes: input.notes.trim(), priority: input.priority }
             : card,
         ),
       )
       return { ok: true as const }
+    },
+    [enablePersist],
+  )
+
+  /** Set just the priority (used by the drop-into-Priority prompt). */
+  const setCardPriority = useCallback(
+    (id: string, priority: Priority) => {
+      enablePersist()
+      setCards((prev) =>
+        prev.map((card) => (card.id === id ? { ...card, priority } : card)),
+      )
     },
     [enablePersist],
   )
@@ -190,13 +208,29 @@ export function useBoard() {
     [],
   )
 
-  /** Drop finished — keep layout and persist. */
+  /** Drop finished — keep layout, persist, and prompt if a card entered Priority. */
   const commitDrag = useCallback(() => {
+    const snapshot = dragSnapshotRef.current
     dragSnapshotRef.current = null
     isDraggingRef.current = false
     if (allowPersistRef.current) {
       saveCards(cardsRef.current)
     }
+
+    if (snapshot) {
+      const entered = cardsRef.current.find((card) => {
+        if (card.column !== 'focus' || card.archived) return false
+        const before = snapshot.find((s) => s.id === card.id)
+        return before != null && before.column !== 'focus'
+      })
+      if (entered) {
+        setPriorityPromptCardId(entered.id)
+      }
+    }
+  }, [])
+
+  const dismissPriorityPrompt = useCallback(() => {
+    setPriorityPromptCardId(null)
   }, [])
 
   /** Cancel drag — restore pre-drag board and persist that. */
@@ -225,8 +259,11 @@ export function useBoard() {
     cards,
     loadError,
     dismissLoadError,
+    priorityPromptCardId,
+    dismissPriorityPrompt,
     addCard,
     updateCard,
+    setCardPriority,
     deleteCard,
     archiveCard,
     restoreCard,

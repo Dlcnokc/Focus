@@ -2,6 +2,15 @@
 
 export type ColumnId = 'ideas' | 'ready' | 'focus' | 'done'
 
+/** Importance rank. Cards in the Priority column always have one. */
+export type Priority =
+  | 'low'
+  | 'medium-low'
+  | 'medium'
+  | 'medium-high'
+  | 'high'
+  | 'immediate'
+
 export type Card = {
   id: string
   title: string
@@ -9,14 +18,18 @@ export type Card = {
   column: ColumnId
   /** Lower = higher in the column. Used for drag reorder (active cards). */
   order: number
-  /** Soft-removed from the board; only Done is archived in v1 UI. */
+  /** Soft-removed from the board; only Completed is archived in v1 UI. */
   archived: boolean
+  /** Optional everywhere except the Priority column (set on create or on drop). */
+  priority?: Priority
 }
 
 export type ColumnDef = {
   id: ColumnId
   label: string
   hint: string
+  /** Heading for the create-card modal, e.g. "New Idea". */
+  newLabel: string
 }
 
 /** What the card form modal is doing right now. */

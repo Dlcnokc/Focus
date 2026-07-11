@@ -68,8 +68,10 @@ Paid boards are often noisy, opinionated, or expensive. Lightweight tools miss d
 |-----------|--------|---------|
 | `ideas` | Ideas | Ideas and issues not yet figured out |
 | `ready` | Ready | Clear work, not started |
-| `focus` | Focus | Actively in progress |
-| `done` | Done | Finished |
+| `focus` | Priority | Ranked by importance (auto-sorted by priority) |
+| `done` | Completed | Finished |
+
+Column ids are stable storage keys; the 2026-07-11 rename (Focus → Priority, Done → Completed) changed labels only so saved boards keep working.
 
 One board only in v1.
 
@@ -83,8 +85,9 @@ One board only in v1.
 | `column` | yes | One of the four column ids |
 | `order` | yes | Position within the column (drag reorder) |
 | `archived` | yes | `false` by default; soft-removed from the board when `true` |
+| `priority` | no* | One of Low / Medium Low / Medium / Medium High / High / Immediate. *Always set for cards in Priority (picked on create, or prompted on drop; defaults Medium). Shown as a colored badge; Priority column auto-sorts by it. |
 
-**Not implemented yet** (optional later): `createdAt`, `updatedAt`, assignees, tags, due dates, priorities, attachments, comments, subtasks, multiple boards.
+**Not implemented yet** (optional later): `createdAt`, `updatedAt`, assignees, tags, due dates, attachments, comments, subtasks, multiple boards.
 
 ---
 
@@ -211,7 +214,7 @@ One board only in v1.
 | Storage | Browser `localStorage` | Decided |
 | Theme | Calm dark greyscale + white accent | Decided |
 | Font | Source Code Pro (700 / 400) | Decided |
-| Columns | Ideas / Ready / Focus / Done | Decided |
+| Columns | Ideas / Ready / Priority / Completed (ids `ideas/ready/focus/done`) | Decided |
 | Stack | Vite + React + TypeScript + @dnd-kit | Decided |
 | Global add default column | Ideas | Decided |
 | Deploy | Netlify + GitHub `main` auto-deploy | Decided |
@@ -246,3 +249,5 @@ One board only in v1.
 | 2026-07-11 | Archive Done cards: confirm modal, header Archive list, restore/delete; `archived` on card. |
 | 2026-07-11 | Mobile / small-screen polish via CSS tokens + media queries; four columns swipe on phone. |
 | 2026-07-11 | Hardening: corrupt-load backup, no mid-drag save, drag off while search, Cancel-first confirms, normalize titles/ids. |
+| 2026-07-11 | Renamed columns Focus → **Priority**, Done → **Completed** (labels only; ids stable). Create modal titled "New {Idea / Ready Task / Priority Task / Completed Task}"; required/optional text replaced with red asterisk. |
+| 2026-07-11 | Card `priority` (Low → Immediate, 6 levels): dropdown on create/edit, prompt when dragged into Priority (Cancel defaults Medium), colored badge on card, Priority column auto-sorts by rank. |

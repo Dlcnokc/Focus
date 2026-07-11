@@ -3,6 +3,7 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
+import { comparePriorityThenOrder } from '../data/priorities'
 import { columnDroppableData } from '../lib/dnd'
 import type { Card as CardType, ColumnDef } from '../types'
 import { Card } from './Card'
@@ -35,7 +36,11 @@ export function Column({
     data: columnDroppableData(column.id),
   })
 
-  const sorted = cards.slice().sort((a, b) => a.order - b.order)
+  // Priority column auto-sorts by importance; others keep manual drag order.
+  const sorted =
+    column.id === 'focus'
+      ? cards.slice().sort(comparePriorityThenOrder)
+      : cards.slice().sort((a, b) => a.order - b.order)
   const itemIds = sorted.map((c) => c.id)
 
   return (
