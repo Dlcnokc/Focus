@@ -58,6 +58,12 @@
     0 2px 4px rgba(0, 0, 0, 0.35),
     0 10px 28px rgba(0, 0, 0, 0.45);
   --header-height: 3.75rem;
+
+  /* Scrollbars — thin, greyscale, still findable */
+  --scrollbar-size: 6px;
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(255, 255, 255, 0.14);
+  --scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
 }
 
 /* Reset / base */
@@ -213,6 +219,25 @@ p {
   flex: 1;
   padding: var(--space-5) var(--space-6) var(--space-5);
   overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.app__main::-webkit-scrollbar {
+  height: var(--scrollbar-size);
+}
+
+.app__main::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.app__main::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.app__main::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 /* Board */
@@ -300,6 +325,33 @@ p {
   padding: var(--space-3);
   overflow-y: auto;
   flex: 1;
+  /* Firefox */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* WebKit (Chrome, Edge, Safari) — subtle column scroll */
+.column__body::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+.column__body::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  margin: var(--space-1) 0;
+}
+
+.column__body::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.column__body::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.column__body::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .column__empty {
@@ -588,6 +640,25 @@ p {
   gap: var(--space-2);
   overflow-y: auto;
   max-height: min(48vh, 360px);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.archive-list::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+}
+
+.archive-list::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.archive-list::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.archive-list::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
 
 .archive-list__empty {
