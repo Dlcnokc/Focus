@@ -6,11 +6,18 @@ Instructions for any coding agent working in this repository. Follow these every
 
 ## Session start (do this first)
 
-1. Read **`PRODUCT.md`** — especially current status, shipped checklist, non-goals.  
-2. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
-3. Skim this file.  
-4. Run the app if changing code: `npm run dev` from `Focus/`.  
-5. Implement the **smallest** requested slice; do not invent multi-user or backend work.
+1. **Sync with GitHub** — stay on latest `main` so work is not against an old local copy:
+   ```powershell
+   git checkout main
+   git pull origin main
+   git status
+   ```
+   Confirm: on `main`, up to date with `origin/main` (or only the owner’s current uncommitted edits). One clone only: this repo folder — do not edit a second copy or a ZIP download.
+2. Read **`PRODUCT.md`** — especially current status, shipped checklist, non-goals.  
+3. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
+4. Skim this file.  
+5. Run the app if changing code: `npm run dev` from `Focus/`.  
+6. Implement the **smallest** requested slice; do not invent multi-user or backend work.
 
 ---
 
@@ -62,7 +69,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Font: **Source Code Pro** — titles/labels **700**, body/notes **400** (avoid ultra-thin weights).  
 - Header shows **Focus** only (no marketing subtitle).  
 - Columns quieter than cards; cards use subtle fill + box-shadow.  
-- Whole **card** is draggable; action icons (copy/edit/delete) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
+- Whole **card** is draggable; action icons (copy / edit / delete / archive on Done) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
 - Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via top-right icon.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
 - Design changes: update tokens first, then layout if needed.
@@ -101,6 +108,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Corrupt load: backup raw to `focus.board.v1.bak`, **block save** until the user changes the board (do not write `[]` over bad data).  
 - Do **not** persist live drag previews — save on drag commit / cancel restore / non-drag mutations only.  
 - Title search: disable drag while a filter is active (filtered list ≠ full board for DnD).  
+- Destructive confirms (delete / archive / import Replace|Merge): focus **Cancel** first (`autoFocus`).  
 - Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; do not reshuffle when hovering same-column chrome only.  
 - No secrets in the repo.
 
@@ -123,7 +131,8 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Export / import JSON | **Done** |
 | Title search | **Done** |
 | Archive Done cards | **Done** |
-| v1.1 Mobile polish | **Done** (CSS) |
+| Baseline mobile CSS (swipe columns, header stack) | **Done** |
+| Further mobile / phone polish | **Next** — owner priority; ask before large redesign |
 | Storage / drag safety hardening | **Done** |
 | Cooperative / multi-user | **Not started** — ask first |
 | External tools hub / tax app | **Out of repo** — do not build here unless asked |

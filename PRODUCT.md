@@ -17,16 +17,18 @@ A simple four-column board where work moves from ideas → ready → in progress
 **Solo v1 is shipped and usable daily** (use the live site; export weekly).
 
 - Four columns, CRUD, drag + live preview, localStorage  
-- Card icons, notes collapse/copy, title search (drag off while searching)  
-- Export/import JSON; Done-only archive + list search  
-- Mobile CSS polish; themed scrollbars  
-- Storage safety: corrupt-load backup (`focus.board.v1.bak`), no mid-drag disk writes, confirm Cancel focused  
+- Card icons (copy / edit / delete; **archive on Done only**), notes collapse/copy, title search (drag off while searching)  
+- Export/import JSON; Done-only archive + list search / restore / permanent delete  
+- Baseline phone CSS (horizontal column swipe, stacked header, safe areas); **more mobile polish is next**  
+- Themed scrollbars  
+- Storage safety: corrupt-load backup (`focus.board.v1.bak`), no mid-drag disk writes, destructive confirms focus **Cancel** first  
 - Design: calm dark greyscale, white accent, Source Code Pro  
 - **Live:** https://coruscating-travesseiro-be1b90.netlify.app/  
 - **Code:** https://github.com/Dlcnokc/Focus (private); push `main` → Netlify; docs-only: `[skip ci]`  
 
 **Not built / park for later:**
 
+- Further mobile / phone UX polish (beyond baseline CSS already in `index.css`)  
 - Archive extras, multi-user, backend/cloud sync  
 - Separate “tools hub” / tax calculator (other repos later; leave Focus alone)  
 
@@ -96,7 +98,7 @@ One board only in v1.
 - [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas)  
 - [x] Edit card (title + notes) — **centered** themed modal, blurred backdrop  
 - [x] Delete card — **custom** centered confirm modal (no browser alert)  
-- [x] Card actions as top-right **icons** (copy notes, edit, delete)  
+- [x] Card actions as top-right **icons** (copy notes, edit, delete; **archive on Done**)  
 - [x] Long notes **collapse** by default; bold Expand/Collapse under notes  
 - [x] **Copy notes** to clipboard from the card  
 - [x] Board starts empty (no sample/seed cards)  
@@ -116,10 +118,11 @@ One board only in v1.
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
 - [x] Archive Done cards (confirm + Archive list modal; restore or permanent delete)  
+- [x] Baseline phone CSS (column swipe, header stack, safe areas) — further polish still open  
 
-### Nice-to-have (v1.1)
+### Nice-to-have / next
 
-- [x] Responsive / phone polish (CSS; four columns, horizontal swipe)  
+- [ ] Further **mobile / phone polish** (owner priority after daily use friction)  
 - [ ] Keyboard shortcuts (only if owner wants them)  
 
 ### Explicitly later
@@ -168,8 +171,9 @@ One board only in v1.
 - Add/edit: centered modal (not side panel); **Cancel** + backdrop click close; no extra Close button  
 - Delete: themed modal, not `window.confirm`  
 - Drag: whole card surface; live reorder preview; all columns can highlight  
-- Card chrome: top-right icons (copy / edit / delete); long notes collapse with bold Expand under notes  
+- Card chrome: top-right icons (copy / edit / delete; **archive on Done only**); long notes collapse with bold Expand under notes  
 - Global Add → **Ideas** by default  
+ 
 
 ### Theme flexibility
 
@@ -195,9 +199,10 @@ One board only in v1.
 | **Phase 1** | Design shell, tokens, columns | Done |
 | **Phase 2 / 2.1** | CRUD + centered modals + empty board | Done |
 | **Phase 3** | Persist + drag move/reorder + live preview | Done |
-| **v1.1** | Mobile polish, archive | Next candidates |
-| **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **Deploy** | Static host + GitHub auto-deploy | **Done** (Netlify) |
+| **Archive** | Done-only archive + list (restore / delete) | **Done** |
+| **Mobile** | Baseline CSS shipped; further phone polish | **Next** (owner priority) |
+| **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **v3+** | Cooperative features if still wanted | Later |
 
 ---
@@ -244,5 +249,6 @@ One board only in v1.
 | 2026-07-11 | Search/filter cards by title in header (display-only; does not delete data). |
 | 2026-07-11 | Docs: document Netlify `[skip ci]` for non-app commits. |
 | 2026-07-11 | Archive Done cards: confirm modal, header Archive list, restore/delete; `archived` on card. |
-| 2026-07-11 | Mobile / small-screen polish via CSS tokens + media queries; four columns swipe on phone. |
+| 2026-07-11 | Baseline mobile CSS (tokens + media queries; four columns swipe on phone). Further phone polish still open. |
 | 2026-07-11 | Hardening: corrupt-load backup, no mid-drag save, drag off while search, Cancel-first confirms, normalize titles/ids. |
+| 2026-07-11 | Docs audit: archive marked Done; mobile further polish = next; docs aligned to code (icons, Cancel focus, roadmap). |

@@ -4,9 +4,9 @@ A calm, personal four-column board: **Ideas → Ready → Focus → Done**.
 
 **Status (handoff):** Solo v1 is **usable daily** and live on Netlify.
 
-Shipped: board CRUD + drag, notes collapse/copy, icons, **export/import**, **title search**, **Done archive**, **mobile CSS**, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, safer confirm focus).
+Shipped: board CRUD + drag, notes collapse/copy, card icons (copy / edit / delete; archive on Done), **export/import**, **title search**, **Done archive**, baseline **mobile CSS** (column swipe + stacked header), subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
 
-Not multi-user. Next: daily use + friction fixes; multi-user only if asked.
+Not multi-user. **Next:** further **mobile / phone polish** and daily-use friction fixes. Multi-user only if asked.
 
 ### Live site
 
@@ -49,7 +49,22 @@ That writes production files to `dist/` only. Preview with `npm run preview`, or
 
 ## Resume tomorrow (session handoff)
 
-Read these in order when starting a new session:
+### Before you edit (stay on latest `main`)
+
+Always work in **this folder only** (the git clone), not a second copy or a GitHub ZIP.
+
+```powershell
+cd C:\Users\accou\Desktop\Projects\Grok_Projects\Focus
+git checkout main
+git pull origin main
+git status
+```
+
+You want: **`On branch main`**, **`up to date with 'origin/main'`**. Then edit; when ready, commit and `git push origin main` so GitHub and Netlify match your PC.
+
+Grok (or any agent) can run `git pull` for you at session start — just ask, or it should do this as part of its session checklist.
+
+### Read these in order
 
 1. **`PRODUCT.md`** — what Focus is, v1 scope, non-goals, roadmap  
 2. **`AGENTS.md`** — how agents should behave in this repo  
@@ -59,8 +74,9 @@ Read these in order when starting a new session:
 
 | Priority | Idea | Notes |
 |----------|------|--------|
+| **Next** | Further **mobile / phone polish** | Baseline CSS exists (swipe columns, header stack, safe areas); improve real phone friction (drag feel, layout, touch targets) |
 | Habit | Weekly **Export** backup | Browser-only data |
-| From use | Fix real friction only | Phone drag, archive extras, etc. |
+| From use | Fix real friction only | Anything that slows daily planning |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
 | Out of scope for now | Separate tax/tools hub site | Owner may do later in another repo — leave Focus alone |
 
@@ -104,7 +120,8 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Delete** | Top-right trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
 | **Copy notes** | Top-right clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
 | **Notes expand** | Long notes start collapsed (~3 lines); bold **Expand** / **Collapse** under the notes |
-| **Drag** | Drag from **anywhere on the card** (not action icons / Expand) |
+| **Card icons** | Top-right: copy (if notes), **archive (Done only)**, edit, delete |
+| **Drag** | Drag from **anywhere on the card** (not action icons / Expand / Collapse) |
 | **Live preview** | Other cards shift while dragging to show insert order |
 | **Column highlight** | Column under cursor lights up (including source column) |
 | **Cursor snap** | Floating card centers under the pointer (`snapCenterToCursor`) |
@@ -122,7 +139,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 - Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
 - `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Phone: four columns swipe horizontally; header stacks; desktop unchanged.
+- Phone: baseline CSS only (four columns swipe horizontally; header stacks; desktop unchanged). Further polish is next.
 - No keyboard shortcuts (by choice so far).
 - Multi-tab: last write wins (no live sync between tabs).
 
@@ -180,7 +197,9 @@ Focus/
 ├── index.html                 Loads fonts + app
 ├── vite.config.ts
 ├── tsconfig*.json
-├── public/favicon.svg
+├── public/
+│   ├── favicon.svg
+│   └── icons.svg              Vite leftover; app icons are inline SVG in Card.tsx
 └── src/
     ├── main.tsx               React mount + ErrorBoundary
     ├── App.tsx                Header, board, modals wiring
@@ -262,7 +281,7 @@ Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defa
 - **Live preview:** `onDragOver` → `previewMove` / `applyCardMove` so other cards make room
 - **Stability:** skip no-op moves; do not reshuffle when hovering **same column chrome** only (prevents React update loops / blank screen)
 - **Cancel:** snapshot at drag start; restore if drop cancelled / no `over`
-- **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; Edit/Delete `stopPropagation` on pointer down
+- **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; copy / archive / edit / delete / Expand-Collapse use `stopPropagation` on pointer down
 
 If drag ever blanks the UI again: check console + ErrorBoundary message; avoid setState loops in `onDragOver`.
 

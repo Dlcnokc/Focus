@@ -656,6 +656,32 @@ p {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  overflow-y: auto;
+  /* Match board / column scrollbars when the panel itself scrolls */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.modal::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+.modal::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.modal::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .modal--form {
@@ -833,20 +859,6 @@ p {
   text-transform: uppercase;
 }
 
-.field__required {
-  color: var(--color-text-faint);
-  font-weight: var(--font-weight-body);
-  text-transform: none;
-  letter-spacing: 0;
-}
-
-.field__optional {
-  color: var(--color-text-faint);
-  font-weight: var(--font-weight-body);
-  text-transform: none;
-  letter-spacing: 0;
-}
-
 .field__input,
 .field__textarea {
   font-family: var(--font-sans);
@@ -875,6 +887,31 @@ p {
   resize: vertical;
   min-height: 8rem;
   line-height: 1.55;
+  /* Match board / column / archive scrollbars (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.field__textarea::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+.field__textarea::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.field__textarea::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+}
+
+.field__textarea::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.field__textarea::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .field__error {

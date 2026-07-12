@@ -88,7 +88,7 @@ export function CardFormPanel(props: Props) {
         <form className="modal__form" onSubmit={handleSubmit} noValidate>
           <div className="field">
             <label className="field__label" htmlFor={titleId}>
-              Title <span className="field__required">required</span>
+              Title
             </label>
             <input
               id={titleId}
@@ -113,7 +113,7 @@ export function CardFormPanel(props: Props) {
 
           <div className="field">
             <label className="field__label" htmlFor={notesId}>
-              Notes <span className="field__optional">optional</span>
+              Notes
             </label>
             <textarea
               id={notesId}
