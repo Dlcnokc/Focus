@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useEffect, useState, type ReactNode, type SVGProps } from 'react'
 import { columnDef } from '../data/placeholderBoard'
+import { formatIsoDate } from '../lib/dates'
 import type { Card as CardType } from '../types'
 import { PriorityBadge } from './PriorityBadge'
 
@@ -212,6 +213,11 @@ export function Card({
         </div>
       </div>
       {card.priority ? <PriorityBadge priority={card.priority} /> : null}
+      {card.completedAt ? (
+        <span className="card__completed">
+          Completed {formatIsoDate(card.completedAt)}
+        </span>
+      ) : null}
       {hasNotes ? (
         <div className="card__notes-block">
           <p

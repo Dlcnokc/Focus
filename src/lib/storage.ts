@@ -4,6 +4,7 @@ import {
   isColumnId,
 } from '../data/placeholderBoard'
 import { DEFAULT_PRIORITY, isPriority } from '../data/priorities'
+import { isIsoDate } from './dates'
 import type { Card, ColumnId } from '../types'
 
 export const BOARD_STORAGE_KEY = 'focus.board.v1'
@@ -53,6 +54,11 @@ export function normalizeCards(raw: unknown): Card[] {
             : index,
         archived: rec.archived === true,
         ...(priorityFor(rec.column, rec.priority)),
+        // Completion date only means something in a column that tracks it
+        ...(columnDef(rec.column).tracksCompletedDate &&
+        isIsoDate(rec.completedAt)
+          ? { completedAt: rec.completedAt }
+          : {}),
       } satisfies Card
     })
     .filter((c): c is Card => c !== null)

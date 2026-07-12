@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { columnDef } from '../data/placeholderBoard'
 import { applyCardMove, boardsEqual, type MoveHint } from '../lib/boardMove'
+import { todayIsoDate } from '../lib/dates'
 import { mergeCardLists } from '../lib/boardFile'
 import {
   cardsInColumn,
@@ -29,6 +30,7 @@ export type UpdateCardInput = {
   title: string
   notes: string
   priority?: Priority
+  completedAt?: string
 }
 
 /**
@@ -114,7 +116,13 @@ export function useBoard() {
       setCards((prev) =>
         prev.map((card) =>
           card.id === input.id
-            ? { ...card, title, notes: input.notes.trim(), priority: input.priority }
+            ? {
+                ...card,
+                title,
+                notes: input.notes.trim(),
+                priority: input.priority,
+                completedAt: input.completedAt,
+              }
             : card,
         ),
       )
@@ -236,18 +244,34 @@ export function useBoard() {
         setPriorityPromptCardId(entered.id)
       }
 
-      // Columns like Completed strip priority; returning to Priority re-prompts.
-      const cleared = cardsRef.current.find(
-        (card) =>
-          card.priority != null &&
-          columnDef(card.column).clearsPriority &&
-          movedTo(card),
-      )
-      if (cleared) {
+      // Apply column entry/exit rules to the moved card: Completed strips
+      // priority and stamps today's completion date; leaving Completed
+      // clears the date (returning to Priority re-prompts via the block above).
+      const needsRules = cardsRef.current.some((card) => {
+        if (!movedTo(card)) return false
+        const def = columnDef(card.column)
+        return (
+          (def.clearsPriority && card.priority != null) ||
+          def.tracksCompletedDate ||
+          (!def.tracksCompletedDate && card.completedAt != null)
+        )
+      })
+      if (needsRules) {
         setCards((prev) =>
-          prev.map((card) =>
-            card.id === cleared.id ? { ...card, priority: undefined } : card,
-          ),
+          prev.map((card) => {
+            if (!movedTo(card)) return card
+            const def = columnDef(card.column)
+            let next = card
+            if (def.clearsPriority && next.priority != null) {
+              next = { ...next, priority: undefined }
+            }
+            if (def.tracksCompletedDate) {
+              next = { ...next, completedAt: todayIsoDate() }
+            } else if (next.completedAt != null) {
+              next = { ...next, completedAt: undefined }
+            }
+            return next
+          }),
         )
       }
     }

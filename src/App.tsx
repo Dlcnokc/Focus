@@ -336,12 +336,13 @@ function App() {
           mode="edit"
           card={editingCard}
           onClose={closeEditor}
-          onSubmit={({ title, notes, priority }) => {
+          onSubmit={({ title, notes, priority, completedAt }) => {
             const result = updateCard({
               id: editingCard.id,
               title,
               notes,
               priority,
+              completedAt,
             })
             return result.ok ? null : result.error
           }}

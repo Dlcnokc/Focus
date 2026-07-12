@@ -17,6 +17,7 @@ export const COLUMNS: ColumnDef[] = [
     clearsPriority: false,
     allowsDirectAdd: true,
     allowsArchive: false,
+    tracksCompletedDate: false,
   },
   {
     id: 'ready',
@@ -27,6 +28,7 @@ export const COLUMNS: ColumnDef[] = [
     clearsPriority: false,
     allowsDirectAdd: true,
     allowsArchive: false,
+    tracksCompletedDate: false,
   },
   {
     id: 'focus',
@@ -37,6 +39,7 @@ export const COLUMNS: ColumnDef[] = [
     clearsPriority: false,
     allowsDirectAdd: true,
     allowsArchive: false,
+    tracksCompletedDate: false,
   },
   {
     id: 'done',
@@ -47,6 +50,7 @@ export const COLUMNS: ColumnDef[] = [
     clearsPriority: true,
     allowsDirectAdd: false,
     allowsArchive: true,
+    tracksCompletedDate: true,
   },
 ]
 
@@ -65,5 +69,5 @@ export function columnDef(id: ColumnId): ColumnDef {
   return def
 }
 
-/** Global “Add card” places new cards here by default. */
+/** Global "Add card" places new cards here by default. */
 export const DEFAULT_NEW_COLUMN: ColumnId = 'ideas'

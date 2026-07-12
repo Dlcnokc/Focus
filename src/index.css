@@ -539,6 +539,13 @@ p {
   --priority-color: var(--color-priority-immediate);
 }
 
+/* Completion date line on Completed cards */
+.card__completed {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-body);
+  color: var(--color-text-faint);
+}
+
 .card__notes-block {
   display: flex;
   flex-direction: column;
@@ -911,6 +918,11 @@ p {
 
 .field__select {
   cursor: pointer;
+}
+
+/* Native date picker widgets follow the dark theme */
+.field__input--date {
+  color-scheme: dark;
 }
 
 .field__select option {

@@ -104,6 +104,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column. **Completed has no add** — cards only arrive there by drag |
 | **Edit** | Top-right pencil icon → centered modal (title + notes + priority); title required (red asterisk) |
 | **Priority** | Low → Immediate (6 levels): dropdown on create/edit, colored badge on card, every column sorts ranked cards first. Dropping an unranked card into Priority prompts for a rank (Cancel = Medium); entering Completed clears it |
+| **Completed date** | Entering Completed stamps today's date (shown on the card); editable via date picker in the edit modal; Completed sorts newest-first by it; leaving Completed clears it |
 | **Delete** | Top-right trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
 | **Copy notes** | Top-right clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
 | **Notes expand** | Long notes start collapsed (~3 lines); bold **Expand** / **Collapse** under the notes |
@@ -220,7 +221,7 @@ Focus/
 {
   "version": 1,
   "exportedAt": "2026-07-11T…",
-  "cards": [ { "id", "title", "notes", "column", "order", "archived", "priority?" } ]
+  "cards": [ { "id", "title", "notes", "column", "order", "archived", "priority?", "completedAt?" } ]
 }
 ```
 
@@ -247,6 +248,7 @@ Import also accepts a bare JSON array of cards (same fields). Invalid cards are 
   archived: boolean
   priority?: 'low' | 'medium-low' | 'medium' | 'medium-high' | 'high' | 'immediate'
   // always set in Priority; always absent in Completed
+  completedAt?: string   // YYYY-MM-DD; only on Completed cards, set on entry
 }
 ```
 

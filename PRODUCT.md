@@ -86,6 +86,7 @@ One board only in v1.
 | `order` | yes | Position within the column (drag reorder) |
 | `archived` | yes | `false` by default; soft-removed from the board when `true` |
 | `priority` | no* | One of Low / Medium Low / Medium / Medium High / High / Immediate. *Always set for cards in Priority (picked on create, or prompted on drop only when the card has no priority yet; defaults Medium). Shown as a colored badge; every column auto-sorts ranked cards first (unranked keep manual order below). Cleared when a card enters Completed — moving it back to Priority prompts fresh. |
+| `completedAt` | no | ISO date (YYYY-MM-DD) stamped automatically when a card enters Completed; editable there via the edit modal (date picker); cleared on leaving. Completed sorts by it, newest first (undated legacy cards sink). |
 
 **Not implemented yet** (optional later): `createdAt`, `updatedAt`, assignees, tags, due dates, attachments, comments, subtasks, multiple boards.
 
@@ -256,3 +257,4 @@ One board only in v1.
 | 2026-07-11 | Entering Completed clears a card's `priority` (edit form hides the field there); dragging back to Priority prompts for a fresh rank. |
 | 2026-07-11 | Priority auto-sort extended to all columns (ranked first, unranked keep manual order below); drop into Priority prompts only when the card has no priority yet. |
 | 2026-07-11 | Column behavior centralized as flags on `ColumnDef` (`requiresPriority` / `clearsPriority` / `allowsDirectAdd` / `allowsArchive`) — one home for per-column rules. Load/import now enforces them too: unranked Priority cards default to Medium (closes the import loophole). Shared `PriorityBadge` component. |
+| 2026-07-12 | Completed date: entering Completed stamps `completedAt` (today), shown on the card and editable via a date picker in the edit modal; Completed sorts newest-first by it; leaving Completed clears it. New `tracksCompletedDate` column flag. |

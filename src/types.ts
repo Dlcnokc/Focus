@@ -22,6 +22,8 @@ export type Card = {
   archived: boolean
   /** Optional everywhere except the Priority column (set on create or on drop). */
   priority?: Priority
+  /** ISO date (YYYY-MM-DD) set when the card enters Completed; editable there. */
+  completedAt?: string
 }
 
 export type ColumnDef = {
@@ -38,6 +40,8 @@ export type ColumnDef = {
   allowsDirectAdd: boolean
   /** Cards here can be archived. */
   allowsArchive: boolean
+  /** Entering this column stamps `completedAt` (today); leaving clears it. */
+  tracksCompletedDate: boolean
 }
 
 /** What the card form modal is doing right now. */

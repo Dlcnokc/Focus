@@ -22,6 +22,7 @@ type EditProps = {
     title: string
     notes: string
     priority?: Priority
+    completedAt?: string
   }) => string | null
   onClose: () => void
 }
@@ -42,6 +43,7 @@ export function CardFormPanel(props: Props) {
   const titleId = useId()
   const notesId = useId()
   const priorityId = useId()
+  const completedId = useId()
   const errorId = useId()
 
   const targetColumn: ColumnId =
@@ -50,6 +52,8 @@ export function CardFormPanel(props: Props) {
   // Priority column: always ranked. Completed: past prioritizing, no field.
   const priorityRequired = targetDef.requiresPriority
   const priorityHidden = targetDef.clearsPriority
+  // Completed cards get an editable completion date instead.
+  const showCompletedDate = props.mode === 'edit' && targetDef.tracksCompletedDate
 
   const [title, setTitle] = useState(
     props.mode === 'edit' ? props.card.title : '',
@@ -61,6 +65,9 @@ export function CardFormPanel(props: Props) {
     if (props.mode === 'edit' && props.card.priority) return props.card.priority
     return priorityRequired ? DEFAULT_PRIORITY : NO_PRIORITY
   })
+  const [completedAt, setCompletedAt] = useState(
+    props.mode === 'edit' ? (props.card.completedAt ?? '') : '',
+  )
   const [error, setError] = useState<string | null>(null)
 
   const heading = props.mode === 'create' ? targetDef.newLabel : 'Edit card'
@@ -80,6 +87,14 @@ export function CardFormPanel(props: Props) {
           : undefined
         : priority
 
+    // Only Completed cards carry a date; an emptied field means "no date"
+    // (the card sorts below dated ones until it gets one).
+    const chosenCompletedAt = showCompletedDate
+      ? completedAt || undefined
+      : props.mode === 'edit'
+        ? props.card.completedAt
+        : undefined
+
     const result =
       props.mode === 'create'
         ? props.onSubmit({
@@ -88,7 +103,12 @@ export function CardFormPanel(props: Props) {
             column: props.column,
             priority: chosenPriority,
           })
-        : props.onSubmit({ title, notes, priority: chosenPriority })
+        : props.onSubmit({
+            title,
+            notes,
+            priority: chosenPriority,
+            completedAt: chosenCompletedAt,
+          })
 
     if (result) {
       setError(result)
@@ -158,6 +178,21 @@ export function CardFormPanel(props: Props) {
               rows={5}
             />
           </div>
+
+          {showCompletedDate ? (
+            <div className="field">
+              <label className="field__label" htmlFor={completedId}>
+                Completed date
+              </label>
+              <input
+                id={completedId}
+                className="field__input field__input--date"
+                type="date"
+                value={completedAt}
+                onChange={(e) => setCompletedAt(e.target.value)}
+              />
+            </div>
+          ) : null}
 
           {priorityHidden ? null : (
             <div className="field">

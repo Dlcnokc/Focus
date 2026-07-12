@@ -4,6 +4,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { comparePriorityThenOrder } from '../data/priorities'
+import { compareCompletedDateThenOrder } from '../lib/dates'
 import type { Card as CardType, ColumnDef } from '../types'
 import { Card } from './Card'
 
@@ -32,9 +33,16 @@ export function Column({
   // Whole column is the droppable so the cursor anywhere inside counts.
   const { setNodeRef } = useDroppable({ id: column.id })
 
-  // Every column auto-sorts by importance first; cards without a priority
-  // stay below ranked ones and keep manual drag order among themselves.
-  const sorted = cards.slice().sort(comparePriorityThenOrder)
+  // Completed sorts by completion date (newest first); every other column
+  // auto-sorts by importance. Undated/unranked cards keep manual drag order
+  // below the sorted ones.
+  const sorted = cards
+    .slice()
+    .sort(
+      column.tracksCompletedDate
+        ? compareCompletedDateThenOrder
+        : comparePriorityThenOrder,
+    )
   const itemIds = sorted.map((c) => c.id)
   const canAdd = column.allowsDirectAdd
 
