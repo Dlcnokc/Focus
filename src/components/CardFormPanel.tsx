@@ -1,5 +1,4 @@
 import { useId, useState, type FormEvent } from 'react'
-import { COLUMNS } from '../data/placeholderBoard'
 import type { Card, ColumnId } from '../types'
 
 type CreateProps = {
@@ -22,10 +21,6 @@ type EditProps = {
 
 type Props = CreateProps | EditProps
 
-function columnLabel(id: ColumnId): string {
-  return COLUMNS.find((c) => c.id === id)?.label ?? id
-}
-
 /**
  * Centered modal for creating or editing a card.
  * Title is required (validated on submit).
@@ -44,10 +39,7 @@ export function CardFormPanel(props: Props) {
   )
   const [error, setError] = useState<string | null>(null)
 
-  const heading =
-    props.mode === 'create'
-      ? `New card · ${columnLabel(props.column)}`
-      : 'Edit card'
+  const heading = props.mode === 'create' ? 'New card' : 'Edit card'
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
