@@ -128,12 +128,21 @@ export function Card({
   const longNotes = hasNotes && notesAreLong(card.notes)
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
+  const [actionsOpen, setActionsOpen] = useState(false)
 
   useEffect(() => {
     if (!copied) return
     const t = window.setTimeout(() => setCopied(false), 1500)
     return () => window.clearTimeout(t)
   }, [copied])
+
+  useEffect(() => {
+    if (isDragging) setActionsOpen(false)
+  }, [isDragging])
+
+  useEffect(() => {
+    setActionsOpen(false)
+  }, [card.id])
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -144,6 +153,7 @@ export function Card({
 
   async function copyNotes() {
     if (!card.notes) return
+    setActionsOpen(false)
     const ok = await writeClipboard(card.notes)
     if (ok) setCopied(true)
   }
@@ -161,51 +171,78 @@ export function Card({
     >
       <div className="card__top">
         <h3 className="card__title">{card.title}</h3>
-        <div className="card__actions">
-          {hasNotes ? (
+        <div className={`card__actions${actionsOpen ? ' is-open' : ''}`}>
+          <button
+            type="button"
+            className="btn btn--ghost btn--icon card__actions-toggle"
+            aria-expanded={actionsOpen}
+            aria-haspopup="menu"
+            aria-label="Card actions"
+            title="Actions"
+            onClick={() => setActionsOpen((v) => !v)}
+            onPointerDown={(e) => e.stopPropagation()}
+          >
+            <span aria-hidden="true">···</span>
+          </button>
+          <div className="card__actions-panel" role="menu">
+            {hasNotes ? (
+              <button
+                type="button"
+                className="btn btn--ghost btn--icon"
+                role="menuitem"
+                onClick={() => void copyNotes()}
+                onPointerDown={(e) => e.stopPropagation()}
+                aria-label={copied ? 'Notes copied' : 'Copy notes to clipboard'}
+                title={copied ? 'Copied' : 'Copy notes'}
+              >
+                {copied ? <IconCheck /> : <IconCopy />}
+              </button>
+            ) : null}
+            {canArchive ? (
+              <button
+                type="button"
+                className="btn btn--ghost btn--icon"
+                role="menuitem"
+                onClick={() => {
+                  setActionsOpen(false)
+                  onRequestArchive(card.id)
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                aria-label="Archive card"
+                title="Archive"
+              >
+                <IconArchive />
+              </button>
+            ) : null}
             <button
               type="button"
               className="btn btn--ghost btn--icon"
-              onClick={() => void copyNotes()}
+              role="menuitem"
+              onClick={() => {
+                setActionsOpen(false)
+                onEdit(card.id)
+              }}
               onPointerDown={(e) => e.stopPropagation()}
-              aria-label={copied ? 'Notes copied' : 'Copy notes to clipboard'}
-              title={copied ? 'Copied' : 'Copy notes'}
+              aria-label="Edit card"
+              title="Edit"
             >
-              {copied ? <IconCheck /> : <IconCopy />}
+              <IconEdit />
             </button>
-          ) : null}
-          {canArchive ? (
             <button
               type="button"
-              className="btn btn--ghost btn--icon"
-              onClick={() => onRequestArchive(card.id)}
+              className="btn btn--danger-ghost btn--icon"
+              role="menuitem"
+              onClick={() => {
+                setActionsOpen(false)
+                onRequestDelete(card.id)
+              }}
               onPointerDown={(e) => e.stopPropagation()}
-              aria-label="Archive card"
-              title="Archive"
+              aria-label="Delete card"
+              title="Delete"
             >
-              <IconArchive />
+              <IconTrash />
             </button>
-          ) : null}
-          <button
-            type="button"
-            className="btn btn--ghost btn--icon"
-            onClick={() => onEdit(card.id)}
-            onPointerDown={(e) => e.stopPropagation()}
-            aria-label="Edit card"
-            title="Edit"
-          >
-            <IconEdit />
-          </button>
-          <button
-            type="button"
-            className="btn btn--danger-ghost btn--icon"
-            onClick={() => onRequestDelete(card.id)}
-            onPointerDown={(e) => e.stopPropagation()}
-            aria-label="Delete card"
-            title="Delete"
-          >
-            <IconTrash />
-          </button>
+          </div>
         </div>
       </div>
       {hasNotes ? (

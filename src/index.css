@@ -165,19 +165,28 @@ p {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  /* Optical align with first column’s left edge (column border + radius) */
+  margin-left: 0.35rem;
 }
 
 .app__mark {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
+  background: transparent;
+  border: 1.5px solid var(--color-accent);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  box-shadow:
+    0 0 0 2px var(--color-accent-soft),
+    0 0 8px rgba(255, 255, 255, 0.35),
+    0 0 14px rgba(255, 255, 255, 0.12);
 }
 
 .app__title {
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-title);
+  /* Slightly lighter than body titles (700) — calmer header wordmark */
+  font-weight: 500;
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -573,6 +582,7 @@ p {
 }
 
 .card__actions {
+  position: relative;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -582,8 +592,55 @@ p {
   cursor: default;
 }
 
+/* Desktop: always show icon row; ··· toggle is phone-only.
+   Higher specificity than `.btn--icon { display: inline-flex }` so hide wins. */
+button.card__actions-toggle.btn--icon {
+  display: none;
+}
+
+.card__actions-panel {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .card__actions .btn--icon svg {
   display: block;
+}
+
+/* Phone column dots — hidden on desktop; shown under header on small screens */
+.board-nav {
+  display: none;
+}
+
+/* Header secondary actions: desktop = flat row (toggle hidden) */
+.app__header-more {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Same specificity issue as card toggle vs `.btn--icon` */
+button.app__header-more-toggle.btn--icon {
+  display: none;
+}
+
+.app__header-more-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.app__header-add {
+  flex-shrink: 0;
+}
+
+/* While dragging: calm cursor + no text selection */
+body.is-dragging {
+  cursor: grabbing;
+  user-select: none;
 }
 
 /* Buttons */
@@ -1008,8 +1065,8 @@ p {
 }
 
 /* ---------------------------------------------------------------------------
-   Responsive — still four columns; polish layout for tablet / phone.
-   Desktop rules above stay the default; these only tighten smaller viewports.
+   Responsive — desktop defaults above stay as-is.
+   These blocks only tighten tablet / overhaul phone UX (max-width).
    --------------------------------------------------------------------------- */
 
 /* Tablet and down */
@@ -1030,21 +1087,24 @@ p {
   }
 }
 
-/* Phone / small screens */
+/* Phone / small screens — mobile-first overhaul (desktop unchanged above) */
 @media (max-width: 640px) {
   :root {
     --layout-pad-x: var(--space-3);
     --layout-pad-y: var(--space-3);
-    /* One primary column in view; swipe for the other three */
-    --board-col-min: min(18.5rem, calc(100vw - var(--layout-pad-x) * 2 - 1.25rem));
+    /* Nearly full-bleed column + small peek of the next */
+    --board-col-min: min(20.5rem, calc(100vw - var(--layout-pad-x) * 2 - 1.5rem));
     --board-gap: var(--space-3);
     --header-height: auto;
+    --touch-min: 2.75rem; /* ~44px comfortable tap */
   }
 
+  /* ----- Header: title + more + Add, search full width ----- */
   .app__header {
-    align-items: stretch;
+    align-items: center;
     gap: var(--space-2) var(--space-3);
     padding-bottom: var(--space-3);
+    row-gap: var(--space-3);
   }
 
   .app__brand {
@@ -1063,37 +1123,134 @@ p {
     order: 3;
   }
 
-  /* 16px avoids iOS zoom-on-focus for search fields */
+  /* 16px avoids iOS zoom-on-focus */
   .app__search-input {
     font-size: 1rem;
-    padding: 0.55rem 0.75rem;
+    min-height: var(--touch-min);
+    padding: 0.65rem 0.85rem;
   }
 
   .app__header-actions {
     flex: 1 1 auto;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+  }
+
+  /* Overflow menu for Archive / Export / Import */
+  .app__header-more {
+    position: relative;
+  }
+
+  button.app__header-more-toggle.btn--icon {
+    display: inline-flex;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .app__header-more-panel {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.4rem);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-1);
+    min-width: 11.5rem;
+    padding: var(--space-2);
+    background: #111111;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 12px 32px rgba(0, 0, 0, 0.55);
+    z-index: 30;
+  }
+
+  .app__header-more.is-open .app__header-more-panel {
+    display: flex;
+  }
+
+  .app__header-secondary {
+    width: 100%;
     justify-content: flex-start;
+    text-align: left;
+    min-height: var(--touch-min);
+    padding: 0.65rem 0.75rem;
+    font-size: var(--font-size-sm);
   }
 
-  .app__header-actions .btn {
-    padding: 0.5rem 0.65rem;
+  .app__header-add {
+    min-height: var(--touch-min);
+    padding: 0.55rem 0.9rem;
+    font-size: var(--font-size-sm);
   }
 
+  /* ----- Column swipe + snap ----- */
   .app__main {
-    /* Horizontal swipe through columns */
-    scroll-snap-type: x proximity;
+    scroll-snap-type: x mandatory;
     scroll-padding-inline: max(var(--layout-pad-x), env(safe-area-inset-left));
+    /* Room for sticky header + column dots */
+    padding-top: var(--space-2);
+  }
+
+  body.is-dragging .app__main {
+    /* Prefer drag over accidental column swipe while holding a card */
+    overflow-x: hidden;
+    scroll-snap-type: none;
+  }
+
+  .board-nav {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0 0 var(--space-2);
+    position: sticky;
+    left: 0;
+    width: 100%;
+    z-index: 2;
+  }
+
+  .board-nav__dot {
+    width: 0.45rem;
+    height: 0.45rem;
+    padding: 0;
+    border: none;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.18);
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration) var(--motion-ease),
+      transform var(--motion-duration) var(--motion-ease-out),
+      width var(--motion-duration) var(--motion-ease);
+  }
+
+  .board-nav__dot.is-active {
+    width: 1.15rem;
+    background: var(--color-accent);
+    transform: scale(1.05);
+  }
+
+  .board-nav__dot:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 3px;
   }
 
   .board {
     grid-template-columns: repeat(4, var(--board-col-min));
     min-width: calc(var(--board-col-min) * 4 + var(--board-gap) * 3);
-    /* Fill remaining viewport under sticky header */
-    height: calc(100dvh - 8.5rem);
-    min-height: 280px;
+    /* Fill remaining viewport; header is multi-line — use generous offset */
+    height: calc(100dvh - 11.5rem);
+    min-height: 260px;
   }
 
   .column {
     scroll-snap-align: start;
+    scroll-snap-stop: always;
   }
 
   .column__header {
@@ -1101,7 +1258,12 @@ p {
   }
 
   .column__hint {
-    display: none; /* reclaim vertical space on short phones */
+    display: none;
+  }
+
+  .column__heading .btn--icon {
+    width: var(--touch-min);
+    height: var(--touch-min);
   }
 
   .column__body {
@@ -1109,19 +1271,76 @@ p {
     gap: var(--space-2);
   }
 
+  .column__empty .btn {
+    min-height: var(--touch-min);
+    padding: 0.55rem 0.85rem;
+  }
+
+  /* ----- Cards: title first; actions behind ··· ----- */
   .card {
-    padding: var(--space-3);
+    padding: var(--space-3) var(--space-3);
+    /* Slightly larger body text on phone */
+    gap: var(--space-2);
+  }
+
+  .card__title {
+    font-size: var(--font-size-sm);
+    padding-top: 0.35rem;
+  }
+
+  .card__notes {
+    font-size: 0.8125rem; /* between xs and sm */
+  }
+
+  .card__notes-toggle {
+    min-height: 2rem;
+    padding: 0.25rem 0;
+    font-size: var(--font-size-sm);
+  }
+
+  button.card__actions-toggle.btn--icon {
+    display: inline-flex;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    font-size: 1.05rem;
+  }
+
+  .card__actions-panel {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.25rem);
+    z-index: 6;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    background: #111111;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 10px 28px rgba(0, 0, 0, 0.55);
+  }
+
+  .card__actions.is-open .card__actions-panel {
+    display: flex;
   }
 
   .card__actions .btn--icon {
-    width: 2rem;
-    height: 2rem;
+    width: var(--touch-min);
+    height: var(--touch-min);
   }
 
+  .card--overlay {
+    width: min(280px, 85vw);
+  }
+
+  /* ----- Bottom sheets ----- */
   .modal-backdrop {
-    padding: var(--space-3);
-    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
-    align-items: flex-end; /* easier reach on tall phones */
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    align-items: flex-end;
   }
 
   .modal,
@@ -1129,23 +1348,99 @@ p {
   .modal--confirm,
   .modal--archive {
     width: 100%;
-    max-height: min(88dvh, 640px);
-    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
+    max-width: none;
+    max-height: min(92dvh, 720px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: var(--space-4) var(--space-4)
+      max(var(--space-5), env(safe-area-inset-bottom));
+    /* Drag handle affordance */
+    position: relative;
+  }
+
+  .modal::before {
+    content: '';
+    display: block;
+    width: 2.25rem;
+    height: 0.25rem;
+    margin: 0 auto var(--space-3);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+  .modal__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+  }
+
+  .modal__actions .btn {
+    width: 100%;
+    min-height: var(--touch-min);
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    padding: 0.7rem 1rem;
+  }
+
+  .modal__actions--wrap {
+    flex-direction: column-reverse;
+  }
+
+  /* Prevent iOS zoom on form fields */
+  .field__input,
+  .field__textarea {
+    font-size: 1rem;
+    min-height: var(--touch-min);
+    padding: 0.75rem 0.85rem;
+  }
+
+  .field__textarea {
+    min-height: 9rem;
   }
 
   .archive-list {
-    max-height: min(40dvh, 280px);
+    max-height: min(42dvh, 320px);
+  }
+
+  .archive-list__item {
+    padding: var(--space-3);
+  }
+
+  .archive-list__actions .btn {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .archive-list__search .app__search-input {
     font-size: 1rem;
+    min-height: var(--touch-min);
+  }
+
+  /* Soften hover lift on touch (sticky hover on some browsers) */
+  .btn:hover {
+    transform: none;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
   }
 }
 
 /* Very narrow phones */
 @media (max-width: 380px) {
-  .app__header-actions .btn {
-    font-size: 0.7rem;
-    padding: 0.45rem 0.5rem;
+  :root {
+    --board-col-min: min(100%, calc(100vw - var(--layout-pad-x) * 2 - 0.75rem));
+  }
+
+  .app__header-add {
+    padding-inline: 0.7rem;
+    font-size: var(--font-size-xs);
+  }
+
+  .board {
+    height: calc(100dvh - 12rem);
   }
 }

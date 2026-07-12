@@ -1,7 +1,8 @@
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -9,7 +10,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COLUMNS } from '../data/placeholderBoard'
 import {
   moveSignature,
@@ -72,6 +73,8 @@ export function Board({
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overColumnId, setOverColumnId] = useState<ColumnId | null>(null)
   const [overlayCard, setOverlayCard] = useState<Card | null>(null)
+  /** Which column is centered in the phone horizontal scroller (CSS-hidden on desktop). */
+  const [snapIndex, setSnapIndex] = useState(0)
 
   /** Skip preview updates that would not change placement (stops update loops). */
   const lastPreviewSigRef = useRef<string | null>(null)
@@ -79,13 +82,68 @@ export function Board({
   cardsRef.current = cards
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       // Huge distance effectively disables drag while search is filtering
       activationConstraint: {
         distance: dragDisabled ? 99999 : 8,
       },
     }),
+    useSensor(TouchSensor, {
+      // Long-press so column swipe / scroll can win first; huge delay when drag off
+      activationConstraint: dragDisabled
+        ? { delay: 99999, tolerance: 8 }
+        : { delay: 220, tolerance: 8 },
+    }),
   )
+
+  useEffect(() => {
+    if (activeId) document.body.classList.add('is-dragging')
+    else document.body.classList.remove('is-dragging')
+    return () => document.body.classList.remove('is-dragging')
+  }, [activeId])
+
+  /** Track horizontal snap for phone column dots (main is the scrollport). */
+  useEffect(() => {
+    const main = document.querySelector('.app__main')
+    if (!(main instanceof HTMLElement)) return
+
+    function updateSnap() {
+      if (!(main instanceof HTMLElement)) return
+      const cols = main.querySelectorAll('.column')
+      if (!cols.length) return
+      const mainRect = main.getBoundingClientRect()
+      const centerX = mainRect.left + mainRect.width / 2
+      let best = 0
+      let bestDist = Infinity
+      cols.forEach((col, i) => {
+        const r = col.getBoundingClientRect()
+        const c = r.left + r.width / 2
+        const d = Math.abs(c - centerX)
+        if (d < bestDist) {
+          bestDist = d
+          best = i
+        }
+      })
+      setSnapIndex((prev) => (prev === best ? prev : best))
+    }
+
+    updateSnap()
+    main.addEventListener('scroll', updateSnap, { passive: true })
+    window.addEventListener('resize', updateSnap)
+    return () => {
+      main.removeEventListener('scroll', updateSnap)
+      window.removeEventListener('resize', updateSnap)
+    }
+  }, [cards])
+
+  function scrollToColumn(index: number) {
+    const main = document.querySelector('.app__main')
+    if (!(main instanceof HTMLElement)) return
+    const col = main.querySelectorAll('.column')[index]
+    if (col instanceof HTMLElement) {
+      col.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
+    }
+  }
 
   function columnOfCard(cardId: string): ColumnId | undefined {
     return cardsRef.current.find((c) => c.id === cardId)?.column
@@ -170,6 +228,19 @@ export function Board({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
+      <nav className="board-nav" aria-label="Board columns">
+        {COLUMNS.map((column, index) => (
+          <button
+            key={column.id}
+            type="button"
+            className={`board-nav__dot${snapIndex === index ? ' is-active' : ''}`}
+            aria-label={column.label}
+            aria-current={snapIndex === index ? 'true' : undefined}
+            onClick={() => scrollToColumn(index)}
+          />
+        ))}
+      </nav>
+
       <div className="board">
         {COLUMNS.map((column) => {
           const showDropHighlight =
