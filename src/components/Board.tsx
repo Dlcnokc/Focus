@@ -34,7 +34,11 @@ type Props = {
   onRequestArchive: (cardId: string) => void
   onBeginDrag: () => void
   onPreviewMove: (activeId: string, overId: string, hint?: MoveHint) => void
-  onCommitDrag: () => void
+  onCommitDrag: (
+    activeId?: string,
+    overId?: string,
+    hint?: MoveHint,
+  ) => void
   onCancelDrag: () => void
 }
 
@@ -134,7 +138,8 @@ export function Board({
       main.removeEventListener('scroll', updateSnap)
       window.removeEventListener('resize', updateSnap)
     }
-  }, [cards])
+    // Mount-only: do not rebind on every drag preview (cards change often).
+  }, [])
 
   function scrollToColumn(index: number) {
     const main = document.querySelector('.app__main')
@@ -205,10 +210,13 @@ export function Board({
 
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
-    if (activeIdStr !== overIdStr) {
-      onPreviewMove(activeIdStr, overIdStr, moveHintFromEvent(event))
-    }
-    onCommitDrag()
+    const hint = moveHintFromEvent(event)
+    // Final move applied inside commitDrag (sync) so disk matches drop position
+    onCommitDrag(
+      activeIdStr === overIdStr ? undefined : activeIdStr,
+      activeIdStr === overIdStr ? undefined : overIdStr,
+      hint,
+    )
   }
 
   function handleDragCancel() {

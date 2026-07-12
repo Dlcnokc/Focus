@@ -1,6 +1,12 @@
+import { useCallback } from 'react'
+import { useModalChrome } from '../hooks/useModalChrome'
+
 type Props = {
   importCount: number
-  currentCount: number
+  /** Active (non-archived) cards currently on the board. */
+  activeCount: number
+  /** Soft-archived cards (also replaced/merged on import). */
+  archivedCount: number
   onReplace: () => void
   onMerge: () => void
   onCancel: () => void
@@ -8,14 +14,24 @@ type Props = {
 
 /**
  * Choose how to apply an imported JSON board: replace everything or merge.
+ * Cancel is focused first (safer default for Replace).
  */
 export function ImportBoardModal({
   importCount,
-  currentCount,
+  activeCount,
+  archivedCount,
   onReplace,
   onMerge,
   onCancel,
 }: Props) {
+  const onEscape = useCallback(() => onCancel(), [onCancel])
+  useModalChrome(onEscape)
+
+  const boardSummary =
+    archivedCount > 0
+      ? `${activeCount} on the board and ${archivedCount} archived`
+      : `${activeCount} card${activeCount === 1 ? '' : 's'} on the board`
+
   return (
     <div className="modal-backdrop" onClick={onCancel} role="presentation">
       <div
@@ -31,12 +47,12 @@ export function ImportBoardModal({
         </h2>
         <p id="import-modal-desc" className="modal__body">
           File has <strong>{importCount}</strong> card
-          {importCount === 1 ? '' : 's'}. Your board currently has{' '}
-          <strong>{currentCount}</strong> card{currentCount === 1 ? '' : 's'}.
+          {importCount === 1 ? '' : 's'}. You currently have {boardSummary}.
         </p>
         <ul className="modal__list">
           <li>
-            <strong>Replace</strong> — wipe the board and use only the file.
+            <strong>Replace</strong> — wipe the board and archive, then use only
+            the file.
           </li>
           <li>
             <strong>Merge</strong> — keep current cards; same id is updated from

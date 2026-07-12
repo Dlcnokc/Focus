@@ -28,8 +28,26 @@
 
   /* Accent — white / off-white on dark greys */
   --color-accent: #ffffff;
+  --color-accent-hover: #e8e8e8;
   --color-accent-soft: rgba(255, 255, 255, 0.08);
   --color-accent-ring: rgba(255, 255, 255, 0.22);
+  --color-accent-on: var(--color-bg);
+
+  /* Elevated chrome (modals, overflow menus) — slightly above cards */
+  --color-elevated: #111111;
+  --color-column-over: #121212;
+  --color-header-scrim: rgba(10, 10, 10, 0.85);
+
+  /* Semantic action hues (quiet, for hovers / validation only) */
+  --color-danger: #f07178;
+  --color-danger-border: rgba(240, 113, 120, 0.45);
+  --color-danger-soft: rgba(240, 113, 120, 0.1);
+  --color-edit: #e5c07b;
+  --color-edit-border: rgba(229, 192, 123, 0.45);
+  --color-edit-soft: rgba(229, 192, 123, 0.1);
+  --color-archive: #7dd3fc;
+  --color-archive-border: rgba(125, 211, 252, 0.45);
+  --color-archive-soft: rgba(125, 211, 252, 0.1);
 
   /* Shape & type
      Source Code Pro — monospace with clear weight range.
@@ -115,6 +133,7 @@ body,
 
 body {
   margin: 0;
+  color-scheme: dark;
   font-family: var(--font-sans);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-body);
@@ -154,8 +173,9 @@ p {
   padding-left: max(var(--layout-pad-x), env(safe-area-inset-left));
   padding-right: max(var(--layout-pad-x), env(safe-area-inset-right));
   border-bottom: 1px solid var(--color-border-subtle);
-  background: rgba(10, 10, 10, 0.85);
+  background: var(--color-header-scrim);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -186,7 +206,7 @@ p {
 .app__title {
   font-size: var(--font-size-xl);
   /* Slightly lighter than body titles (700) — calmer header wordmark */
-  font-weight: 500;
+  font-weight: var(--font-weight-ui);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -339,9 +359,9 @@ p {
 }
 
 .column--over {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: #121212;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  border-color: var(--color-accent-ring);
+  background: var(--color-column-over);
+  box-shadow: inset 0 0 0 1px var(--color-accent-soft);
 }
 
 .column__header {
@@ -643,6 +663,11 @@ body.is-dragging {
   user-select: none;
 }
 
+/* While a modal is open: avoid scrolling the board under the overlay */
+body.modal-open {
+  overflow: hidden;
+}
+
 /* Buttons */
 .btn {
   font-family: var(--font-sans);
@@ -671,13 +696,13 @@ body.is-dragging {
 
 .btn--primary {
   background: var(--color-accent);
-  color: #0a0a0a;
+  color: var(--color-accent-on);
   border-color: var(--color-accent);
 }
 
 .btn--primary:hover {
-  background: #e8e8e8;
-  border-color: #e8e8e8;
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .btn--ghost {
@@ -700,23 +725,23 @@ body.is-dragging {
 
 /* Delete / destructive — soft red on hover (icons use currentColor) */
 .btn--danger-ghost:hover {
-  color: #f07178;
-  border-color: rgba(240, 113, 120, 0.45);
-  background: rgba(240, 113, 120, 0.1);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
 }
 
 /* Edit — soft yellow on hover */
 .btn--edit:hover {
-  color: #e5c07b;
-  border-color: rgba(229, 192, 123, 0.45);
-  background: rgba(229, 192, 123, 0.1);
+  color: var(--color-edit);
+  border-color: var(--color-edit-border);
+  background: var(--color-edit-soft);
 }
 
 /* Archive — sky blue on hover (same quiet treatment as edit/delete) */
 .btn--archive:hover {
-  color: #7dd3fc;
-  border-color: rgba(125, 211, 252, 0.45);
-  background: rgba(125, 211, 252, 0.1);
+  color: var(--color-archive);
+  border-color: var(--color-archive-border);
+  background: var(--color-archive-soft);
 }
 
 .btn--compact {
@@ -752,7 +777,7 @@ body.is-dragging {
 
 .modal {
   width: min(420px, 100%);
-  background: #111111;
+  background: var(--color-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow:
@@ -999,6 +1024,14 @@ body.is-dragging {
   box-shadow: 0 0 0 1px var(--color-accent-ring);
 }
 
+.field__input:focus-visible,
+.field__textarea:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-color: var(--color-accent-ring);
+  box-shadow: none;
+}
+
 /* Title validation: brief red + shake, then back to normal border */
 @keyframes field-shake {
   0%,
@@ -1026,8 +1059,8 @@ body.is-dragging {
 }
 
 .field__input--shake {
-  border-color: #f07178;
-  box-shadow: 0 0 0 1px rgba(240, 113, 120, 0.45);
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 1px var(--color-danger-border);
   animation: field-shake 0.45s var(--motion-ease);
 }
 
@@ -1073,7 +1106,7 @@ body.is-dragging {
   margin: 0;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-body);
-  color: #f07178;
+  color: var(--color-danger);
   line-height: 1.4;
 }
 
@@ -1212,7 +1245,7 @@ body.is-dragging {
     gap: var(--space-1);
     min-width: 11.5rem;
     padding: var(--space-2);
-    background: #111111;
+    background: var(--color-elevated);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow:
@@ -1267,22 +1300,28 @@ body.is-dragging {
   }
 
   .board-nav__dot {
+    /* Visual dot is small; hit area meets touch comfort */
+    box-sizing: content-box;
     width: 0.45rem;
     height: 0.45rem;
-    padding: 0;
+    padding: 0.65rem;
+    margin: -0.65rem;
     border: none;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.18);
+    background: transparent;
+    background-clip: content-box;
+    /* Paint the visible dot via box-shadow so padding stays clear for hit testing */
+    box-shadow: inset 0 0 0 999px rgba(255, 255, 255, 0.18);
     cursor: pointer;
     transition:
-      background-color var(--motion-duration) var(--motion-ease),
+      box-shadow var(--motion-duration) var(--motion-ease),
       transform var(--motion-duration) var(--motion-ease-out),
       width var(--motion-duration) var(--motion-ease);
   }
 
   .board-nav__dot.is-active {
     width: 1.15rem;
-    background: var(--color-accent);
+    box-shadow: inset 0 0 0 999px var(--color-accent);
     transform: scale(1.05);
   }
 
@@ -1366,7 +1405,7 @@ body.is-dragging {
     flex-wrap: nowrap;
     gap: var(--space-1);
     padding: var(--space-1);
-    background: #111111;
+    background: var(--color-elevated);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
     box-shadow:

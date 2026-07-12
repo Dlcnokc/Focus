@@ -1,3 +1,6 @@
+import { useCallback } from 'react'
+import { useModalChrome } from '../hooks/useModalChrome'
+
 type Props = {
   cardTitle: string
   onConfirm: () => void
@@ -5,9 +8,13 @@ type Props = {
 }
 
 /**
- * Centered confirm before archiving a Done card (soft remove).
+ * Confirm before archiving a Done card (soft remove).
+ * Cancel is focused first (safer default).
  */
 export function ArchiveConfirmModal({ cardTitle, onConfirm, onCancel }: Props) {
+  const onEscape = useCallback(() => onCancel(), [onCancel])
+  useModalChrome(onEscape)
+
   return (
     <div className="modal-backdrop" onClick={onCancel} role="presentation">
       <div

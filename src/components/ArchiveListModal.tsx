@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
+import { useModalChrome } from '../hooks/useModalChrome'
 import type { Card } from '../types'
 
 type Props = {
@@ -9,7 +10,7 @@ type Props = {
 }
 
 /**
- * Centered list of archived cards — restore or permanently delete.
+ * List of archived cards — restore or permanently delete.
  * Title search filters the list only (does not change stored data).
  */
 export function ArchiveListModal({
@@ -19,6 +20,8 @@ export function ArchiveListModal({
   onClose,
 }: Props) {
   const [titleQuery, setTitleQuery] = useState('')
+  const onEscape = useCallback(() => onClose(), [onClose])
+  useModalChrome(onEscape)
 
   const visibleCards = useMemo(() => {
     const q = titleQuery.trim().toLowerCase()

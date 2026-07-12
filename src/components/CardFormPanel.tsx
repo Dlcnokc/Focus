@@ -1,10 +1,13 @@
 import {
+  useCallback,
   useEffect,
   useId,
+  useRef,
   useState,
   type AnimationEvent,
   type FormEvent,
 } from 'react'
+import { useModalChrome } from '../hooks/useModalChrome'
 import type { Card, ColumnId } from '../types'
 
 type CreateProps = {
@@ -28,7 +31,7 @@ type EditProps = {
 type Props = CreateProps | EditProps
 
 /**
- * Centered modal for creating or editing a card.
+ * Modal for creating or editing a card.
  * Title is required (validated on submit).
  * Remount via parent `key` when target changes so form state resets cleanly.
  */
@@ -36,6 +39,7 @@ export function CardFormPanel(props: Props) {
   const titleId = useId()
   const notesId = useId()
   const errorId = useId()
+  const shakeRafRef = useRef<number | null>(null)
 
   const [title, setTitle] = useState(
     props.mode === 'edit' ? props.card.title : '',
@@ -48,6 +52,9 @@ export function CardFormPanel(props: Props) {
   const [titleShaking, setTitleShaking] = useState(false)
 
   const heading = props.mode === 'create' ? 'New card' : 'Edit card'
+  const { onClose } = props
+  const onEscape = useCallback(() => onClose(), [onClose])
+  useModalChrome(onEscape)
 
   // Backup if animationend is skipped (e.g. reduced motion / interrupted)
   useEffect(() => {
@@ -56,12 +63,27 @@ export function CardFormPanel(props: Props) {
     return () => window.clearTimeout(t)
   }, [titleShaking])
 
+  // Cancel pending shake rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (shakeRafRef.current != null) {
+        cancelAnimationFrame(shakeRafRef.current)
+      }
+    }
+  }, [])
+
   function flashTitleError(message: string) {
     setError(message)
     // Drop the class then re-add next frame so re-submit restarts the animation
     setTitleShaking(false)
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => setTitleShaking(true))
+    if (shakeRafRef.current != null) {
+      cancelAnimationFrame(shakeRafRef.current)
+    }
+    shakeRafRef.current = requestAnimationFrame(() => {
+      shakeRafRef.current = requestAnimationFrame(() => {
+        shakeRafRef.current = null
+        setTitleShaking(true)
+      })
     })
   }
 

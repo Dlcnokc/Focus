@@ -3,14 +3,13 @@ import {
   pointerWithin,
   rectIntersection,
   type CollisionDetection,
-  type DroppableContainer,
 } from '@dnd-kit/core'
 import type { ColumnId } from '../types'
 
 export const COLUMN_IDS: ColumnId[] = ['ideas', 'ready', 'focus', 'done']
 
 export function isColumnId(id: string): id is ColumnId {
-  return COLUMN_IDS.includes(id as ColumnId)
+  return (COLUMN_IDS as readonly string[]).includes(id)
 }
 
 /**
@@ -48,9 +47,7 @@ export function resolveColumnFromOverId(
   return findCardColumn(overId) ?? null
 }
 
-/** Used if we need to inspect droppable data later. */
+/** Droppable data attached to each column container. */
 export function columnDroppableData(columnId: ColumnId) {
   return { type: 'column' as const, columnId }
 }
-
-export type ColumnDroppable = DroppableContainer

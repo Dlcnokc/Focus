@@ -1,10 +1,16 @@
+import { useCallback } from 'react'
+import { useModalChrome } from '../hooks/useModalChrome'
+
 type Props = {
   message: string
   onClose: () => void
 }
 
-/** Simple centered error after a failed import parse. */
+/** Error after a failed import parse. */
 export function ImportErrorModal({ message, onClose }: Props) {
+  const onEscape = useCallback(() => onClose(), [onClose])
+  useModalChrome(onEscape)
+
   return (
     <div className="modal-backdrop" onClick={onClose} role="presentation">
       <div

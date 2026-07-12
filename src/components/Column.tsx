@@ -35,8 +35,8 @@ export function Column({
     data: columnDroppableData(column.id),
   })
 
-  const sorted = cards.slice().sort((a, b) => a.order - b.order)
-  const itemIds = sorted.map((c) => c.id)
+  // Parent already passes cardsInColumn (sorted); avoid a second sort pass.
+  const itemIds = cards.map((c) => c.id)
 
   return (
     <section
@@ -50,8 +50,8 @@ export function Column({
             <h2 id={`col-${column.id}`} className="column__label">
               {column.label}
             </h2>
-            <span className="column__count" aria-label={`${sorted.length} cards`}>
-              {sorted.length}
+            <span className="column__count" aria-label={`${cards.length} cards`}>
+              {cards.length}
             </span>
           </div>
           <button
@@ -69,7 +69,7 @@ export function Column({
 
       <div className="column__body">
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          {sorted.length === 0 ? (
+          {cards.length === 0 ? (
             <div className="column__empty">
               <p className="column__empty-text">Nothing here yet</p>
               <button
@@ -81,7 +81,7 @@ export function Column({
               </button>
             </div>
           ) : (
-            sorted.map((card) => (
+            cards.map((card) => (
               <Card
                 key={card.id}
                 card={card}

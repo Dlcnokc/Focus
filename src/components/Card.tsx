@@ -1,6 +1,12 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { useEffect, useState, type ReactNode, type SVGProps } from 'react'
+import {
+  useEffect,
+  useRef,
+  useState,
+  type ReactNode,
+  type SVGProps,
+} from 'react'
 import type { Card as CardType } from '../types'
 
 type Props = {
@@ -129,6 +135,7 @@ export function Card({
   const [expanded, setExpanded] = useState(false)
   const [copied, setCopied] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
+  const actionsRootRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!copied) return
@@ -144,11 +151,34 @@ export function Card({
     setActionsOpen(false)
   }, [card.id])
 
+  /** Phone ··· menu: close on outside tap or Escape (matches header menu). */
+  useEffect(() => {
+    if (!actionsOpen) return
+
+    function onPointerDown(event: PointerEvent) {
+      const root = actionsRootRef.current
+      if (!root) return
+      if (event.target instanceof Node && !root.contains(event.target)) {
+        setActionsOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') setActionsOpen(false)
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [actionsOpen])
+
+  // DnD-kit needs transform/transition inline; opacity lives on .card--dragging
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-    // Keep layout space while DragOverlay shows the floating card
-    opacity: isDragging ? 0.4 : undefined,
   }
 
   async function copyNotes() {
@@ -171,12 +201,15 @@ export function Card({
     >
       <div className="card__top">
         <h3 className="card__title">{card.title}</h3>
-        <div className={`card__actions${actionsOpen ? ' is-open' : ''}`}>
+        <div
+          ref={actionsRootRef}
+          className={`card__actions${actionsOpen ? ' is-open' : ''}`}
+        >
           <button
             type="button"
             className="btn btn--ghost btn--icon card__actions-toggle"
             aria-expanded={actionsOpen}
-            aria-haspopup="menu"
+            aria-haspopup="true"
             aria-label="Card actions"
             title="Actions"
             onClick={() => setActionsOpen((v) => !v)}
@@ -184,12 +217,11 @@ export function Card({
           >
             <span aria-hidden="true">···</span>
           </button>
-          <div className="card__actions-panel" role="menu">
+          <div className="card__actions-panel" role="group" aria-label="Card actions">
             {hasNotes ? (
               <button
                 type="button"
                 className="btn btn--ghost btn--icon"
-                role="menuitem"
                 onClick={() => void copyNotes()}
                 onPointerDown={(e) => e.stopPropagation()}
                 aria-label={copied ? 'Notes copied' : 'Copy notes to clipboard'}
@@ -202,7 +234,6 @@ export function Card({
               <button
                 type="button"
                 className="btn btn--ghost btn--icon btn--archive"
-                role="menuitem"
                 onClick={() => {
                   setActionsOpen(false)
                   onRequestArchive(card.id)
@@ -217,7 +248,6 @@ export function Card({
             <button
               type="button"
               className="btn btn--ghost btn--icon btn--edit"
-              role="menuitem"
               onClick={() => {
                 setActionsOpen(false)
                 onEdit(card.id)
@@ -231,7 +261,6 @@ export function Card({
             <button
               type="button"
               className="btn btn--danger-ghost btn--icon"
-              role="menuitem"
               onClick={() => {
                 setActionsOpen(false)
                 onRequestDelete(card.id)

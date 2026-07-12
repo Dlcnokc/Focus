@@ -51,6 +51,10 @@ function App() {
   const headerMoreRef = useRef<HTMLDivElement>(null)
 
   const archivedCards = useMemo(() => listArchivedCards(cards), [cards])
+  const activeCardCount = useMemo(
+    () => cards.filter((card) => !card.archived).length,
+    [cards],
+  )
   const searchActive = titleQuery.trim().length > 0
 
   /** Active board only; title filter is display-only. */
@@ -271,18 +275,21 @@ function App() {
               type="button"
               className="btn btn--ghost btn--icon app__header-more-toggle"
               aria-expanded={headerMenuOpen}
-              aria-haspopup="menu"
+              aria-haspopup="true"
               aria-label="More actions"
               title="More"
               onClick={() => setHeaderMenuOpen((v) => !v)}
             >
               <span aria-hidden="true">···</span>
             </button>
-            <div className="app__header-more-panel" role="menu">
+            <div
+              className="app__header-more-panel"
+              role="group"
+              aria-label="Board file actions"
+            >
               <button
                 type="button"
                 className="btn btn--ghost app__header-secondary"
-                role="menuitem"
                 onClick={() => {
                   openArchiveList()
                   setHeaderMenuOpen(false)
@@ -297,7 +304,6 @@ function App() {
               <button
                 type="button"
                 className="btn btn--ghost app__header-secondary"
-                role="menuitem"
                 onClick={() => {
                   handleExport()
                   setHeaderMenuOpen(false)
@@ -309,7 +315,6 @@ function App() {
               <button
                 type="button"
                 className="btn btn--ghost app__header-secondary"
-                role="menuitem"
                 onClick={() => {
                   openImportPicker()
                   setHeaderMenuOpen(false)
@@ -426,7 +431,8 @@ function App() {
       {pendingImport ? (
         <ImportBoardModal
           importCount={pendingImport.length}
-          currentCount={cards.length}
+          activeCount={activeCardCount}
+          archivedCount={archivedCards.length}
           onReplace={confirmReplace}
           onMerge={confirmMerge}
           onCancel={cancelImport}

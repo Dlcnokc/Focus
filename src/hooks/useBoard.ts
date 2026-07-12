@@ -1,11 +1,16 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { applyCardMove, boardsEqual, type MoveHint } from '../lib/boardMove'
+import {
+  applyCardMove,
+  boardsEqual,
+  type MoveHint,
+} from '../lib/boardMove'
 import { mergeCardLists } from '../lib/boardFile'
 import {
   cardsInColumn,
   loadBoard,
   reindexOrders,
   saveCards,
+  type LoadBoardResult,
 } from '../lib/storage'
 import type { Card, ColumnId } from '../types'
 
@@ -15,6 +20,9 @@ function newId(): string {
   }
   return `card-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
+
+const SAVE_ERROR =
+  'Could not save the board to browser storage (quota or private mode). Changes stay on screen until you fix storage or Export a backup.'
 
 export type AddCardInput = {
   title: string
@@ -28,16 +36,24 @@ export type UpdateCardInput = {
   notes: string
 }
 
+/** Read localStorage once per mount (not every render). */
+function readInitialBoard(): LoadBoardResult {
+  return loadBoard()
+}
+
 /**
  * Board state with localStorage persistence + live drag preview.
  * Drag previews stay in memory only; disk writes on commit / non-drag edits.
  */
 export function useBoard() {
-  const initial = loadBoard()
-  const [cards, setCards] = useState<Card[]>(() => initial.cards)
-  const [loadError, setLoadError] = useState<string | null>(
-    () => initial.loadError,
-  )
+  const initialRef = useRef<LoadBoardResult | null>(null)
+  if (initialRef.current === null) {
+    initialRef.current = readInitialBoard()
+  }
+  const initial = initialRef.current
+
+  const [cards, setCards] = useState<Card[]>(initial.cards)
+  const [loadError, setLoadError] = useState<string | null>(initial.loadError)
 
   /** Always mirrors latest cards for sync snapshot on drag start. */
   const cardsRef = useRef(cards)
@@ -57,11 +73,22 @@ export function useBoard() {
     setLoadError(null)
   }, [])
 
-  const persistIfAllowed = useCallback((next: Card[]) => {
-    if (!allowPersistRef.current) return
-    if (isDraggingRef.current) return
-    saveCards(next)
+  const reportSaveResult = useCallback((ok: boolean) => {
+    if (ok) {
+      setLoadError((prev) => (prev === SAVE_ERROR ? null : prev))
+      return
+    }
+    setLoadError(SAVE_ERROR)
   }, [])
+
+  const persistIfAllowed = useCallback(
+    (next: Card[]) => {
+      if (!allowPersistRef.current) return
+      if (isDraggingRef.current) return
+      reportSaveResult(saveCards(next))
+    },
+    [reportSaveResult],
+  )
 
   useEffect(() => {
     persistIfAllowed(cards)
@@ -190,14 +217,34 @@ export function useBoard() {
     [],
   )
 
-  /** Drop finished — keep layout and persist. */
-  const commitDrag = useCallback(() => {
-    dragSnapshotRef.current = null
-    isDraggingRef.current = false
-    if (allowPersistRef.current) {
-      saveCards(cardsRef.current)
-    }
-  }, [])
+  /**
+   * Drop finished — apply final placement synchronously, then persist that board.
+   * Optional active/over re-applies the last drop (avoids one-frame-stale save).
+   */
+  const commitDrag = useCallback(
+    (activeId?: string, overId?: string, hint?: MoveHint) => {
+      dragSnapshotRef.current = null
+      isDraggingRef.current = false
+
+      let next = cardsRef.current
+      if (activeId && overId && activeId !== overId) {
+        const moved = applyCardMove(next, activeId, overId, hint)
+        if (!boardsEqual(next, moved)) {
+          next = moved
+          cardsRef.current = next
+          setCards(next)
+          // Persist via the cards effect — avoid a second identical write
+          return
+        }
+      }
+
+      // Board already matched the drop (live preview); effect will not re-run
+      if (allowPersistRef.current) {
+        reportSaveResult(saveCards(next))
+      }
+    },
+    [reportSaveResult],
+  )
 
   /** Cancel drag — restore pre-drag board and persist that. */
   const cancelDrag = useCallback(() => {
@@ -205,12 +252,13 @@ export function useBoard() {
     dragSnapshotRef.current = null
     isDraggingRef.current = false
     if (snap) {
+      cardsRef.current = snap
       setCards(snap)
       // setCards will persist via effect once isDragging is false
     } else if (allowPersistRef.current) {
-      saveCards(cardsRef.current)
+      reportSaveResult(saveCards(cardsRef.current))
     }
-  }, [])
+  }, [reportSaveResult])
 
   const getCard = useCallback(
     (id: string) => cards.find((card) => card.id === id),
