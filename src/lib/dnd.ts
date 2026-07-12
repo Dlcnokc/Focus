@@ -4,13 +4,8 @@ import {
   rectIntersection,
   type CollisionDetection,
 } from '@dnd-kit/core'
+import { isColumnId } from '../data/placeholderBoard'
 import type { ColumnId } from '../types'
-
-export const COLUMN_IDS: ColumnId[] = ['ideas', 'ready', 'focus', 'done']
-
-export function isColumnId(id: string): id is ColumnId {
-  return COLUMN_IDS.includes(id as ColumnId)
-}
 
 /**
  * Prefer "pointer is inside this rect" so a column activates as soon as the

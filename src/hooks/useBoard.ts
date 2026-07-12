@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { columnDef } from '../data/placeholderBoard'
 import { applyCardMove, boardsEqual, type MoveHint } from '../lib/boardMove'
 import { mergeCardLists } from '../lib/boardFile'
 import {
@@ -218,27 +219,34 @@ export function useBoard() {
     }
 
     if (snapshot) {
-      // Prompt only when the card arrives in Priority without a rank already.
-      const entered = cardsRef.current.find((card) => {
-        if (card.column !== 'focus' || card.archived) return false
-        if (card.priority != null) return false
+      const movedTo = (card: Card) => {
         const before = snapshot.find((s) => s.id === card.id)
-        return before != null && before.column !== 'focus'
-      })
+        return before != null && before.column !== card.column
+      }
+
+      // Prompt only when a card arrives unranked in a column that requires a rank.
+      const entered = cardsRef.current.find(
+        (card) =>
+          !card.archived &&
+          columnDef(card.column).requiresPriority &&
+          card.priority == null &&
+          movedTo(card),
+      )
       if (entered) {
         setPriorityPromptCardId(entered.id)
       }
 
-      // Completed cards drop their priority; returning to Priority re-prompts.
-      const completed = cardsRef.current.find((card) => {
-        if (card.column !== 'done' || card.priority == null) return false
-        const before = snapshot.find((s) => s.id === card.id)
-        return before != null && before.column !== 'done'
-      })
-      if (completed) {
+      // Columns like Completed strip priority; returning to Priority re-prompts.
+      const cleared = cardsRef.current.find(
+        (card) =>
+          card.priority != null &&
+          columnDef(card.column).clearsPriority &&
+          movedTo(card),
+      )
+      if (cleared) {
         setCards((prev) =>
           prev.map((card) =>
-            card.id === completed.id ? { ...card, priority: undefined } : card,
+            card.id === cleared.id ? { ...card, priority: undefined } : card,
           ),
         )
       }

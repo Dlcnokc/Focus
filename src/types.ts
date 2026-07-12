@@ -30,6 +30,14 @@ export type ColumnDef = {
   hint: string
   /** Heading for the create-card modal, e.g. "New Idea". */
   newLabel: string
+  /** Cards here must always carry a priority (defaulted/prompted on entry). */
+  requiresPriority: boolean
+  /** Entering this column removes a card's priority. */
+  clearsPriority: boolean
+  /** Show the column + and empty-state Add card buttons. */
+  allowsDirectAdd: boolean
+  /** Cards here can be archived. */
+  allowsArchive: boolean
 }
 
 /** What the card form modal is doing right now. */

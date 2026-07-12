@@ -1,8 +1,9 @@
 import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useEffect, useState, type ReactNode, type SVGProps } from 'react'
-import { priorityLabel } from '../data/priorities'
+import { columnDef } from '../data/placeholderBoard'
 import type { Card as CardType } from '../types'
+import { PriorityBadge } from './PriorityBadge'
 
 type Props = {
   card: CardType
@@ -111,7 +112,8 @@ export function Card({
   onRequestDelete,
   onRequestArchive,
 }: Props) {
-  const canArchive = card.column === 'done' && !card.archived && onRequestArchive
+  const canArchive =
+    columnDef(card.column).allowsArchive && !card.archived && onRequestArchive
   const {
     attributes,
     listeners,
@@ -209,11 +211,7 @@ export function Card({
           </button>
         </div>
       </div>
-      {card.priority ? (
-        <span className={`card__priority card__priority--${card.priority}`}>
-          {priorityLabel(card.priority)}
-        </span>
-      ) : null}
+      {card.priority ? <PriorityBadge priority={card.priority} /> : null}
       {hasNotes ? (
         <div className="card__notes-block">
           <p

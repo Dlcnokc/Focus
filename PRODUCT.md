@@ -255,3 +255,4 @@ One board only in v1.
 | 2026-07-11 | Completed cannot be added to directly (no **+** / empty-state add); cards reach it only by dragging from other columns. |
 | 2026-07-11 | Entering Completed clears a card's `priority` (edit form hides the field there); dragging back to Priority prompts for a fresh rank. |
 | 2026-07-11 | Priority auto-sort extended to all columns (ranked first, unranked keep manual order below); drop into Priority prompts only when the card has no priority yet. |
+| 2026-07-11 | Column behavior centralized as flags on `ColumnDef` (`requiresPriority` / `clearsPriority` / `allowsDirectAdd` / `allowsArchive`) — one home for per-column rules. Load/import now enforces them too: unranked Priority cards default to Medium (closes the import loophole). Shared `PriorityBadge` component. |

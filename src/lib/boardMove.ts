@@ -1,6 +1,6 @@
 import { arrayMove } from '@dnd-kit/sortable'
+import { COLUMN_IDS, isColumnId } from '../data/placeholderBoard'
 import type { Card, ColumnId } from '../types'
-import { COLUMN_IDS, isColumnId } from './dnd'
 import { cardsInColumn, reindexOrders } from './storage'
 
 function rebuildFromLists(lists: Record<ColumnId, Card[]>): Card[] {

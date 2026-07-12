@@ -36,8 +36,7 @@ export function Column({
   // stay below ranked ones and keep manual drag order among themselves.
   const sorted = cards.slice().sort(comparePriorityThenOrder)
   const itemIds = sorted.map((c) => c.id)
-  // Completed only receives cards by dragging them in — no direct add.
-  const canAdd = column.id !== 'done'
+  const canAdd = column.allowsDirectAdd
 
   return (
     <section
@@ -94,7 +93,7 @@ export function Column({
                 onEdit={onEdit}
                 onRequestDelete={onRequestDelete}
                 onRequestArchive={
-                  column.id === 'done' ? onRequestArchive : undefined
+                  column.allowsArchive ? onRequestArchive : undefined
                 }
               />
             ))

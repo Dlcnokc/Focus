@@ -1,20 +1,33 @@
-import { isPriority } from '../data/priorities'
+import {
+  COLUMN_IDS,
+  columnDef,
+  isColumnId,
+} from '../data/placeholderBoard'
+import { DEFAULT_PRIORITY, isPriority } from '../data/priorities'
 import type { Card, ColumnId } from '../types'
 
 export const BOARD_STORAGE_KEY = 'focus.board.v1'
 /** Last good raw payload when the main key fails to parse. */
 export const BOARD_STORAGE_BACKUP_KEY = 'focus.board.v1.bak'
 
-const COLUMN_IDS: ColumnId[] = ['ideas', 'ready', 'focus', 'done']
-
-function isColumnId(value: unknown): value is ColumnId {
-  return typeof value === 'string' && COLUMN_IDS.includes(value as ColumnId)
+/** Apply column priority rules to a raw stored value. */
+function priorityFor(
+  column: ColumnId,
+  raw: unknown,
+): { priority?: Card['priority'] } {
+  const def = columnDef(column)
+  if (def.clearsPriority) return {}
+  if (isPriority(raw)) return { priority: raw }
+  return def.requiresPriority ? { priority: DEFAULT_PRIORITY } : {}
 }
 
 /**
  * Parse and normalize stored board data.
  * Older cards without `order` / `archived` get defaults.
  * Empty titles dropped; duplicate ids keep the last occurrence.
+ * Column priority rules are enforced here too, so imports and old saves
+ * can't sneak past them: Completed strips priority, Priority defaults
+ * unranked cards to Medium.
  */
 export function normalizeCards(raw: unknown): Card[] {
   if (!Array.isArray(raw)) return []
@@ -39,10 +52,7 @@ export function normalizeCards(raw: unknown): Card[] {
             ? rec.order
             : index,
         archived: rec.archived === true,
-        // Completed cards never carry a priority (cleared on entering the column)
-        ...(isPriority(rec.priority) && rec.column !== 'done'
-          ? { priority: rec.priority }
-          : {}),
+        ...(priorityFor(rec.column, rec.priority)),
       } satisfies Card
     })
     .filter((c): c is Card => c !== null)

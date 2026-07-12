@@ -1,5 +1,5 @@
 import { useId, useState, type FormEvent } from 'react'
-import { COLUMNS } from '../data/placeholderBoard'
+import { columnDef } from '../data/placeholderBoard'
 import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
 import type { Card, ColumnId, Priority } from '../types'
 
@@ -31,10 +31,6 @@ type Props = CreateProps | EditProps
 /** Select value for "no priority" (empty string keeps <select> simple). */
 const NO_PRIORITY = ''
 
-function columnDef(id: ColumnId) {
-  return COLUMNS.find((c) => c.id === id)
-}
-
 /**
  * Centered modal for creating or editing a card.
  * Title is required (validated on submit, marked with a red asterisk).
@@ -50,10 +46,10 @@ export function CardFormPanel(props: Props) {
 
   const targetColumn: ColumnId =
     props.mode === 'create' ? props.column : props.card.column
-  // Cards in the Priority column must always carry a priority.
-  const priorityRequired = targetColumn === 'focus'
-  // Completed cards are past prioritizing — no priority field at all.
-  const priorityHidden = targetColumn === 'done'
+  const targetDef = columnDef(targetColumn)
+  // Priority column: always ranked. Completed: past prioritizing, no field.
+  const priorityRequired = targetDef.requiresPriority
+  const priorityHidden = targetDef.clearsPriority
 
   const [title, setTitle] = useState(
     props.mode === 'edit' ? props.card.title : '',
@@ -67,10 +63,7 @@ export function CardFormPanel(props: Props) {
   })
   const [error, setError] = useState<string | null>(null)
 
-  const heading =
-    props.mode === 'create'
-      ? (columnDef(props.column)?.newLabel ?? 'New card')
-      : 'Edit card'
+  const heading = props.mode === 'create' ? targetDef.newLabel : 'Edit card'
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
