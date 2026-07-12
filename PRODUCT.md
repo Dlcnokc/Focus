@@ -14,21 +14,21 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 ## Current status (handoff)
 
-**Solo v1 is shipped and usable daily** (use the live site; export weekly).
+**Solo v1 is shipped and usable daily** (export weekly). Phone UI polish lives on branch **`ui-polish`** until merged to `main`.
 
 - Four columns, CRUD, drag + live preview, localStorage  
 - Card icons (copy / edit / delete; **archive on Done only**), notes collapse/copy, title search (drag off while searching)  
 - Export/import JSON; Done-only archive + list search / restore / permanent delete  
-- Baseline phone CSS (horizontal column swipe, stacked header, safe areas); **more mobile polish is next**  
-- Themed scrollbars  
-- Storage safety: corrupt-load backup (`focus.board.v1.bak`), no mid-drag disk writes, destructive confirms focus **Cancel** first  
+- **Phone polish shipped** (on `ui-polish`): column swipe + snap, page dots, stacked header, **···** overflow menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
+- Desktop: icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
+- Themed scrollbars; storage safety (corrupt-load backup, no mid-drag saves, Cancel-first confirms)  
 - Design: calm dark greyscale, white accent, Source Code Pro  
-- **Live:** https://coruscating-travesseiro-be1b90.netlify.app/  
+- **Live (`main` only):** https://coruscating-travesseiro-be1b90.netlify.app/ — does **not** include `ui-polish` until merge  
 - **Code:** https://github.com/Dlcnokc/Focus (private); push `main` → Netlify; docs-only: `[skip ci]`  
 
 **Not built / park for later:**
 
-- Further mobile / phone UX polish (beyond baseline CSS already in `index.css`)  
+- Daily-use friction only (fix from real use; no large redesign without asking)  
 - Archive extras, multi-user, backend/cloud sync  
 - Separate “tools hub” / tax calculator (other repos later; leave Focus alone)  
 
@@ -95,10 +95,10 @@ One board only in v1.
 ### Shipped (v1 core)
 
 - [x] Four-column board layout  
-- [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas)  
-- [x] Edit card (title + notes) — **centered** themed modal, blurred backdrop  
-- [x] Delete card — **custom** centered confirm modal (no browser alert)  
-- [x] Card actions as top-right **icons** (copy notes, edit, delete; **archive on Done**)  
+- [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas); modal title **New card**  
+- [x] Edit card (title + notes) — themed modal, blurred backdrop (desktop **centered**; phone **bottom sheet**)  
+- [x] Delete card — **custom** confirm modal (no browser alert)  
+- [x] Card actions: copy notes, edit, delete; **archive on Done** — desktop top-right icons; phone **···** menu  
 - [x] Long notes **collapse** by default; bold Expand/Collapse under notes  
 - [x] **Copy notes** to clipboard from the card  
 - [x] Board starts empty (no sample/seed cards)  
@@ -107,23 +107,25 @@ One board only in v1.
 - [x] Live drag preview (other cards make room for insert position)  
 - [x] Column drop highlight under cursor (including source column)  
 - [x] Floating card snaps center to cursor while dragging  
+- [x] Touch: long-press to drag so column swipe wins first; mouse: small distance threshold  
 - [x] Persist to `localStorage` (`focus.board.v1`) — survives refresh  
 - [x] Storage safety: corrupt load backup + block overwrite; no persist mid-drag; drag disabled during title search  
 - [x] Destructive confirms focus **Cancel** first (delete / archive / import)  
-- [x] Calm dark greyscale + white accent + Source Code Pro (700 titles / 400 body)  
-- [x] Theme tokens in CSS  
+- [x] Empty title rejected with red message + brief shake  
+- [x] Calm dark greyscale + white accent + Source Code Pro (700 card/column titles / 400 body; header wordmark 500)  
+- [x] Theme tokens + shared motion tokens in CSS  
 - [x] Empty column states  
 - [x] Error boundary (reload UI on crash)  
 - [x] Runs locally (`npm run dev`)  
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
 - [x] Archive Done cards (confirm + Archive list modal; restore or permanent delete)  
-- [x] Baseline phone CSS (column swipe, header stack, safe areas) — further polish still open  
+- [x] Phone polish: column swipe + snap, page dots, stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
 
 ### Nice-to-have / next
 
-- [ ] Further **mobile / phone polish** (owner priority after daily use friction)  
 - [ ] Keyboard shortcuts (only if owner wants them)  
+- [ ] Merge **`ui-polish`** → `main` so Netlify picks up phone polish  
 
 ### Explicitly later
 
@@ -162,18 +164,19 @@ One board only in v1.
 
 - Near-black page, soft column panels, slightly lifted cards + shadow  
 - **White / off-white accent** for primary actions and focus  
-- **Source Code Pro** — bold titles, regular body  
-- Centered modals with **blurred** backdrop  
-- Header: **Focus** only (no subtitle); no phase footer  
+- **Source Code Pro** — bold card/column titles (700), regular body (400); header wordmark medium (500)  
+- Modals with **blurred** backdrop: desktop centered; phone bottom sheet with handle  
+- Header: brand mark (unfilled ring) + **Focus** only (no subtitle); no phase footer  
 
 ### UX decisions locked in recent sessions
 
-- Add/edit: centered modal (not side panel); **Cancel** + backdrop click close; no extra Close button  
+- Add/edit: themed modal (not side panel); **Cancel** + backdrop click close; no extra Close button; create heading **New card**  
 - Delete: themed modal, not `window.confirm`  
-- Drag: whole card surface; live reorder preview; all columns can highlight  
-- Card chrome: top-right icons (copy / edit / delete; **archive on Done only**); long notes collapse with bold Expand under notes  
+- Drag: whole card surface; live reorder preview; all columns can highlight; touch long-press  
+- Card chrome: desktop top-right icons; phone **···** menu (copy / edit / delete; **archive on Done only**); long notes collapse with bold Expand under notes  
+- Header secondary actions (Archive / Export / Import): desktop row; phone **···** overflow  
 - Global Add → **Ideas** by default  
- 
+
 
 ### Theme flexibility
 
@@ -201,7 +204,7 @@ One board only in v1.
 | **Phase 3** | Persist + drag move/reorder + live preview | Done |
 | **Deploy** | Static host + GitHub auto-deploy | **Done** (Netlify) |
 | **Archive** | Done-only archive + list (restore / delete) | **Done** |
-| **Mobile** | Baseline CSS shipped; further phone polish | **Next** (owner priority) |
+| **Mobile / phone polish** | Swipe, dots, menus, bottom sheets, touch drag | **Done** on `ui-polish` (merge → `main` still open) |
 | **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **v3+** | Cooperative features if still wanted | Later |
 
@@ -215,7 +218,7 @@ One board only in v1.
 | App name | Focus | Decided |
 | Storage | Browser `localStorage` | Decided |
 | Theme | Calm dark greyscale + white accent | Decided |
-| Font | Source Code Pro (700 / 400) | Decided |
+| Font | Source Code Pro (700 titles / 400 body; header 500) | Decided |
 | Columns | Ideas / Ready / Focus / Done | Decided |
 | Stack | Vite + React + TypeScript + @dnd-kit | Decided |
 | Global add default column | Ideas | Decided |
@@ -249,6 +252,8 @@ One board only in v1.
 | 2026-07-11 | Search/filter cards by title in header (display-only; does not delete data). |
 | 2026-07-11 | Docs: document Netlify `[skip ci]` for non-app commits. |
 | 2026-07-11 | Archive Done cards: confirm modal, header Archive list, restore/delete; `archived` on card. |
-| 2026-07-11 | Baseline mobile CSS (tokens + media queries; four columns swipe on phone). Further phone polish still open. |
+| 2026-07-11 | Baseline mobile CSS (tokens + media queries; four columns swipe on phone). |
 | 2026-07-11 | Hardening: corrupt-load backup, no mid-drag save, drag off while search, Cancel-first confirms, normalize titles/ids. |
 | 2026-07-11 | Docs audit: archive marked Done; mobile further polish = next; docs aligned to code (icons, Cancel focus, roadmap). |
+| 2026-07-11 | **ui-polish** branch: phone overhaul (header/card ··· menus, column dots + snap, bottom-sheet modals, TouchSensor long-press, safe areas); motion tokens; form polish (**New card**, title shake); soft action-icon hovers. |
+| 2026-07-11 | Docs updated to match `ui-polish` (mobile polish = Done on branch; merge to `main` / Netlify still open). |

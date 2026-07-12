@@ -2,11 +2,11 @@
 
 A calm, personal four-column board: **Ideas → Ready → Focus → Done**.
 
-**Status (handoff):** Solo v1 is **usable daily** and live on Netlify.
+**Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**. Phone/UI polish is on branch **`ui-polish`** until merge.
 
-Shipped: board CRUD + drag, notes collapse/copy, card icons (copy / edit / delete; archive on Done), **export/import**, **title search**, **Done archive**, baseline **mobile CSS** (column swipe + stacked header), subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
+Shipped (this branch): board CRUD + drag, notes collapse/copy, card icons (copy / edit / delete; archive on Done), **export/import**, **title search**, **Done archive**, **phone polish** (swipe + snap, column dots, header/card **···** menus, bottom-sheet modals, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
 
-Not multi-user. **Next:** further **mobile / phone polish** and daily-use friction fixes. Multi-user only if asked.
+Not multi-user. **Next:** merge **`ui-polish` → `main`** (so the live site gets phone polish), then daily-use friction fixes only. Multi-user only if asked.
 
 ### Live site
 
@@ -49,9 +49,11 @@ That writes production files to `dist/` only. Preview with `npm run preview`, or
 
 ## Resume tomorrow (session handoff)
 
-### Before you edit (stay on latest `main`)
+### Before you edit (stay on the right branch)
 
 Always work in **this folder only** (the git clone), not a second copy or a GitHub ZIP.
+
+**Default (shipped live / after polish merges):**
 
 ```powershell
 cd C:\Users\accou\Desktop\Projects\Grok_Projects\Focus
@@ -61,6 +63,14 @@ git status
 ```
 
 You want: **`On branch main`**, **`up to date with 'origin/main'`**. Then edit; when ready, commit and `git push origin main` so GitHub and Netlify match your PC.
+
+**While phone/UI polish is still in flight:** stay on **`ui-polish`** — do **not** force-checkout `main` (that drops this work). Pull and push that branch instead:
+
+```powershell
+git checkout ui-polish
+git pull origin ui-polish
+git status
+```
 
 Grok (or any agent) can run `git pull` for you at session start — just ask, or it should do this as part of its session checklist.
 
@@ -74,9 +84,9 @@ Grok (or any agent) can run `git pull` for you at session start — just ask, or
 
 | Priority | Idea | Notes |
 |----------|------|--------|
-| **Next** | Further **mobile / phone polish** | Baseline CSS exists (swipe columns, header stack, safe areas); improve real phone friction (drag feel, layout, touch targets) |
+| **Next** | Merge **`ui-polish` → `main`** | Phone polish is done on the branch; live Netlify only updates after merge + push `main` |
 | Habit | Weekly **Export** backup | Browser-only data |
-| From use | Fix real friction only | Anything that slows daily planning |
+| From use | Fix real friction only | Anything that slows daily planning (no large redesign without asking) |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
 | Out of scope for now | Separate tax/tools hub site | Owner may do later in another repo — leave Focus alone |
 
@@ -115,47 +125,50 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | Feature | Behavior |
 |---------|----------|
 | **Columns** | Ideas, Ready, Focus, Done (fixed) |
-| **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column |
-| **Edit** | Top-right pencil icon → centered modal (title + notes); title required |
-| **Delete** | Top-right trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
-| **Copy notes** | Top-right clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
+| **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column; create modal title **New card** |
+| **Edit** | Pencil icon → modal (title + notes); title required; empty title shows red message + brief shake |
+| **Delete** | Trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
+| **Copy notes** | Clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
 | **Notes expand** | Long notes start collapsed (~3 lines); bold **Expand** / **Collapse** under the notes |
-| **Card icons** | Top-right: copy (if notes), **archive (Done only)**, edit, delete |
-| **Drag** | Drag from **anywhere on the card** (not action icons / Expand / Collapse) |
+| **Card actions** | Desktop: top-right icons — copy (if notes), **archive (Done only)**, edit, delete. Phone: same actions behind card **···** |
+| **Header actions** | Desktop: Archive / Export / Import as a row next to **Add card**. Phone: those three behind header **···**; **Add card** stays primary |
+| **Drag** | Drag from **anywhere on the card** (not action icons / Expand / Collapse). Mouse: small move threshold. Touch: **long-press** so swipe can win first |
 | **Live preview** | Other cards shift while dragging to show insert order |
 | **Column highlight** | Column under cursor lights up (including source column) |
 | **Cursor snap** | Floating card centers under the pointer (`snapCenterToCursor`) |
+| **Phone columns** | Horizontal swipe with scroll-snap; **page dots** under the board jump to a column; swipe locks while a drag is active |
+| **Modals** | Desktop: centered. Phone: **bottom sheet** with handle; full-width actions where helpful |
 | **Save** | Auto-saves to `localStorage` key `focus.board.v1` (not during live drag preview; saves on drop / other edits) |
-| **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner, **no overwrite** until user edits/imports |
+| **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner + Dismiss, **no overwrite** until user edits/imports |
 | **Empty start** | No sample cards; board empty until you add some |
 | **Crash recovery** | `ErrorBoundary` shows reload UI instead of a blank page |
-| **Export** | Header **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards) |
-| **Import** | Header **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
+| **Export** | **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards, incl. archived) |
+| **Import** | **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
 | **Search** | Header **Search titles…** — filters visible cards by title only (case-insensitive); full board still saved; **drag disabled** while search is active |
-| **Archive** | Done cards only: archive icon → confirm → leaves board. Header **Archive (N)** lists Restore / permanent Delete; search titles in that modal. Export includes archived |
+| **Archive** | Done cards only: archive control → confirm → leaves board. **Archive (N)** lists Restore / permanent Delete; search titles in that modal |
 
 ### Known limits
 
 - Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
 - `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Phone: baseline CSS only (four columns swipe horizontally; header stacks; desktop unchanged). Further polish is next.
+- Live Netlify is **`main` only** — phone polish on `ui-polish` is not public until that branch merges.
 - No keyboard shortcuts (by choice so far).
 - Multi-tab: last write wins (no live sync between tabs).
 
 ### Manual smoke test
 
-1. Add cards via global and column **+**  
-2. Reject empty title (validation message)  
-3. Edit notes → Save (pencil icon)  
-4. Long notes: collapsed preview, **Expand** / **Collapse**, **Copy** icon pastes notes  
+1. Add cards via global and column **+** (modal says **New card**)  
+2. Reject empty title (red message + brief shake)  
+3. Edit notes → Save (pencil / card menu)  
+4. Long notes: collapsed preview, **Expand** / **Collapse**, **Copy** pastes notes  
 5. Drag between columns (search empty); confirm live reordering; refresh → order kept  
 6. Search on → drag disabled; clear search → drag works  
 7. Delete / Archive / Import confirms → **Cancel** is focused first  
 8. Export → open the JSON file → should list cards (incl. archived if any)  
 9. Import → Merge and Replace both work; bad file shows error modal  
-10. Done → archive icon → confirm → Archive list → Restore / Delete  
-11. Phone/narrow: swipe columns; header stacks  
+10. Done → archive → confirm → Archive list → Restore / Delete  
+11. Phone/narrow: swipe columns + dots; header **···** for Archive/Export/Import; card **···** for actions; long-press to drag; modals rise as bottom sheets  
 
 ---
 
@@ -164,11 +177,12 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | Token area | Where | Notes |
 |------------|--------|--------|
 | Colors, radii, type, space | `src/index.css` → `:root` | Theme tokens |
-| Font | **Source Code Pro** (Google Fonts in `index.html`) | Titles **700**, body **400** |
+| Font | **Source Code Pro** (Google Fonts in `index.html`) | Titles **700**, body **400**, header wordmark **500** |
 | Palette | Near-black / greys, **white accent** | Calm dark |
 | Columns | Soft `--color-column` fill | Quieter than cards |
 | Cards | Lighter fill + box-shadow | Drag whole card |
-| Modals | Centered `.modal` + blurred `.modal-backdrop` | Add/edit + delete |
+| Motion | `--motion-duration` / `--motion-ease` in `:root` | Buttons/hovers; cards stay transform-free for drag |
+| Modals | `.modal` + blurred `.modal-backdrop` | Desktop centered; phone bottom sheet |
 
 **Theme token** = named CSS variable (e.g. `--color-bg`) so redesigns are one-file edits.
 
@@ -281,7 +295,9 @@ Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defa
 - **Live preview:** `onDragOver` → `previewMove` / `applyCardMove` so other cards make room
 - **Stability:** skip no-op moves; do not reshuffle when hovering **same column chrome** only (prevents React update loops / blank screen)
 - **Cancel:** snapshot at drag start; restore if drop cancelled / no `over`
-- **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; copy / archive / edit / delete / Expand-Collapse use `stopPropagation` on pointer down
+- **Sensors:** `MouseSensor` (distance) + `TouchSensor` (long-press ~220ms so column swipe wins first); both use huge thresholds when search disables drag  
+- **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; copy / archive / edit / delete / Expand-Collapse use `stopPropagation` on pointer down  
+- **Phone:** `body.is-dragging` locks horizontal column scroll while a card is dragged; column page dots track scroll position on `.app__main`
 
 If drag ever blanks the UI again: check console + ErrorBoundary message; avoid setState loops in `onDragOver`.
 

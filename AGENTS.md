@@ -6,13 +6,19 @@ Instructions for any coding agent working in this repository. Follow these every
 
 ## Session start (do this first)
 
-1. **Sync with GitHub** — stay on latest `main` so work is not against an old local copy:
-   ```powershell
-   git checkout main
-   git pull origin main
-   git status
-   ```
-   Confirm: on `main`, up to date with `origin/main` (or only the owner’s current uncommitted edits). One clone only: this repo folder — do not edit a second copy or a ZIP download.
+1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
+   - If the owner is on a **feature branch** (e.g. `ui-polish`), **stay there** — do not force-checkout `main` (that drops in-flight work).
+     ```powershell
+     git pull origin ui-polish
+     git status
+     ```
+   - Otherwise use latest **`main`** (what Netlify deploys):
+     ```powershell
+     git checkout main
+     git pull origin main
+     git status
+     ```
+   Confirm: on the expected branch, up to date with its remote (or only the owner’s current uncommitted edits).
 2. Read **`PRODUCT.md`** — especially current status, shipped checklist, non-goals.  
 3. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
 4. Skim this file.  
@@ -58,7 +64,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 4. **One board only** in v1.  
 5. **Browser-only persistence** — do not add backend, auth, or cloud sync unless asked.  
 6. **Theme tokens** — colors/fonts/spacing via CSS variables in `src/index.css`; avoid scattered hard-coded colors.  
-7. **Modals** — add/edit/delete use **centered** themed modals with blurred backdrop (not browser `alert`/`confirm`, not a side drawer).  
+7. **Modals** — add/edit/delete use themed modals with blurred backdrop (not browser `alert`/`confirm`, not a side drawer). Desktop: **centered**. Phone: **bottom sheet**.  
 8. **No keyboard shortcuts** unless the user asks for them.
 
 ---
@@ -66,12 +72,15 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 ## Design & theme rules
 
 - Mood: **calm dark greyscale**; **white/off-white accent**.  
-- Font: **Source Code Pro** — titles/labels **700**, body/notes **400** (avoid ultra-thin weights).  
-- Header shows **Focus** only (no marketing subtitle).  
+- Font: **Source Code Pro** — card/column titles **700**, body/notes **400**, header wordmark **500** (avoid ultra-thin weights).  
+- Header: brand mark + **Focus** only (no marketing subtitle).  
 - Columns quieter than cards; cards use subtle fill + box-shadow.  
-- Whole **card** is draggable; action icons (copy / edit / delete / archive on Done) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
-- Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via top-right icon.  
+- Whole **card** is draggable; action controls (copy / edit / delete / archive on Done) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
+- Desktop: top-right action **icons** always visible. Phone: card actions behind **···**; header Archive/Export/Import behind **···**; **Add card** stays primary.  
+- Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via action control.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
+- Phone: column swipe + scroll-snap + page dots; touch long-press to start drag; lock horizontal scroll while dragging.  
+- Motion: use shared CSS motion tokens; respect `prefers-reduced-motion`.  
 - Design changes: update tokens first, then layout if needed.
 
 ---
@@ -127,13 +136,14 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | 1 Shell + design tokens | **Done** |
 | 2 / 2.1 CRUD + centered modals + empty board | **Done** |
 | 3 Persist + drag + live preview | **Done** |
-| Deploy (Netlify + GitHub) | **Done** |
+| Deploy (Netlify + GitHub) | **Done** (tracks `main` only) |
 | Export / import JSON | **Done** |
 | Title search | **Done** |
 | Archive Done cards | **Done** |
-| Baseline mobile CSS (swipe columns, header stack) | **Done** |
-| Further mobile / phone polish | **Next** — owner priority; ask before large redesign |
+| Mobile / phone polish (swipe, dots, ··· menus, bottom sheets, touch drag) | **Done** on `ui-polish` — merge → `main` still open |
 | Storage / drag safety hardening | **Done** |
+| UI motion / hover / form polish | **Done** on `ui-polish` |
+| Daily-use friction fixes | **As needed** — ask before large redesign |
 | Cooperative / multi-user | **Not started** — ask first |
 | External tools hub / tax app | **Out of repo** — do not build here unless asked |
 
