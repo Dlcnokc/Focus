@@ -351,16 +351,13 @@ function App() {
       {priorityPromptCard ? (
         <PriorityPromptModal
           cardTitle={priorityPromptCard.title}
-          currentPriority={priorityPromptCard.priority}
           onConfirm={(priority) => {
             setCardPriority(priorityPromptCard.id, priority)
             dismissPriorityPrompt()
           }}
           onCancel={() => {
             // Priority column stays fully ranked even when the prompt is dismissed
-            if (!priorityPromptCard.priority) {
-              setCardPriority(priorityPromptCard.id, DEFAULT_PRIORITY)
-            }
+            setCardPriority(priorityPromptCard.id, DEFAULT_PRIORITY)
             dismissPriorityPrompt()
           }}
         />

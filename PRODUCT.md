@@ -97,7 +97,7 @@ One board only in v1.
 
 - [x] Four-column board layout  
 - [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas). Completed has no direct add — cards only arrive there by drag  
-- [x] Edit card (title + notes) — **centered** themed modal, blurred backdrop  
+- [x] Edit card (title + notes + priority) — **centered** themed modal, blurred backdrop  
 - [x] Delete card — **custom** centered confirm modal (no browser alert)  
 - [x] Card actions as top-right **icons** (copy notes, edit, delete)  
 - [x] Long notes **collapse** by default; bold Expand/Collapse under notes  
@@ -115,7 +115,7 @@ One board only in v1.
 - [x] Theme tokens in CSS  
 - [x] Empty column states  
 - [x] Error boundary (reload UI on crash)  
-- [x] Runs locally (`npm run dev`)  
+- [x] Runs locally (`pnpm run dev`)  
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
 - [x] Archive Done cards (confirm + Archive list modal; restore or permanent delete)  

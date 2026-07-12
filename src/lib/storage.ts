@@ -154,11 +154,6 @@ export function loadBoard(): LoadBoardResult {
   }
 }
 
-/** @deprecated Prefer loadBoard(); kept for narrow call sites if any. */
-export function loadCards(): Card[] {
-  return loadBoard().cards
-}
-
 export function saveCards(cards: Card[]): boolean {
   try {
     localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(cards))

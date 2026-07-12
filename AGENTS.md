@@ -45,7 +45,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 
 ## Product constraints (do not violate without asking)
 
-1. **v1 scope** — four fixed columns, title + notes, DnD, browser persistence, calm dark greyscale + white accent, Source Code Pro.  
+1. **v1 scope** — four fixed columns, title + notes + priority, DnD, browser persistence, calm dark greyscale + white accent, Source Code Pro.  
 2. **No multi-user / cooperative** features until explicitly requested.  
 3. **No feature bloat** — tags, due dates, assignees, attachments, charts, notifications stay out unless asked.  
 4. **One board only** in v1.  
@@ -58,7 +58,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 
 ## Design & theme rules
 
-- Mood: **calm dark greyscale**; **white/off-white accent**.  
+- Mood: **calm dark greyscale**; **white/off-white accent**. Two sanctioned semantic color exceptions (2026-07-11): the priority-badge ramp (`--color-priority-*`) and the required-field red asterisk (`--color-required`) — keep them muted, add no other color without asking.  
 - Font: **Source Code Pro** — titles/labels **700**, body/notes **400** (avoid ultra-thin weights).  
 - Header shows **Focus** only (no marketing subtitle).  
 - Columns quieter than cards; cards use subtle fill + box-shadow.  

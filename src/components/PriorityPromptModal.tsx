@@ -4,27 +4,18 @@ import type { Priority } from '../types'
 
 type Props = {
   cardTitle: string
-  /** Card's current priority, if it already had one. */
-  currentPriority?: Priority
   onConfirm: (priority: Priority) => void
   onCancel: () => void
 }
 
 /**
- * Centered prompt shown when a card is dragged into the Priority column,
- * so nothing there is ever unranked. Cancel keeps the card's existing
- * priority (the caller falls back to Medium when it had none).
+ * Centered prompt shown when an unranked card is dragged into the Priority
+ * column, so nothing there is ever unranked. Cancel makes the caller apply
+ * the Medium default.
  */
-export function PriorityPromptModal({
-  cardTitle,
-  currentPriority,
-  onConfirm,
-  onCancel,
-}: Props) {
+export function PriorityPromptModal({ cardTitle, onConfirm, onCancel }: Props) {
   const selectId = useId()
-  const [priority, setPriority] = useState<Priority>(
-    currentPriority ?? DEFAULT_PRIORITY,
-  )
+  const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY)
 
   return (
     <div className="modal-backdrop" onClick={onCancel} role="presentation">

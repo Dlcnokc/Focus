@@ -1,10 +1,10 @@
 # Focus
 
-A calm, personal four-column board: **Ideas → Ready → Focus → Done**.
+A calm, personal four-column board: **Ideas → Ready → Priority → Completed**.
 
 **Status (handoff):** Solo v1 is **usable daily** and live on Netlify.
 
-Shipped: board CRUD + drag, notes collapse/copy, icons, **export/import**, **title search**, **Done archive**, **mobile CSS**, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, safer confirm focus).
+Shipped: board CRUD + drag, notes collapse/copy, icons, **card priority** (badge + auto-sort + prompt), **export/import**, **title search**, **Completed archive**, **mobile CSS**, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, safer confirm focus).
 
 Not multi-user. Next: daily use + friction fixes; multi-user only if asked.
 
@@ -100,9 +100,10 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 
 | Feature | Behavior |
 |---------|----------|
-| **Columns** | Ideas, Ready, Focus, Done (fixed) |
-| **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column |
-| **Edit** | Top-right pencil icon → centered modal (title + notes); title required |
+| **Columns** | Ideas, Ready, Priority, Completed (fixed; internal ids stay `ideas/ready/focus/done`) |
+| **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column. **Completed has no add** — cards only arrive there by drag |
+| **Edit** | Top-right pencil icon → centered modal (title + notes + priority); title required (red asterisk) |
+| **Priority** | Low → Immediate (6 levels): dropdown on create/edit, colored badge on card, every column sorts ranked cards first. Dropping an unranked card into Priority prompts for a rank (Cancel = Medium); entering Completed clears it |
 | **Delete** | Top-right trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
 | **Copy notes** | Top-right clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
 | **Notes expand** | Long notes start collapsed (~3 lines); bold **Expand** / **Collapse** under the notes |
@@ -117,7 +118,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Export** | Header **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards) |
 | **Import** | Header **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
 | **Search** | Header **Search titles…** — filters visible cards by title only (case-insensitive); full board still saved; **drag disabled** while search is active |
-| **Archive** | Done cards only: archive icon → confirm → leaves board. Header **Archive (N)** lists Restore / permanent Delete; search titles in that modal. Export includes archived |
+| **Archive** | Completed cards only: archive icon → confirm → leaves board. Header **Archive (N)** lists Restore / permanent Delete; search titles in that modal. Export includes archived |
 
 ### Known limits
 
@@ -139,8 +140,9 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 7. Delete / Archive / Import confirms → **Cancel** is focused first  
 8. Export → open the JSON file → should list cards (incl. archived if any)  
 9. Import → Merge and Replace both work; bad file shows error modal  
-10. Done → archive icon → confirm → Archive list → Restore / Delete  
-11. Phone/narrow: swipe columns; header stacks  
+10. Completed → archive icon → confirm → Archive list → Restore / Delete  
+11. Priority: create a ranked card (badge shows, column sorts); drag an unranked card into Priority → prompt appears; drag a ranked card into Completed → badge clears  
+12. Phone/narrow: swipe columns; header stacks  
 
 ---
 
@@ -150,7 +152,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 |------------|--------|--------|
 | Colors, radii, type, space | `src/index.css` → `:root` | Theme tokens |
 | Font | **Source Code Pro** (Google Fonts in `index.html`) | Titles **700**, body **400** |
-| Palette | Near-black / greys, **white accent** | Calm dark |
+| Palette | Near-black / greys, **white accent** | Calm dark. Two sanctioned color exceptions: priority-badge ramp (`--color-priority-*`) and required-field red (`--color-required`) |
 | Columns | Soft `--color-column` fill | Quieter than cards |
 | Cards | Lighter fill + box-shadow | Drag whole card |
 | Modals | Centered `.modal` + blurred `.modal-backdrop` | Add/edit + delete |
@@ -196,12 +198,14 @@ Focus/
     │   ├── dnd.ts             Collision detection, column helpers
     │   └── boardMove.ts       Pure move/reorder for live preview + drop
     ├── data/
-    │   └── placeholderBoard.ts  COLUMNS + DEFAULT_NEW_COLUMN (no seed cards)
+    │   ├── placeholderBoard.ts  COLUMNS + DEFAULT_NEW_COLUMN (no seed cards)
+    │   └── priorities.ts        Priority levels, rank, sort, labels, default
     └── components/
         ├── Board.tsx              DndContext, overlay, column highlight
         ├── Column.tsx             Droppable column + list
         ├── Card.tsx               Sortable card + icons + notes expand
         ├── CardFormPanel.tsx      Centered add/edit modal
+        ├── PriorityPromptModal.tsx  Rank prompt on drop into Priority
         ├── DeleteConfirmModal.tsx Centered delete confirm
         ├── ArchiveConfirmModal.tsx  Archive confirm
         ├── ArchiveListModal.tsx   Archived list + search
@@ -216,7 +220,7 @@ Focus/
 {
   "version": 1,
   "exportedAt": "2026-07-11T…",
-  "cards": [ { "id", "title", "notes", "column", "order", "archived" } ]
+  "cards": [ { "id", "title", "notes", "column", "order", "archived", "priority?" } ]
 }
 ```
 
@@ -238,9 +242,11 @@ Import also accepts a bare JSON array of cards (same fields). Invalid cards are 
   id: string
   title: string
   notes: string
-  column: 'ideas' | 'ready' | 'focus' | 'done'
+  column: 'ideas' | 'ready' | 'focus' | 'done'   // ids; labels are Ideas/Ready/Priority/Completed
   order: number   // position within column
   archived: boolean
+  priority?: 'low' | 'medium-low' | 'medium' | 'medium-high' | 'high' | 'immediate'
+  // always set in Priority; always absent in Completed
 }
 ```
 
@@ -278,6 +284,7 @@ If drag ever blanks the UI again: check console + ErrorBoundary message; avoid s
 | Font weights | `--font-weight-title` / `--font-weight-body` |
 | Column names / hints | `COLUMNS` in `src/data/placeholderBoard.ts` |
 | Default column for global Add | `DEFAULT_NEW_COLUMN` (currently `ideas`) |
+| Priority levels / labels / default | `src/data/priorities.ts`; badge colors via `--color-priority-*` tokens |
 
 ---
 

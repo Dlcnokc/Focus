@@ -4,7 +4,6 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { comparePriorityThenOrder } from '../data/priorities'
-import { columnDroppableData } from '../lib/dnd'
 import type { Card as CardType, ColumnDef } from '../types'
 import { Card } from './Card'
 
@@ -31,10 +30,7 @@ export function Column({
   onRequestArchive,
 }: Props) {
   // Whole column is the droppable so the cursor anywhere inside counts.
-  const { setNodeRef } = useDroppable({
-    id: column.id,
-    data: columnDroppableData(column.id),
-  })
+  const { setNodeRef } = useDroppable({ id: column.id })
 
   // Every column auto-sorts by importance first; cards without a priority
   // stay below ranked ones and keep manual drag order among themselves.

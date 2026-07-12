@@ -3,7 +3,6 @@ import {
   pointerWithin,
   rectIntersection,
   type CollisionDetection,
-  type DroppableContainer,
 } from '@dnd-kit/core'
 import type { ColumnId } from '../types'
 
@@ -47,10 +46,3 @@ export function resolveColumnFromOverId(
   if (isColumnId(overId)) return overId
   return findCardColumn(overId) ?? null
 }
-
-/** Used if we need to inspect droppable data later. */
-export function columnDroppableData(columnId: ColumnId) {
-  return { type: 'column' as const, columnId }
-}
-
-export type ColumnDroppable = DroppableContainer
