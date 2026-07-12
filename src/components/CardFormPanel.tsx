@@ -1,4 +1,10 @@
-import { useId, useState, type FormEvent } from 'react'
+import {
+  useEffect,
+  useId,
+  useState,
+  type AnimationEvent,
+  type FormEvent,
+} from 'react'
 import type { Card, ColumnId } from '../types'
 
 type CreateProps = {
@@ -38,13 +44,36 @@ export function CardFormPanel(props: Props) {
     props.mode === 'edit' ? props.card.notes : '',
   )
   const [error, setError] = useState<string | null>(null)
+  /** True only while the title field shake/red flash runs. */
+  const [titleShaking, setTitleShaking] = useState(false)
 
   const heading = props.mode === 'create' ? 'New card' : 'Edit card'
+
+  // Backup if animationend is skipped (e.g. reduced motion / interrupted)
+  useEffect(() => {
+    if (!titleShaking) return
+    const t = window.setTimeout(() => setTitleShaking(false), 500)
+    return () => window.clearTimeout(t)
+  }, [titleShaking])
+
+  function flashTitleError(message: string) {
+    setError(message)
+    // Drop the class then re-add next frame so re-submit restarts the animation
+    setTitleShaking(false)
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => setTitleShaking(true))
+    })
+  }
+
+  function handleTitleAnimationEnd(event: AnimationEvent<HTMLInputElement>) {
+    if (event.animationName !== 'field-shake') return
+    setTitleShaking(false)
+  }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!title.trim()) {
-      setError('Title is required.')
+      flashTitleError('Title is required.')
       return
     }
 
@@ -54,11 +83,12 @@ export function CardFormPanel(props: Props) {
         : props.onSubmit({ title, notes })
 
     if (result) {
-      setError(result)
+      flashTitleError(result)
       return
     }
 
     setError(null)
+    setTitleShaking(false)
     props.onClose()
   }
 
@@ -84,13 +114,15 @@ export function CardFormPanel(props: Props) {
             </label>
             <input
               id={titleId}
-              className={`field__input${error ? ' field__input--error' : ''}`}
+              className={`field__input${titleShaking ? ' field__input--shake' : ''}`}
               type="text"
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value)
                 if (error) setError(null)
+                if (titleShaking) setTitleShaking(false)
               }}
+              onAnimationEnd={handleTitleAnimationEnd}
               placeholder="What needs doing?"
               autoFocus
               aria-invalid={error ? true : undefined}

@@ -201,7 +201,7 @@ export function Card({
             {canArchive ? (
               <button
                 type="button"
-                className="btn btn--ghost btn--icon"
+                className="btn btn--ghost btn--icon btn--archive"
                 role="menuitem"
                 onClick={() => {
                   setActionsOpen(false)
@@ -216,7 +216,7 @@ export function Card({
             ) : null}
             <button
               type="button"
-              className="btn btn--ghost btn--icon"
+              className="btn btn--ghost btn--icon btn--edit"
               role="menuitem"
               onClick={() => {
                 setActionsOpen(false)

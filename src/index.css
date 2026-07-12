@@ -698,10 +698,25 @@ body.is-dragging {
   border-color: var(--color-border);
 }
 
+/* Delete / destructive — soft red on hover (icons use currentColor) */
 .btn--danger-ghost:hover {
-  color: #f0f0f0;
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.04);
+  color: #f07178;
+  border-color: rgba(240, 113, 120, 0.45);
+  background: rgba(240, 113, 120, 0.1);
+}
+
+/* Edit — soft yellow on hover */
+.btn--edit:hover {
+  color: #e5c07b;
+  border-color: rgba(229, 192, 123, 0.45);
+  background: rgba(229, 192, 123, 0.1);
+}
+
+/* Archive — sky blue on hover (same quiet treatment as edit/delete) */
+.btn--archive:hover {
+  color: #7dd3fc;
+  border-color: rgba(125, 211, 252, 0.45);
+  background: rgba(125, 211, 252, 0.1);
 }
 
 .btn--compact {
@@ -984,8 +999,42 @@ body.is-dragging {
   box-shadow: 0 0 0 1px var(--color-accent-ring);
 }
 
-.field__input--error {
-  border-color: rgba(255, 255, 255, 0.35);
+/* Title validation: brief red + shake, then back to normal border */
+@keyframes field-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-5px);
+  }
+  30% {
+    transform: translateX(5px);
+  }
+  45% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+  90% {
+    transform: translateX(2px);
+  }
+}
+
+.field__input--shake {
+  border-color: #f07178;
+  box-shadow: 0 0 0 1px rgba(240, 113, 120, 0.45);
+  animation: field-shake 0.45s var(--motion-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field__input--shake {
+    animation: none;
+  }
 }
 
 .field__textarea {
@@ -1021,9 +1070,11 @@ body.is-dragging {
 }
 
 .field__error {
+  margin: 0;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-body);
-  color: #cfcfcf;
+  color: #f07178;
+  line-height: 1.4;
 }
 
 /* Crash recovery screen */
