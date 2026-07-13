@@ -20,7 +20,7 @@ A simple four-column board where work moves from ideas → ready → priority �
 
 | Branch | Role | Tip (as of 2026-07-13 handoff) |
 |--------|------|--------------------------------|
-| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Tip **`9844c42`** (docs handoff; code tip **`f8c9c12`**): notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** + hidden headers, quiet empty columns, tighter headers |
+| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Pushed and clean vs origin. Stack includes: notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** + hidden headers, quiet empty columns, tighter headers (run `git log -1` for tip) |
 | **`main`** | What Netlify deploys | `aaee213` — full app **except** the `ui-polish` stack above (phone still **tabs**; no title-20 / type polish / selector / empty-chrome polish) |
 
 **Next agent:** `git checkout ui-polish && git pull origin ui-polish` then **`git status`**. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
