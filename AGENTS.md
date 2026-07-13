@@ -7,7 +7,7 @@ Instructions for any coding agent working in this repository. Follow these every
 ## Session start (do this first)
 
 1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
-   - **Current active branch: `ui-polish`** tip **`f8c9c12`** (ahead of `main` `aaee213`: notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + form weights, phone **selector** + hidden headers, quiet empty columns, docs). Stay there unless the owner says otherwise:
+   - **Current active branch: `ui-polish`** (ahead of `main` `aaee213`: notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + form weights, phone **selector** + hidden headers, quiet empty columns, docs). Stay there unless the owner says otherwise:
      ```powershell
      git checkout ui-polish
      git pull origin ui-polish

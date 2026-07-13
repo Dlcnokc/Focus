@@ -20,7 +20,7 @@ A simple four-column board where work moves from ideas → ready → priority �
 
 | Branch | Role | Tip (as of 2026-07-13 handoff) |
 |--------|------|--------------------------------|
-| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Tip **`f8c9c12`** (pushed): notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** + hidden headers, quiet empty columns, tighter headers |
+| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Tip **`9844c42`** (docs handoff; code tip **`f8c9c12`**): notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** + hidden headers, quiet empty columns, tighter headers |
 | **`main`** | What Netlify deploys | `aaee213` — full app **except** the `ui-polish` stack above (phone still **tabs**; no title-20 / type polish / selector / empty-chrome polish) |
 
 **Next agent:** `git checkout ui-polish && git pull origin ui-polish` then **`git status`**. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
@@ -317,4 +317,4 @@ One board only in v1.
 | 2026-07-13 | Add/edit form type: header **500**; title/notes typed **300** (phone **400**); placeholders one step heavier (`219f7b9`, `5e53c9e`). |
 | 2026-07-13 | Phone: **tabs → singular column selector**; drop chips while dragging; **column headers hidden** on phone; tighter desktop column headers (`9be99e9`, `ea6d6b6`). |
 | 2026-07-13 | Empty columns: drop dashed placeholder chrome — quiet **“Nothing here yet”** text only (`f8c9c12`). |
-| 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS aligned to tip **`f8c9c12`** (selector, type map, empty chrome, merge-open stack). |
+| 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS aligned to **`ui-polish`** tip (selector, type map, empty chrome, merge-open stack vs `main` `aaee213`). |

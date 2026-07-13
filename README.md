@@ -4,7 +4,7 @@ A calm, personal four-column board: **Ideas → Ready → Priority → Completed
 
 **Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**.
 
-**Active branch:** **`ui-polish`** tip **`f8c9c12`** (pushed; clean vs origin). Ahead of **`main`** (`aaee213` / Netlify): notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** (not tabs) + hidden headers, quiet empty columns, docs. Stay until merge → `main`.
+**Active branch:** **`ui-polish`** (pushed; clean vs origin). Ahead of **`main`** (`aaee213` / Netlify): notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** (not tabs) + hidden headers, quiet empty columns, docs. Stay until merge → `main`.
 
 Shipped on this branch: board CRUD + drag, **notes collapse** (~2 lines measured), **title max 20**, **column counts** centered, favicon = header ring, board type polish + compact chips, phone **selector** + drop chips, **card priority**, **completed dates**, archive/export/import/search, motion tokens, **storage safety**.
 
@@ -84,7 +84,7 @@ Grok (or any agent) should pull the active branch at session start (see `AGENTS.
 2. **`AGENTS.md`** — how agents should behave in this repo  
 3. **This file** — how to run, folder map, current behavior  
 
-### What changed last session (ui-polish) — tip `f8c9c12`
+### What changed last session (ui-polish)
 
 | Change | Detail |
 |--------|--------|
@@ -174,7 +174,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 - Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
 - `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Live Netlify is **`main` only**. Full **`ui-polish`** stack (notes measure, title 20, selector, type polish, empty chrome, …) is tip **`f8c9c12`** until merge → `main`.
+- Live Netlify is **`main` only**. Full **`ui-polish`** stack (notes measure, title 20, selector, type polish, empty chrome, …) stays on this branch until merge → `main`.
 - Title max **20** is intentional and tight — longer wording must be shortened or the limit raised by the owner.
 - Empty columns show quiet text only (no dashed “placeholder card”).
 - No keyboard shortcuts (by choice so far).
