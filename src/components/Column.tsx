@@ -14,6 +14,8 @@ type Props = {
   dragDisabled?: boolean
   /** Light up as a valid drop target while dragging (includes source column). */
   showDropHighlight: boolean
+  /** Phone: which single column is visible (tabs); ignored by desktop CSS. */
+  mobileActive?: boolean
   onAdd: (columnId: ColumnDef['id']) => void
   onEdit: (cardId: string) => void
   onRequestDelete: (cardId: string) => void
@@ -25,6 +27,7 @@ export function Column({
   cards,
   dragDisabled = false,
   showDropHighlight,
+  mobileActive = false,
   onAdd,
   onEdit,
   onRequestDelete,
@@ -33,9 +36,10 @@ export function Column({
   // Whole column is the droppable so the cursor anywhere inside counts.
   const { setNodeRef } = useDroppable({ id: column.id })
 
-  // Completed sorts by completion date (newest first); every other column
-  // auto-sorts by importance. Undated/unranked cards keep manual drag order
-  // below the sorted ones.
+  // Parent passes cardsInColumn (order-sorted); the policy sort still runs
+  // here: Completed sorts by completion date (newest first); every other
+  // column auto-sorts by importance. Undated/unranked cards keep manual
+  // drag order below the sorted ones.
   const sorted = cards
     .slice()
     .sort(
@@ -49,7 +53,7 @@ export function Column({
   return (
     <section
       ref={setNodeRef}
-      className={`column${showDropHighlight ? ' column--over' : ''}`}
+      className={`column${showDropHighlight ? ' column--over' : ''}${mobileActive ? ' column--mobile-active' : ''}`}
       aria-labelledby={`col-${column.id}`}
     >
       <header className="column__header">
@@ -58,8 +62,8 @@ export function Column({
             <h2 id={`col-${column.id}`} className="column__label">
               {column.label}
             </h2>
-            <span className="column__count" aria-label={`${sorted.length} cards`}>
-              {sorted.length}
+            <span className="column__count" aria-label={`${cards.length} cards`}>
+              {cards.length}
             </span>
           </div>
           {canAdd ? (

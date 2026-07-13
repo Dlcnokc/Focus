@@ -8,7 +8,7 @@ import { isIsoDate } from './dates'
 import type { Card, ColumnId } from '../types'
 
 export const BOARD_STORAGE_KEY = 'focus.board.v1'
-/** Last good raw payload when the main key fails to parse. */
+/** Last good raw payload when the main key fails to parse or drops rows. */
 export const BOARD_STORAGE_BACKUP_KEY = 'focus.board.v1.bak'
 
 /** Apply column priority rules to a raw stored value. */
@@ -22,54 +22,90 @@ function priorityFor(
   return def.requiresPriority ? { priority: DEFAULT_PRIORITY } : {}
 }
 
+export type NormalizeResult = {
+  cards: Card[]
+  /** Rows skipped as invalid (bad shape, empty title, reserved id, etc.). */
+  skippedInvalid: number
+  /** Duplicate ids collapsed (last occurrence kept). */
+  skippedDuplicate: number
+}
+
 /**
  * Parse and normalize stored board data.
  * Older cards without `order` / `archived` get defaults.
- * Empty titles dropped; duplicate ids keep the last occurrence.
- * Column priority rules are enforced here too, so imports and old saves
- * can't sneak past them: Completed strips priority, Priority defaults
- * unranked cards to Medium.
+ * Empty titles dropped; reserved column ids cannot be card ids; duplicate ids keep last.
+ * Column priority/date rules are enforced here too, so imports and old saves
+ * can't sneak past them: Completed strips priority and keeps only valid
+ * completion dates, Priority defaults unranked cards to Medium.
  */
-export function normalizeCards(raw: unknown): Card[] {
-  if (!Array.isArray(raw)) return []
+export function normalizeCards(raw: unknown): NormalizeResult {
+  if (!Array.isArray(raw)) {
+    return { cards: [], skippedInvalid: 0, skippedDuplicate: 0 }
+  }
 
-  const partial = raw
-    .map((item, index) => {
-      if (!item || typeof item !== 'object') return null
-      const rec = item as Record<string, unknown>
-      if (typeof rec.id !== 'string' || typeof rec.title !== 'string') return null
-      if (!isColumnId(rec.column)) return null
+  let skippedInvalid = 0
+  const partial: Card[] = []
 
-      const title = rec.title.trim()
-      if (!title) return null
+  raw.forEach((item, index) => {
+    if (!item || typeof item !== 'object') {
+      skippedInvalid += 1
+      return
+    }
+    const rec = item as Record<string, unknown>
+    if (typeof rec.id !== 'string' || typeof rec.title !== 'string') {
+      skippedInvalid += 1
+      return
+    }
 
-      return {
-        id: rec.id,
-        title,
-        notes: typeof rec.notes === 'string' ? rec.notes : '',
-        column: rec.column,
-        order:
-          typeof rec.order === 'number' && Number.isFinite(rec.order)
-            ? rec.order
-            : index,
-        archived: rec.archived === true,
-        ...(priorityFor(rec.column, rec.priority)),
-        // Completion date only means something in a column that tracks it
-        ...(columnDef(rec.column).tracksCompletedDate &&
-        isIsoDate(rec.completedAt)
-          ? { completedAt: rec.completedAt }
-          : {}),
-      } satisfies Card
+    const id = rec.id.trim()
+    // Empty or reserved ids clash with column droppables in @dnd-kit
+    if (!id || isColumnId(id)) {
+      skippedInvalid += 1
+      return
+    }
+
+    if (typeof rec.column !== 'string' || !isColumnId(rec.column)) {
+      skippedInvalid += 1
+      return
+    }
+    const column = rec.column
+
+    const title = rec.title.trim()
+    if (!title) {
+      skippedInvalid += 1
+      return
+    }
+
+    partial.push({
+      id,
+      title,
+      notes: typeof rec.notes === 'string' ? rec.notes : '',
+      column,
+      order:
+        typeof rec.order === 'number' && Number.isFinite(rec.order)
+          ? rec.order
+          : index,
+      archived: rec.archived === true,
+      ...priorityFor(column, rec.priority),
+      // Completion date only means something in a column that tracks it
+      ...(columnDef(column).tracksCompletedDate && isIsoDate(rec.completedAt)
+        ? { completedAt: rec.completedAt }
+        : {}),
     })
-    .filter((c): c is Card => c !== null)
+  })
 
   // Last write wins on duplicate ids
   const byId = new Map<string, Card>()
   for (const card of partial) {
     byId.set(card.id, card)
   }
+  const skippedDuplicate = partial.length - byId.size
 
-  return reindexOrders([...byId.values()])
+  return {
+    cards: reindexOrders([...byId.values()]),
+    skippedInvalid,
+    skippedDuplicate,
+  }
 }
 
 /** Assign 0..n-1 order within each column (active and archived separately). */
@@ -103,7 +139,7 @@ export type LoadBoardResult = {
    * load failed and saving would wipe recoverable data.
    */
   allowPersist: boolean
-  /** Human-readable reason when allowPersist is false. */
+  /** Human-readable reason when load had problems. */
   loadError: string | null
 }
 
@@ -148,7 +184,8 @@ export function loadBoard(): LoadBoardResult {
       }
     }
 
-    const cards = normalizeCards(parsed)
+    const { cards, skippedInvalid } = normalizeCards(parsed)
+
     if (parsed.length > 0 && cards.length === 0) {
       backupRaw(raw)
       return {
@@ -156,6 +193,16 @@ export function loadBoard(): LoadBoardResult {
         allowPersist: false,
         loadError:
           'Saved board had entries, but none were valid cards. A backup was kept. Use Import or add cards to start fresh.',
+      }
+    }
+
+    // Partial invalid: keep valid cards, backup original, warn (still allow save)
+    if (skippedInvalid > 0) {
+      backupRaw(raw)
+      return {
+        cards,
+        allowPersist: true,
+        loadError: `Skipped ${skippedInvalid} invalid saved entr${skippedInvalid === 1 ? 'y' : 'ies'}. A backup of the original data was kept.`,
       }
     }
 
@@ -175,7 +222,7 @@ export function saveCards(cards: Card[]): boolean {
     localStorage.setItem(BOARD_STORAGE_KEY, JSON.stringify(cards))
     return true
   } catch {
-    // Quota / private mode — fail quietly; board still works in-session
+    // Quota / private mode — caller may surface a banner
     return false
   }
 }

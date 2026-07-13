@@ -14,19 +14,22 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 ## Current status (handoff)
 
-**Solo v1 is shipped and usable daily** (use the live site; export weekly).
+**Solo v1 is shipped and usable daily** (export weekly).
 
-- Four columns, CRUD, drag + live preview, localStorage  
-- Card icons, notes collapse/copy, title search (drag off while searching)  
-- Export/import JSON; Done-only archive + list search  
-- Mobile CSS polish; themed scrollbars  
-- Storage safety: corrupt-load backup (`focus.board.v1.bak`), no mid-drag disk writes, confirm Cancel focused  
-- Design: calm dark greyscale, white accent, Source Code Pro  
-- **Live:** https://coruscating-travesseiro-be1b90.netlify.app/  
+- Four columns (Ideas / Ready / Priority / Completed), CRUD, drag + live preview, localStorage  
+- Card **priority** (Low → Immediate: badge, all-column auto-sort, prompt on unranked drop into Priority) and **completed dates** (auto-stamp, editable, newest-first sort in Completed)  
+- Card actions (copy / edit / delete; **archive on Completed only**), notes collapse/copy, title search (drag off while searching)  
+- Export/import JSON; Completed-only archive + list search / restore / permanent delete  
+- **Phone polish:** column **tabs** (one column at a time), stacked header, **···** overflow menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
+- Desktop: icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
+- Themed scrollbars; storage safety (corrupt-load backup, no mid-drag saves, Cancel-first confirms)  
+- Design: calm dark greyscale, white accent, Source Code Pro; package manager **pnpm**  
+- **Live:** https://coruscating-travesseiro-be1b90.netlify.app/ (tracks `main`)  
 - **Code:** https://github.com/Dlcnokc/Focus (private); push `main` → Netlify; docs-only: `[skip ci]`  
 
 **Not built / park for later:**
 
+- Daily-use friction only (fix from real use; no large redesign without asking)  
 - Archive extras, multi-user, backend/cloud sync  
 - Separate “tools hub” / tax calculator (other repos later; leave Focus alone)  
 
@@ -97,10 +100,10 @@ One board only in v1.
 ### Shipped (v1 core)
 
 - [x] Four-column board layout  
-- [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas). Completed has no direct add — cards only arrive there by drag  
-- [x] Edit card (title + notes + priority) — **centered** themed modal, blurred backdrop  
-- [x] Delete card — **custom** centered confirm modal (no browser alert)  
-- [x] Card actions as top-right **icons** (copy notes, edit, delete)  
+- [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas); modal titled per column (**New Idea / New Ready Task / New Priority Task**). Completed has no direct add — cards only arrive there by drag  
+- [x] Edit card (title + notes + priority; completed date on Completed) — themed modal, blurred backdrop (desktop **centered**; phone **bottom sheet**)  
+- [x] Delete card — **custom** confirm modal (no browser alert)  
+- [x] Card actions: copy notes, edit, delete; **archive on Completed** — desktop top-right icons; phone **···** menu  
 - [x] Long notes **collapse** by default; bold Expand/Collapse under notes  
 - [x] **Copy notes** to clipboard from the card  
 - [x] Board starts empty (no sample/seed cards)  
@@ -109,21 +112,23 @@ One board only in v1.
 - [x] Live drag preview (other cards make room for insert position)  
 - [x] Column drop highlight under cursor (including source column)  
 - [x] Floating card snaps center to cursor while dragging  
+- [x] Touch: long-press to drag so list scroll wins first; mouse: small distance threshold  
 - [x] Persist to `localStorage` (`focus.board.v1`) — survives refresh  
 - [x] Storage safety: corrupt load backup + block overwrite; no persist mid-drag; drag disabled during title search  
 - [x] Destructive confirms focus **Cancel** first (delete / archive / import)  
-- [x] Calm dark greyscale + white accent + Source Code Pro (700 titles / 400 body)  
-- [x] Theme tokens in CSS  
+- [x] Empty title rejected with red message + brief shake  
+- [x] Calm dark greyscale + white accent + Source Code Pro (700 card/column titles / 400 body; header wordmark 500)  
+- [x] Theme tokens + shared motion tokens in CSS  
 - [x] Empty column states  
 - [x] Error boundary (reload UI on crash)  
 - [x] Runs locally (`pnpm run dev`)  
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
 - [x] Archive Done cards (confirm + Archive list modal; restore or permanent delete)  
+- [x] Phone polish: column tabs (Ideas / Ready / Priority / Completed), stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
 
-### Nice-to-have (v1.1)
+### Nice-to-have / next
 
-- [x] Responsive / phone polish (CSS; four columns, horizontal swipe)  
 - [ ] Keyboard shortcuts (only if owner wants them)  
 
 ### Explicitly later
@@ -163,17 +168,19 @@ One board only in v1.
 
 - Near-black page, soft column panels, slightly lifted cards + shadow  
 - **White / off-white accent** for primary actions and focus  
-- **Source Code Pro** — bold titles, regular body  
-- Centered modals with **blurred** backdrop  
-- Header: **Focus** only (no subtitle); no phase footer  
+- **Source Code Pro** — bold card/column titles (700), regular body (400); header wordmark medium (500)  
+- Modals with **blurred** backdrop: desktop centered; phone bottom sheet with handle  
+- Header: brand mark (unfilled ring) + **Focus** only (no subtitle); no phase footer  
 
 ### UX decisions locked in recent sessions
 
-- Add/edit: centered modal (not side panel); **Cancel** + backdrop click close; no extra Close button  
+- Add/edit: themed modal (not side panel); **Cancel** + backdrop click close; no extra Close button; create heading **New card**  
 - Delete: themed modal, not `window.confirm`  
-- Drag: whole card surface; live reorder preview; all columns can highlight  
-- Card chrome: top-right icons (copy / edit / delete); long notes collapse with bold Expand under notes  
+- Drag: whole card surface; live reorder preview; all columns can highlight; touch long-press  
+- Card chrome: desktop top-right icons; phone **···** menu (copy / edit / delete; **archive on Completed only**); long notes collapse with bold Expand under notes  
+- Header secondary actions (Archive / Export / Import): desktop row; phone **···** overflow  
 - Global Add → **Ideas** by default  
+
 
 ### Theme flexibility
 
@@ -199,9 +206,10 @@ One board only in v1.
 | **Phase 1** | Design shell, tokens, columns | Done |
 | **Phase 2 / 2.1** | CRUD + centered modals + empty board | Done |
 | **Phase 3** | Persist + drag move/reorder + live preview | Done |
-| **v1.1** | Mobile polish, archive | Next candidates |
-| **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **Deploy** | Static host + GitHub auto-deploy | **Done** (Netlify) |
+| **Archive** | Done-only archive + list (restore / delete) | **Done** |
+| **Mobile / phone polish** | Swipe, dots, menus, bottom sheets, touch drag | **Done** on `ui-polish` (merge → `main` still open) |
+| **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **v3+** | Cooperative features if still wanted | Later |
 
 ---
@@ -214,7 +222,7 @@ One board only in v1.
 | App name | Focus | Decided |
 | Storage | Browser `localStorage` | Decided |
 | Theme | Calm dark greyscale + white accent | Decided |
-| Font | Source Code Pro (700 / 400) | Decided |
+| Font | Source Code Pro (700 titles / 400 body; header 500) | Decided |
 | Columns | Ideas / Ready / Priority / Completed (ids `ideas/ready/focus/done`) | Decided |
 | Stack | Vite + React + TypeScript + @dnd-kit | Decided |
 | Global add default column | Ideas | Decided |
@@ -248,7 +256,7 @@ One board only in v1.
 | 2026-07-11 | Search/filter cards by title in header (display-only; does not delete data). |
 | 2026-07-11 | Docs: document Netlify `[skip ci]` for non-app commits. |
 | 2026-07-11 | Archive Done cards: confirm modal, header Archive list, restore/delete; `archived` on card. |
-| 2026-07-11 | Mobile / small-screen polish via CSS tokens + media queries; four columns swipe on phone. |
+| 2026-07-11 | Baseline mobile CSS (tokens + media queries; four columns swipe on phone). |
 | 2026-07-11 | Hardening: corrupt-load backup, no mid-drag save, drag off while search, Cancel-first confirms, normalize titles/ids. |
 | 2026-07-11 | Renamed columns Focus → **Priority**, Done → **Completed** (labels only; ids stable). Create modal titled "New {Idea / Ready Task / Priority Task / Completed Task}"; required/optional text replaced with red asterisk. |
 | 2026-07-11 | Card `priority` (Low → Immediate, 6 levels): dropdown on create/edit, prompt when dragged into Priority (Cancel defaults Medium), colored badge on card, Priority column auto-sorts by rank. |
@@ -257,4 +265,9 @@ One board only in v1.
 | 2026-07-11 | Entering Completed clears a card's `priority` (edit form hides the field there); dragging back to Priority prompts for a fresh rank. |
 | 2026-07-11 | Priority auto-sort extended to all columns (ranked first, unranked keep manual order below); drop into Priority prompts only when the card has no priority yet. |
 | 2026-07-11 | Column behavior centralized as flags on `ColumnDef` (`requiresPriority` / `clearsPriority` / `allowsDirectAdd` / `allowsArchive`) — one home for per-column rules. Load/import now enforces them too: unranked Priority cards default to Medium (closes the import loophole). Shared `PriorityBadge` component. |
+| 2026-07-11 | Docs audit: archive marked Done; mobile further polish = next; docs aligned to code (icons, Cancel focus, roadmap). |
+| 2026-07-11 | **ui-polish** branch: phone overhaul (header/card ··· menus, column dots + snap, bottom-sheet modals, TouchSensor long-press, safe areas); motion tokens; form polish (**New card**, title shake); soft action-icon hovers. |
+| 2026-07-11 | Docs updated to match `ui-polish` (mobile polish = Done on branch; merge to `main` / Netlify still open). |
 | 2026-07-12 | Completed date: entering Completed stamps `completedAt` (today), shown on the card and editable via a date picker in the edit modal; Completed sorts newest-first by it; leaving Completed clears it. New `tracksCompletedDate` column flag. |
+| 2026-07-13 | Phone: replaced column swipe/dots with **tabs** (one column at a time); tabs are droppable for cross-column drag. |
+| 2026-07-13 | Merged `sean-dev` (priority, completed dates, column flags, pnpm) with `ui-polish` (phone tabs, motion tokens, modal chrome, title shake). Per-column create-modal headings kept over ui-polish's "New card". |

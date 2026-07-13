@@ -1,7 +1,9 @@
 import {
   DndContext,
   DragOverlay,
-  PointerSensor,
+  MouseSensor,
+  TouchSensor,
+  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -9,7 +11,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { COLUMNS } from '../data/placeholderBoard'
 import { PriorityBadge } from './PriorityBadge'
 import {
@@ -18,10 +20,12 @@ import {
 } from '../lib/boardMove'
 import {
   boardCollisionDetection,
+  columnTabDroppableData,
+  columnTabId,
   resolveColumnFromOverId,
 } from '../lib/dnd'
 import { cardsInColumn } from '../lib/storage'
-import type { Card, ColumnId } from '../types'
+import type { Card, ColumnDef, ColumnId } from '../types'
 import { Column } from './Column'
 
 type Props = {
@@ -34,7 +38,11 @@ type Props = {
   onRequestArchive: (cardId: string) => void
   onBeginDrag: () => void
   onPreviewMove: (activeId: string, overId: string, hint?: MoveHint) => void
-  onCommitDrag: () => void
+  onCommitDrag: (
+    activeId?: string,
+    overId?: string,
+    hint?: MoveHint,
+  ) => void
   onCancelDrag: () => void
 }
 
@@ -58,6 +66,40 @@ function moveHintFromEvent(
   }
 }
 
+/** Phone-only column tab — droppable so drag can move cards between columns. */
+function BoardColumnTab({
+  column,
+  count,
+  isActive,
+  onSelect,
+}: {
+  column: ColumnDef
+  count: number
+  isActive: boolean
+  onSelect: (columnId: ColumnId) => void
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: columnTabId(column.id),
+    data: columnTabDroppableData(column.id),
+  })
+
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      className={`board-nav__tab${isActive ? ' is-active' : ''}${isOver ? ' is-over' : ''}`}
+      aria-label={`${column.label}, ${count} cards`}
+      aria-current={isActive ? 'true' : undefined}
+      onClick={() => onSelect(column.id)}
+    >
+      <span className="board-nav__tab-label">{column.label}</span>
+      <span className="board-nav__tab-count" aria-hidden="true">
+        {count}
+      </span>
+    </button>
+  )
+}
+
 export function Board({
   cards,
   dragDisabled = false,
@@ -73,6 +115,8 @@ export function Board({
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overColumnId, setOverColumnId] = useState<ColumnId | null>(null)
   const [overlayCard, setOverlayCard] = useState<Card | null>(null)
+  /** Which column tab is selected on phone (CSS-hidden on desktop). */
+  const [mobileColumnId, setMobileColumnId] = useState<ColumnId>('ideas')
 
   /** Skip preview updates that would not change placement (stops update loops). */
   const lastPreviewSigRef = useRef<string | null>(null)
@@ -80,13 +124,25 @@ export function Board({
   cardsRef.current = cards
 
   const sensors = useSensors(
-    useSensor(PointerSensor, {
+    useSensor(MouseSensor, {
       // Huge distance effectively disables drag while search is filtering
       activationConstraint: {
         distance: dragDisabled ? 99999 : 8,
       },
     }),
+    useSensor(TouchSensor, {
+      // Long-press so vertical list scroll can win first; huge delay when drag off
+      activationConstraint: dragDisabled
+        ? { delay: 99999, tolerance: 8 }
+        : { delay: 220, tolerance: 8 },
+    }),
   )
+
+  useEffect(() => {
+    if (activeId) document.body.classList.add('is-dragging')
+    else document.body.classList.remove('is-dragging')
+    return () => document.body.classList.remove('is-dragging')
+  }, [activeId])
 
   function columnOfCard(cardId: string): ColumnId | undefined {
     return cardsRef.current.find((c) => c.id === cardId)?.column
@@ -100,6 +156,7 @@ export function Board({
     setActiveId(id)
     setOverlayCard(card)
     setOverColumnId(card?.column ?? null)
+    if (card) setMobileColumnId(card.column)
     onBeginDrag()
   }
 
@@ -117,6 +174,13 @@ export function Board({
     setOverColumnId((prev) =>
       prev === nextOverColumn ? prev : nextOverColumn,
     )
+
+    // On phone: reveal the column under the pointer (tab or cards) so drop works
+    if (nextOverColumn) {
+      setMobileColumnId((prev) =>
+        prev === nextOverColumn ? prev : nextOverColumn,
+      )
+    }
 
     if (activeIdStr === overIdStr) return
 
@@ -148,10 +212,17 @@ export function Board({
 
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
-    if (activeIdStr !== overIdStr) {
-      onPreviewMove(activeIdStr, overIdStr, moveHintFromEvent(event))
-    }
-    onCommitDrag()
+    const hint = moveHintFromEvent(event)
+
+    const destColumn = resolveColumnFromOverId(overIdStr, columnOfCard)
+    if (destColumn) setMobileColumnId(destColumn)
+
+    // Final move applied inside commitDrag (sync) so disk matches drop position
+    onCommitDrag(
+      activeIdStr === overIdStr ? undefined : activeIdStr,
+      activeIdStr === overIdStr ? undefined : overIdStr,
+      hint,
+    )
   }
 
   function handleDragCancel() {
@@ -171,10 +242,23 @@ export function Board({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <div className="board">
+      <nav className="board-nav" aria-label="Board columns">
+        {COLUMNS.map((column) => (
+          <BoardColumnTab
+            key={column.id}
+            column={column}
+            count={cardsInColumn(cards, column.id).length}
+            isActive={mobileColumnId === column.id}
+            onSelect={setMobileColumnId}
+          />
+        ))}
+      </nav>
+
+      <div className="board" data-mobile-column={mobileColumnId}>
         {COLUMNS.map((column) => {
           const showDropHighlight =
             activeId !== null && overColumnId === column.id
+          const isMobileActive = mobileColumnId === column.id
 
           return (
             <Column
@@ -183,6 +267,7 @@ export function Board({
               cards={cardsInColumn(cards, column.id)}
               dragDisabled={dragDisabled}
               showDropHighlight={showDropHighlight}
+              mobileActive={isMobileActive}
               onAdd={onAdd}
               onEdit={onEdit}
               onRequestDelete={onRequestDelete}

@@ -1,6 +1,7 @@
 import { arrayMove } from '@dnd-kit/sortable'
-import { COLUMN_IDS, isColumnId } from '../data/placeholderBoard'
+import { COLUMN_IDS } from '../data/placeholderBoard'
 import type { Card, ColumnId } from '../types'
+import { columnIdFromDroppableId } from './dnd'
 import { cardsInColumn, reindexOrders } from './storage'
 
 function rebuildFromLists(lists: Record<ColumnId, Card[]>): Card[] {
@@ -55,11 +56,12 @@ export function applyCardMove(
 
   const lists = listsFromCards(prev)
 
-  // Dropping on a column container (empty space / column body)
-  if (isColumnId(overId)) {
-    const target = overId
+  // Dropping on a column container or mobile column tab
+  const targetFromDroppable = columnIdFromDroppableId(overId)
+  if (targetFromDroppable) {
+    const target = targetFromDroppable
 
-    // Already in this column and hovering column chrome — do not reshuffle
+    // Already in this column and hovering column/tab chrome — do not reshuffle
     // (avoids jump-to-end loops that can freeze React).
     if (active.column === target) {
       return prev

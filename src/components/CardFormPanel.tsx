@@ -1,6 +1,15 @@
-import { useId, useState, type FormEvent } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useRef,
+  useState,
+  type AnimationEvent,
+  type FormEvent,
+} from 'react'
 import { columnDef } from '../data/placeholderBoard'
 import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
+import { useModalChrome } from '../hooks/useModalChrome'
 import type { Card, ColumnId, Priority } from '../types'
 
 type CreateProps = {
@@ -33,7 +42,7 @@ type Props = CreateProps | EditProps
 const NO_PRIORITY = ''
 
 /**
- * Centered modal for creating or editing a card.
+ * Modal for creating or editing a card.
  * Title is required (validated on submit, marked with a red asterisk).
  * Priority is pickable in any column; in the Priority column it is
  * always set (no "none" choice there).
@@ -45,6 +54,7 @@ export function CardFormPanel(props: Props) {
   const priorityId = useId()
   const completedId = useId()
   const errorId = useId()
+  const shakeRafRef = useRef<number | null>(null)
 
   const targetColumn: ColumnId =
     props.mode === 'create' ? props.column : props.card.column
@@ -69,13 +79,54 @@ export function CardFormPanel(props: Props) {
     props.mode === 'edit' ? (props.card.completedAt ?? '') : '',
   )
   const [error, setError] = useState<string | null>(null)
+  /** True only while the title field shake/red flash runs. */
+  const [titleShaking, setTitleShaking] = useState(false)
 
   const heading = props.mode === 'create' ? targetDef.newLabel : 'Edit card'
+  const { onClose } = props
+  const onEscape = useCallback(() => onClose(), [onClose])
+  useModalChrome(onEscape)
+
+  // Backup if animationend is skipped (e.g. reduced motion / interrupted)
+  useEffect(() => {
+    if (!titleShaking) return
+    const t = window.setTimeout(() => setTitleShaking(false), 500)
+    return () => window.clearTimeout(t)
+  }, [titleShaking])
+
+  // Cancel pending shake rAF on unmount
+  useEffect(() => {
+    return () => {
+      if (shakeRafRef.current != null) {
+        cancelAnimationFrame(shakeRafRef.current)
+      }
+    }
+  }, [])
+
+  function flashTitleError(message: string) {
+    setError(message)
+    // Drop the class then re-add next frame so re-submit restarts the animation
+    setTitleShaking(false)
+    if (shakeRafRef.current != null) {
+      cancelAnimationFrame(shakeRafRef.current)
+    }
+    shakeRafRef.current = requestAnimationFrame(() => {
+      shakeRafRef.current = requestAnimationFrame(() => {
+        shakeRafRef.current = null
+        setTitleShaking(true)
+      })
+    })
+  }
+
+  function handleTitleAnimationEnd(event: AnimationEvent<HTMLInputElement>) {
+    if (event.animationName !== 'field-shake') return
+    setTitleShaking(false)
+  }
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
     if (!title.trim()) {
-      setError('Title is required.')
+      flashTitleError('Title is required.')
       return
     }
 
@@ -111,11 +162,12 @@ export function CardFormPanel(props: Props) {
           })
 
     if (result) {
-      setError(result)
+      flashTitleError(result)
       return
     }
 
     setError(null)
+    setTitleShaking(false)
     props.onClose()
   }
 
@@ -132,6 +184,15 @@ export function CardFormPanel(props: Props) {
           <h2 id="card-form-title" className="modal__title">
             {heading}
           </h2>
+          <button
+            type="button"
+            className="btn btn--ghost btn--icon modal__close"
+            onClick={props.onClose}
+            aria-label="Close"
+            title="Close"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
         </header>
 
         <form className="modal__form" onSubmit={handleSubmit} noValidate>
@@ -144,13 +205,15 @@ export function CardFormPanel(props: Props) {
             </label>
             <input
               id={titleId}
-              className={`field__input${error ? ' field__input--error' : ''}`}
+              className={`field__input${titleShaking ? ' field__input--shake' : ''}`}
               type="text"
               value={title}
               onChange={(e) => {
                 setTitle(e.target.value)
                 if (error) setError(null)
+                if (titleShaking) setTitleShaking(false)
               }}
+              onAnimationEnd={handleTitleAnimationEnd}
               placeholder="What needs doing?"
               autoFocus
               required
@@ -165,7 +228,7 @@ export function CardFormPanel(props: Props) {
             ) : null}
           </div>
 
-          <div className="field">
+          <div className="field field--grow">
             <label className="field__label" htmlFor={notesId}>
               Notes
             </label>

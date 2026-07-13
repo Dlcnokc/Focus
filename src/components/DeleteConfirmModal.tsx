@@ -1,3 +1,6 @@
+import { useCallback } from 'react'
+import { useModalChrome } from '../hooks/useModalChrome'
+
 type Props = {
   cardTitle: string
   onConfirm: () => void
@@ -5,9 +8,13 @@ type Props = {
 }
 
 /**
- * Centered delete confirmation — themed, no browser alert.
+ * Delete confirmation — themed, no browser alert.
+ * Cancel is focused first (safer default for destructive actions).
  */
 export function DeleteConfirmModal({ cardTitle, onConfirm, onCancel }: Props) {
+  const onEscape = useCallback(() => onCancel(), [onCancel])
+  useModalChrome(onEscape)
+
   return (
     <div className="modal-backdrop" onClick={onCancel} role="presentation">
       <div

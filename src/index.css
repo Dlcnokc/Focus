@@ -28,11 +28,31 @@
 
   /* Accent — white / off-white on dark greys */
   --color-accent: #ffffff;
+  --color-accent-hover: #e8e8e8;
   --color-accent-soft: rgba(255, 255, 255, 0.08);
   --color-accent-ring: rgba(255, 255, 255, 0.22);
+  --color-accent-on: var(--color-bg);
 
-  /* Required-field marker */
-  --color-required: #e5484d;
+  /* Elevated chrome (modals, overflow menus) — slightly above cards */
+  --color-elevated: #111111;
+  --color-column-over: #121212;
+  --color-header-scrim: rgba(10, 10, 10, 0.85);
+
+  /* Semantic action hues (quiet, for hovers / validation only).
+     One red across the app: danger, required asterisk, and the Immediate
+     priority badge all share #e5484d. */
+  --color-danger: #e5484d;
+  --color-danger-border: rgba(229, 72, 77, 0.45);
+  --color-danger-soft: rgba(229, 72, 77, 0.1);
+  --color-edit: #e5c07b;
+  --color-edit-border: rgba(229, 192, 123, 0.45);
+  --color-edit-soft: rgba(229, 192, 123, 0.1);
+  --color-archive: #7dd3fc;
+  --color-archive-border: rgba(125, 211, 252, 0.45);
+  --color-archive-soft: rgba(125, 211, 252, 0.1);
+
+  /* Required-field marker — same red as danger */
+  --color-required: var(--color-danger);
 
   /* Priority badge colors — muted ramp, calm against the greyscale theme */
   --color-priority-low: #9ca3af;
@@ -79,6 +99,36 @@
   --scrollbar-track: transparent;
   --scrollbar-thumb: rgba(255, 255, 255, 0.14);
   --scrollbar-thumb-hover: rgba(255, 255, 255, 0.28);
+
+  /* Motion — calm, consistent hover / focus / press */
+  --motion-duration: 160ms;
+  --motion-duration-fast: 120ms;
+  --motion-ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --motion-ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Shared transition bundles — use these instead of one-off timings */
+  --motion-transition-colors:
+    background-color var(--motion-duration) var(--motion-ease),
+    border-color var(--motion-duration) var(--motion-ease),
+    color var(--motion-duration) var(--motion-ease),
+    box-shadow var(--motion-duration) var(--motion-ease),
+    opacity var(--motion-duration) var(--motion-ease);
+
+  --motion-transition-interactive:
+    background-color var(--motion-duration) var(--motion-ease),
+    border-color var(--motion-duration) var(--motion-ease),
+    color var(--motion-duration) var(--motion-ease),
+    box-shadow var(--motion-duration) var(--motion-ease),
+    transform var(--motion-duration) var(--motion-ease-out),
+    opacity var(--motion-duration) var(--motion-ease);
+}
+
+/* Soften motion for users who prefer reduced motion (tokens only — leave DnD alone) */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration: 0.01ms;
+    --motion-duration-fast: 0.01ms;
+  }
 }
 
 /* Reset / base */
@@ -96,6 +146,7 @@ body,
 
 body {
   margin: 0;
+  color-scheme: dark;
   font-family: var(--font-sans);
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-body);
@@ -135,8 +186,9 @@ p {
   padding-left: max(var(--layout-pad-x), env(safe-area-inset-left));
   padding-right: max(var(--layout-pad-x), env(safe-area-inset-right));
   border-bottom: 1px solid var(--color-border-subtle);
-  background: rgba(10, 10, 10, 0.85);
+  background: var(--color-header-scrim);
   backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -146,19 +198,28 @@ p {
   display: flex;
   align-items: center;
   gap: var(--space-3);
+  /* Optical align with first column’s left edge (column border + radius) */
+  margin-left: 0.35rem;
 }
 
 .app__mark {
   width: 8px;
   height: 8px;
   border-radius: 999px;
-  background: var(--color-accent);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
+  background: transparent;
+  border: 1.5px solid var(--color-accent);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  box-shadow:
+    0 0 0 2px var(--color-accent-soft),
+    0 0 8px rgba(255, 255, 255, 0.35),
+    0 0 14px rgba(255, 255, 255, 0.12);
 }
 
 .app__title {
   font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-title);
+  /* Slightly lighter than body titles (700) — calmer header wordmark */
+  font-weight: var(--font-weight-ui);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -182,9 +243,7 @@ p {
   border-radius: var(--radius-sm);
   padding: 0.45rem 0.75rem;
   line-height: 1.3;
-  transition:
-    border-color 0.12s ease,
-    background 0.12s ease;
+  transition: var(--motion-transition-colors);
 }
 
 .app__search-input::placeholder {
@@ -279,6 +338,7 @@ p {
 .app__main::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 999px;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease);
 }
 
 .app__main::-webkit-scrollbar-thumb:hover {
@@ -308,13 +368,13 @@ p {
   border: 1px solid var(--color-column-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: var(--motion-transition-colors);
 }
 
 .column--over {
-  border-color: rgba(255, 255, 255, 0.28);
-  background: #121212;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+  border-color: var(--color-accent-ring);
+  background: var(--color-column-over);
+  box-shadow: inset 0 0 0 1px var(--color-accent-soft);
 }
 
 .column__header {
@@ -347,15 +407,9 @@ p {
 .column__count {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-ui);
-  color: var(--color-text-faint);
-  background: var(--color-accent-soft);
-  border-radius: 999px;
-  min-width: 1.5rem;
-  height: 1.5rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0 var(--space-2);
+  /* Lighter than column chrome (faint); quieter than titles */
+  color: var(--color-text-muted);
+  line-height: 1;
 }
 
 .column__hint {
@@ -391,6 +445,7 @@ p {
 .column__body::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 999px;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease);
 }
 
 .column__body::-webkit-scrollbar-thumb:hover {
@@ -429,10 +484,8 @@ p {
   border-radius: var(--radius-md);
   padding: var(--space-3) var(--space-4);
   box-shadow: var(--shadow-card);
-  transition:
-    border-color 0.15s ease,
-    background 0.15s ease,
-    box-shadow 0.15s ease;
+  /* Colors + shadow only — never transform (dnd-kit uses transform for drag) */
+  transition: var(--motion-transition-colors);
   touch-action: none;
   cursor: grab;
 }
@@ -572,7 +625,7 @@ p {
   white-space: normal;
 }
 
-/* Bold text control under notes — clearly not a drag handle */
+/* Quiet text control under notes — clearly not a drag handle */
 .card__notes-toggle {
   align-self: flex-start;
   margin: 0;
@@ -581,16 +634,20 @@ p {
   background: none;
   font-family: var(--font-sans);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-title);
+  font-weight: var(--font-weight-ui);
   line-height: 1.3;
-  color: var(--color-text);
+  /* Match column card-count grey */
+  color: var(--color-text-muted);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 0.15em;
+  text-decoration-color: rgba(255, 255, 255, 0.22);
+  transition: var(--motion-transition-colors);
 }
 
 .card__notes-toggle:hover {
   color: var(--color-accent);
+  text-decoration-color: var(--color-accent);
 }
 
 .card__notes-toggle:focus-visible {
@@ -600,6 +657,7 @@ p {
 }
 
 .card__actions {
+  position: relative;
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
@@ -609,8 +667,60 @@ p {
   cursor: default;
 }
 
+/* Desktop: always show icon row; ··· toggle is phone-only.
+   Higher specificity than `.btn--icon { display: inline-flex }` so hide wins. */
+button.card__actions-toggle.btn--icon {
+  display: none;
+}
+
+.card__actions-panel {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: var(--space-1);
+}
+
 .card__actions .btn--icon svg {
   display: block;
+}
+
+/* Phone column tabs — hidden on desktop; shown above the board on small screens */
+.board-nav {
+  display: none;
+}
+
+/* Header secondary actions: desktop = flat row (toggle hidden) */
+.app__header-more {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* Same specificity issue as card toggle vs `.btn--icon` */
+button.app__header-more-toggle.btn--icon {
+  display: none;
+}
+
+.app__header-more-panel {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.app__header-add {
+  flex-shrink: 0;
+}
+
+/* While dragging: calm cursor + no text selection */
+body.is-dragging {
+  cursor: grabbing;
+  user-select: none;
+}
+
+/* While a modal is open: avoid scrolling the board under the overlay */
+body.modal-open {
+  overflow: hidden;
 }
 
 /* Buttons */
@@ -623,10 +733,15 @@ p {
   border: 1px solid transparent;
   padding: 0.45rem 0.75rem;
   cursor: pointer;
-  transition:
-    background 0.12s ease,
-    border-color 0.12s ease,
-    color 0.12s ease;
+  transition: var(--motion-transition-interactive);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active {
+  transform: translateY(1px) scale(0.98);
 }
 
 .btn:focus-visible {
@@ -636,13 +751,13 @@ p {
 
 .btn--primary {
   background: var(--color-accent);
-  color: #0a0a0a;
+  color: var(--color-accent-on);
   border-color: var(--color-accent);
 }
 
 .btn--primary:hover {
-  background: #e8e8e8;
-  border-color: #e8e8e8;
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .btn--ghost {
@@ -663,10 +778,25 @@ p {
   border-color: var(--color-border);
 }
 
+/* Delete / destructive — soft red on hover (icons use currentColor) */
 .btn--danger-ghost:hover {
-  color: #f0f0f0;
-  border-color: rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-danger);
+  border-color: var(--color-danger-border);
+  background: var(--color-danger-soft);
+}
+
+/* Edit — soft yellow on hover */
+.btn--edit:hover {
+  color: var(--color-edit);
+  border-color: var(--color-edit-border);
+  background: var(--color-edit-soft);
+}
+
+/* Archive — sky blue on hover (same quiet treatment as edit/delete) */
+.btn--archive:hover {
+  color: var(--color-archive);
+  border-color: var(--color-archive-border);
+  background: var(--color-archive-soft);
 }
 
 .btn--compact {
@@ -702,7 +832,7 @@ p {
 
 .modal {
   width: min(420px, 100%);
-  background: #111111;
+  background: var(--color-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   box-shadow:
@@ -712,6 +842,33 @@ p {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  overflow-y: auto;
+  /* Match board / column scrollbars when the panel itself scrolls */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.modal::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+.modal::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.modal::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease);
+}
+
+.modal::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.modal::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .modal--form {
@@ -756,6 +913,7 @@ p {
 .archive-list::-webkit-scrollbar-thumb {
   background: var(--scrollbar-thumb);
   border-radius: 999px;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease);
 }
 
 .archive-list::-webkit-scrollbar-thumb:hover {
@@ -779,6 +937,12 @@ p {
   background: var(--color-surface);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-md);
+  transition: var(--motion-transition-colors);
+}
+
+.archive-list__item:hover {
+  background: var(--color-surface-hover);
+  border-color: var(--color-border);
 }
 
 .archive-list__text {
@@ -819,7 +983,7 @@ p {
 
 .modal__header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
 }
@@ -829,6 +993,20 @@ p {
   font-weight: var(--font-weight-title);
   letter-spacing: -0.02em;
   line-height: 1.3;
+  min-width: 0;
+  flex: 1;
+}
+
+.modal__close {
+  margin: -0.25rem -0.25rem -0.25rem 0;
+  font-size: 1.35rem;
+  font-weight: var(--font-weight-body);
+  color: var(--color-text-muted);
+  line-height: 1;
+}
+
+.modal__close:hover {
+  color: var(--color-text);
 }
 
 .modal__body {
@@ -843,6 +1021,20 @@ p {
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
+  flex: 1;
+  min-height: 0;
+}
+
+.field--grow {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.field--grow .field__textarea {
+  flex: 1;
+  min-height: 8rem;
 }
 
 .modal__actions {
@@ -906,6 +1098,12 @@ p {
   border-radius: var(--radius-sm);
   padding: 0.65rem 0.75rem;
   width: 100%;
+  transition: var(--motion-transition-colors);
+}
+
+.field__input:hover,
+.field__textarea:hover {
+  border-color: var(--color-accent-ring);
 }
 
 .field__input:focus,
@@ -930,20 +1128,91 @@ p {
   color: var(--color-text);
 }
 
-.field__input--error {
-  border-color: rgba(255, 255, 255, 0.35);
+.field__input:focus-visible,
+.field__textarea:focus-visible,
+.field__select:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-color: var(--color-accent-ring);
+  box-shadow: none;
+}
+
+/* Title validation: brief red + shake, then back to normal border */
+@keyframes field-shake {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  15% {
+    transform: translateX(-5px);
+  }
+  30% {
+    transform: translateX(5px);
+  }
+  45% {
+    transform: translateX(-4px);
+  }
+  60% {
+    transform: translateX(4px);
+  }
+  75% {
+    transform: translateX(-2px);
+  }
+  90% {
+    transform: translateX(2px);
+  }
+}
+
+.field__input--shake {
+  border-color: var(--color-danger);
+  box-shadow: 0 0 0 1px var(--color-danger-border);
+  animation: field-shake 0.45s var(--motion-ease);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .field__input--shake {
+    animation: none;
+  }
 }
 
 .field__textarea {
   resize: vertical;
   min-height: 8rem;
   line-height: 1.55;
+  /* Match board / column / archive scrollbars (Firefox) */
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.field__textarea::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+}
+
+.field__textarea::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+.field__textarea::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 999px;
+  transition: background-color var(--motion-duration-fast) var(--motion-ease);
+}
+
+.field__textarea::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+.field__textarea::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 .field__error {
+  margin: 0;
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-body);
-  color: #cfcfcf;
+  color: var(--color-danger);
+  line-height: 1.4;
 }
 
 /* Crash recovery screen */
@@ -985,8 +1254,8 @@ p {
 }
 
 /* ---------------------------------------------------------------------------
-   Responsive — still four columns; polish layout for tablet / phone.
-   Desktop rules above stay the default; these only tighten smaller viewports.
+   Responsive — desktop defaults above stay as-is.
+   These blocks only tighten tablet / overhaul phone UX (max-width).
    --------------------------------------------------------------------------- */
 
 /* Tablet and down */
@@ -1007,21 +1276,24 @@ p {
   }
 }
 
-/* Phone / small screens */
+/* Phone / small screens — mobile-first overhaul (desktop unchanged above) */
 @media (max-width: 640px) {
   :root {
     --layout-pad-x: var(--space-3);
     --layout-pad-y: var(--space-3);
-    /* One primary column in view; swipe for the other three */
-    --board-col-min: min(18.5rem, calc(100vw - var(--layout-pad-x) * 2 - 1.25rem));
+    /* One full-width column under the active tab */
+    --board-col-min: 100%;
     --board-gap: var(--space-3);
     --header-height: auto;
+    --touch-min: 2.75rem; /* ~44px comfortable tap */
   }
 
+  /* ----- Header: title + more + Add, search full width ----- */
   .app__header {
-    align-items: stretch;
+    align-items: center;
     gap: var(--space-2) var(--space-3);
     padding-bottom: var(--space-3);
+    row-gap: var(--space-3);
   }
 
   .app__brand {
@@ -1040,37 +1312,158 @@ p {
     order: 3;
   }
 
-  /* 16px avoids iOS zoom-on-focus for search fields */
+  /* 16px avoids iOS zoom-on-focus */
   .app__search-input {
     font-size: 1rem;
-    padding: 0.55rem 0.75rem;
+    min-height: var(--touch-min);
+    padding: 0.65rem 0.85rem;
   }
 
   .app__header-actions {
     flex: 1 1 auto;
+    justify-content: flex-end;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: auto;
+  }
+
+  /* Overflow menu for Archive / Export / Import */
+  .app__header-more {
+    position: relative;
+  }
+
+  button.app__header-more-toggle.btn--icon {
+    display: inline-flex;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    font-size: 1.1rem;
+    letter-spacing: 0.02em;
+  }
+
+  .app__header-more-panel {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.4rem);
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-1);
+    min-width: 11.5rem;
+    padding: var(--space-2);
+    background: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 12px 32px rgba(0, 0, 0, 0.55);
+    z-index: 30;
+  }
+
+  .app__header-more.is-open .app__header-more-panel {
+    display: flex;
+  }
+
+  .app__header-secondary {
+    width: 100%;
     justify-content: flex-start;
+    text-align: left;
+    min-height: var(--touch-min);
+    padding: 0.65rem 0.75rem;
+    font-size: var(--font-size-sm);
   }
 
-  .app__header-actions .btn {
-    padding: 0.5rem 0.65rem;
+  .app__header-add {
+    min-height: var(--touch-min);
+    padding: 0.55rem 0.9rem;
+    font-size: var(--font-size-sm);
   }
 
+  /* ----- Single-column tabs (no horizontal column scroll) ----- */
   .app__main {
-    /* Horizontal swipe through columns */
-    scroll-snap-type: x proximity;
-    scroll-padding-inline: max(var(--layout-pad-x), env(safe-area-inset-left));
+    overflow-x: hidden;
+    padding-top: var(--space-2);
+  }
+
+  .board-nav {
+    display: flex;
+    flex-wrap: nowrap;
+    justify-content: stretch;
+    align-items: stretch;
+    gap: var(--space-1);
+    padding: 0 0 var(--space-3);
+    width: 100%;
+    z-index: 2;
+  }
+
+  .board-nav__tab {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: var(--touch-min);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1rem;
+    padding: 0.4rem 0.25rem;
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--color-text-muted);
+    font-family: var(--font-sans);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-ui);
+    line-height: 1.2;
+    cursor: pointer;
+    transition: var(--motion-transition-interactive);
+  }
+
+  .board-nav__tab-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .board-nav__tab-count {
+    font-size: 0.65rem;
+    font-weight: var(--font-weight-body);
+    color: var(--color-text-faint);
+    line-height: 1;
+  }
+
+  .board-nav__tab.is-active {
+    color: var(--color-text);
+    border-color: var(--color-accent-ring);
+    background: var(--color-accent-soft);
+  }
+
+  .board-nav__tab.is-active .board-nav__tab-count {
+    color: var(--color-text-muted);
+  }
+
+  /* While dragging: tab under pointer is a drop target */
+  .board-nav__tab.is-over {
+    color: var(--color-text);
+    border-color: var(--color-accent);
+    background: var(--color-accent-soft);
+  }
+
+  .board-nav__tab:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
   }
 
   .board {
-    grid-template-columns: repeat(4, var(--board-col-min));
-    min-width: calc(var(--board-col-min) * 4 + var(--board-gap) * 3);
-    /* Fill remaining viewport under sticky header */
-    height: calc(100dvh - 8.5rem);
-    min-height: 280px;
+    grid-template-columns: 1fr;
+    min-width: 0;
+    /* Fill remaining viewport; header is multi-line — use generous offset */
+    height: calc(100dvh - 13.5rem);
+    min-height: 260px;
   }
 
-  .column {
-    scroll-snap-align: start;
+  /* Keep all columns mounted for drag droppables; show only the selected tab */
+  .column:not(.column--mobile-active) {
+    display: none;
   }
 
   .column__header {
@@ -1078,7 +1471,12 @@ p {
   }
 
   .column__hint {
-    display: none; /* reclaim vertical space on short phones */
+    display: none;
+  }
+
+  .column__heading .btn--icon {
+    width: var(--touch-min);
+    height: var(--touch-min);
   }
 
   .column__body {
@@ -1086,19 +1484,76 @@ p {
     gap: var(--space-2);
   }
 
+  .column__empty .btn {
+    min-height: var(--touch-min);
+    padding: 0.55rem 0.85rem;
+  }
+
+  /* ----- Cards: title first; actions behind ··· ----- */
   .card {
-    padding: var(--space-3);
+    padding: var(--space-3) var(--space-3);
+    /* Slightly larger body text on phone */
+    gap: var(--space-2);
+  }
+
+  .card__title {
+    font-size: var(--font-size-sm);
+    padding-top: 0.35rem;
+  }
+
+  .card__notes {
+    font-size: 0.8125rem; /* between xs and sm */
+  }
+
+  .card__notes-toggle {
+    min-height: 2rem;
+    padding: 0.25rem 0;
+    font-size: var(--font-size-sm);
+  }
+
+  button.card__actions-toggle.btn--icon {
+    display: inline-flex;
+    width: var(--touch-min);
+    height: var(--touch-min);
+    font-size: 1.05rem;
+  }
+
+  .card__actions-panel {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: calc(100% + 0.25rem);
+    z-index: 6;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    padding: var(--space-1);
+    background: var(--color-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 0 0 1px rgba(255, 255, 255, 0.04),
+      0 10px 28px rgba(0, 0, 0, 0.55);
+  }
+
+  .card__actions.is-open .card__actions-panel {
+    display: flex;
   }
 
   .card__actions .btn--icon {
-    width: 2rem;
-    height: 2rem;
+    width: var(--touch-min);
+    height: var(--touch-min);
   }
 
+  .card--overlay {
+    width: min(280px, 85vw);
+  }
+
+  /* ----- Bottom sheets ----- */
   .modal-backdrop {
-    padding: var(--space-3);
-    padding-bottom: max(var(--space-3), env(safe-area-inset-bottom));
-    align-items: flex-end; /* easier reach on tall phones */
+    padding: 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    align-items: flex-end;
   }
 
   .modal,
@@ -1106,23 +1561,119 @@ p {
   .modal--confirm,
   .modal--archive {
     width: 100%;
-    max-height: min(88dvh, 640px);
-    border-radius: var(--radius-lg) var(--radius-lg) var(--radius-md) var(--radius-md);
+    max-width: none;
+    max-height: min(92dvh, 720px);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+    padding: var(--space-4) var(--space-4)
+      max(var(--space-5), env(safe-area-inset-bottom));
+    position: relative;
+  }
+
+  /* Add/edit card: use most of the screen; notes grow into leftover space */
+  .modal--form {
+    height: min(92dvh, 100%);
+    max-height: min(92dvh, 100%);
+  }
+
+  .modal--form .modal__form {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .modal--form .field--grow {
+    flex: 1;
+    min-height: 0;
+  }
+
+  .modal--form .field--grow .field__textarea {
+    flex: 1;
+    min-height: 12rem;
+    height: 100%;
+    resize: none;
+  }
+
+  .modal__close {
+    width: var(--touch-min);
+    height: var(--touch-min);
+    font-size: 1.5rem;
+    margin: 0;
+  }
+
+  .modal__actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+    gap: var(--space-2);
+    padding-top: var(--space-3);
+    flex-shrink: 0;
+  }
+
+  .modal__actions .btn {
+    width: 100%;
+    min-height: var(--touch-min);
+    justify-content: center;
+    font-size: var(--font-size-sm);
+    padding: 0.7rem 1rem;
+  }
+
+  .modal__actions--wrap {
+    flex-direction: column-reverse;
+  }
+
+  /* Prevent iOS zoom on form fields */
+  .field__input,
+  .field__textarea {
+    font-size: 1rem;
+    min-height: var(--touch-min);
+    padding: 0.75rem 0.85rem;
+  }
+
+  .field__textarea {
+    min-height: 9rem;
   }
 
   .archive-list {
-    max-height: min(40dvh, 280px);
+    max-height: min(42dvh, 320px);
+  }
+
+  .archive-list__item {
+    padding: var(--space-3);
+  }
+
+  .archive-list__actions .btn {
+    min-height: 2.5rem;
+    padding: 0.5rem 0.75rem;
   }
 
   .archive-list__search .app__search-input {
     font-size: 1rem;
+    min-height: var(--touch-min);
+  }
+
+  /* Soften hover lift on touch (sticky hover on some browsers) */
+  .btn:hover {
+    transform: none;
+  }
+
+  .btn:active {
+    transform: scale(0.98);
   }
 }
 
 /* Very narrow phones */
 @media (max-width: 380px) {
-  .app__header-actions .btn {
-    font-size: 0.7rem;
-    padding: 0.45rem 0.5rem;
+  :root {
+    --board-col-min: min(100%, calc(100vw - var(--layout-pad-x) * 2 - 0.75rem));
+  }
+
+  .app__header-add {
+    padding-inline: 0.7rem;
+    font-size: var(--font-size-xs);
+  }
+
+  .board {
+    height: calc(100dvh - 12rem);
   }
 }

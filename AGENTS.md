@@ -6,11 +6,24 @@ Instructions for any coding agent working in this repository. Follow these every
 
 ## Session start (do this first)
 
-1. Read **`PRODUCT.md`** — especially current status, shipped checklist, non-goals.  
-2. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
-3. Skim this file.  
-4. Run the app if changing code: `pnpm run dev` from the repo root.  
-5. Implement the **smallest** requested slice; do not invent multi-user or backend work.
+1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
+   - If the owner is on a **feature branch** (e.g. `sean-dev`), **stay there** — do not force-checkout `main` (that drops in-flight work).
+     ```powershell
+     git pull
+     git status
+     ```
+   - Otherwise use latest **`main`** (what Netlify deploys):
+     ```powershell
+     git checkout main
+     git pull origin main
+     git status
+     ```
+   Confirm: on the expected branch, up to date with its remote (or only the owner’s current uncommitted edits).
+2. Read **`PRODUCT.md`** — especially current status, shipped checklist, non-goals.  
+3. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
+4. Skim this file.  
+5. Run the app if changing code: `pnpm run dev` from the repo root.  
+6. Implement the **smallest** requested slice; do not invent multi-user or backend work.
 
 ---
 
@@ -51,20 +64,23 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 4. **One board only** in v1.  
 5. **Browser-only persistence** — do not add backend, auth, or cloud sync unless asked.  
 6. **Theme tokens** — colors/fonts/spacing via CSS variables in `src/index.css`; avoid scattered hard-coded colors.  
-7. **Modals** — add/edit/delete use **centered** themed modals with blurred backdrop (not browser `alert`/`confirm`, not a side drawer).  
+7. **Modals** — add/edit/delete use themed modals with blurred backdrop (not browser `alert`/`confirm`, not a side drawer). Desktop: **centered**. Phone: **bottom sheet**.  
 8. **No keyboard shortcuts** unless the user asks for them.
 
 ---
 
 ## Design & theme rules
 
-- Mood: **calm dark greyscale**; **white/off-white accent**. Two sanctioned semantic color exceptions (2026-07-11): the priority-badge ramp (`--color-priority-*`) and the required-field red asterisk (`--color-required`) — keep them muted, add no other color without asking.  
-- Font: **Source Code Pro** — titles/labels **700**, body/notes **400** (avoid ultra-thin weights).  
-- Header shows **Focus** only (no marketing subtitle).  
+- Mood: **calm dark greyscale**; **white/off-white accent**. Sanctioned semantic color exceptions: the quiet action hues (`--color-danger` / `--color-edit` / `--color-archive`), the priority-badge ramp (`--color-priority-*`), and the required-field red asterisk (`--color-required`) — keep them muted, add no other color without asking.  
+- Font: **Source Code Pro** — card/column titles **700**, body/notes **400**, header wordmark **500** (avoid ultra-thin weights).  
+- Header: brand mark + **Focus** only (no marketing subtitle).  
 - Columns quieter than cards; cards use subtle fill + box-shadow.  
-- Whole **card** is draggable; action icons (copy/edit/delete) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
-- Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via top-right icon.  
+- Whole **card** is draggable; action controls (copy / edit / delete / archive on Completed) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
+- Desktop: top-right action **icons** always visible. Phone: card actions behind **···**; header Archive/Export/Import behind **···**; **Add card** stays primary.  
+- Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via action control.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
+- Phone: column **tabs** (one column at a time; no horizontal column scroll); touch long-press to start drag; drag onto a tab to move across columns.  
+- Motion: use shared CSS motion tokens; respect `prefers-reduced-motion`.  
 - Design changes: update tokens first, then layout if needed.
 
 ---
@@ -101,6 +117,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Corrupt load: backup raw to `focus.board.v1.bak`, **block save** until the user changes the board (do not write `[]` over bad data).  
 - Do **not** persist live drag previews — save on drag commit / cancel restore / non-drag mutations only.  
 - Title search: disable drag while a filter is active (filtered list ≠ full board for DnD).  
+- Destructive confirms (delete / archive / import Replace|Merge): focus **Cancel** first (`autoFocus`).  
 - Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; do not reshuffle when hovering same-column chrome only.  
 - No secrets in the repo.
 
@@ -119,12 +136,14 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | 1 Shell + design tokens | **Done** |
 | 2 / 2.1 CRUD + centered modals + empty board | **Done** |
 | 3 Persist + drag + live preview | **Done** |
-| Deploy (Netlify + GitHub) | **Done** |
+| Deploy (Netlify + GitHub) | **Done** (tracks `main` only) |
 | Export / import JSON | **Done** |
 | Title search | **Done** |
 | Archive Done cards | **Done** |
-| v1.1 Mobile polish | **Done** (CSS) |
+| Mobile / phone polish (column tabs, ··· menus, bottom sheets, touch drag) | **Done** on `ui-polish` — merge → `main` still open |
 | Storage / drag safety hardening | **Done** |
+| UI motion / hover / form polish | **Done** on `ui-polish` |
+| Daily-use friction fixes | **As needed** — ask before large redesign |
 | Cooperative / multi-user | **Not started** — ask first |
 | External tools hub / tax app | **Out of repo** — do not build here unless asked |
 

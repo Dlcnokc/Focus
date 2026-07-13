@@ -51,9 +51,15 @@ function App() {
   const [pendingImport, setPendingImport] = useState<Card[] | null>(null)
   const [importError, setImportError] = useState<string | null>(null)
   const [titleQuery, setTitleQuery] = useState('')
+  const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const headerMoreRef = useRef<HTMLDivElement>(null)
 
   const archivedCards = useMemo(() => listArchivedCards(cards), [cards])
+  const activeCardCount = useMemo(
+    () => cards.filter((card) => !card.archived).length,
+    [cards],
+  )
   const searchActive = titleQuery.trim().length > 0
 
   /** Active board only; title filter is display-only. */
@@ -70,6 +76,7 @@ function App() {
     setPendingImport(null)
     setImportError(null)
     setArchiveListOpen(false)
+    setHeaderMenuOpen(false)
   }
 
   function openCreate(column: ColumnId = DEFAULT_NEW_COLUMN) {
@@ -224,6 +231,33 @@ function App() {
     }
   }, [priorityPromptCardId, priorityPromptCard, dismissPriorityPrompt])
 
+  /** Close mobile header menu on outside click or Escape. */
+  useEffect(() => {
+    if (!headerMenuOpen) return
+
+    function onPointerDown(event: MouseEvent | PointerEvent) {
+      const root = headerMoreRef.current
+      if (!root) return
+      if (event.target instanceof Node && !root.contains(event.target)) {
+        setHeaderMenuOpen(false)
+      }
+    }
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setHeaderMenuOpen(false)
+      }
+    }
+
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [headerMenuOpen])
+
+
   return (
     <div className="app">
       <header className="app__header">
@@ -244,34 +278,71 @@ function App() {
           />
         </label>
         <div className="app__header-actions">
-          <button
-            type="button"
-            className="btn btn--ghost"
-            onClick={openArchiveList}
-            title="View archived cards"
+          {/*
+            Desktop CSS: hide toggle, show panel buttons as a horizontal row.
+            Mobile CSS: show toggle + Add; panel is a dropdown when .is-open.
+          */}
+          <div
+            ref={headerMoreRef}
+            className={`app__header-more${headerMenuOpen ? ' is-open' : ''}`}
           >
-            Archive
-            {archivedCards.length > 0 ? ` (${archivedCards.length})` : ''}
-          </button>
+            <button
+              type="button"
+              className="btn btn--ghost btn--icon app__header-more-toggle"
+              aria-expanded={headerMenuOpen}
+              aria-haspopup="true"
+              aria-label="More actions"
+              title="More"
+              onClick={() => setHeaderMenuOpen((v) => !v)}
+            >
+              <span aria-hidden="true">···</span>
+            </button>
+            <div
+              className="app__header-more-panel"
+              role="group"
+              aria-label="Board file actions"
+            >
+              <button
+                type="button"
+                className="btn btn--ghost app__header-secondary"
+                onClick={() => {
+                  openArchiveList()
+                  setHeaderMenuOpen(false)
+                }}
+                title="View archived cards"
+              >
+                Archive
+                {archivedCards.length > 0
+                  ? ` (${archivedCards.length})`
+                  : ''}
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost app__header-secondary"
+                onClick={() => {
+                  handleExport()
+                  setHeaderMenuOpen(false)
+                }}
+                title="Download board as JSON"
+              >
+                Export
+              </button>
+              <button
+                type="button"
+                className="btn btn--ghost app__header-secondary"
+                onClick={() => {
+                  openImportPicker()
+                  setHeaderMenuOpen(false)
+                }}
+                title="Import board from JSON"
+              >
+                Import
+              </button>
+            </div>
+          </div>
           <button
             type="button"
-            className="btn btn--ghost"
-            onClick={handleExport}
-            title="Download board as JSON"
-          >
-            Export
-          </button>
-          <button
-            type="button"
-            className="btn btn--ghost"
-            onClick={openImportPicker}
-            title="Import board from JSON"
-          >
-            Import
-          </button>
-          <button
-            type="button"
-            className="btn btn--primary"
+            className="btn btn--primary app__header-add"
             onClick={() => openCreate(DEFAULT_NEW_COLUMN)}
           >
             Add card
@@ -392,7 +463,8 @@ function App() {
       {pendingImport ? (
         <ImportBoardModal
           importCount={pendingImport.length}
-          currentCount={cards.length}
+          activeCount={activeCardCount}
+          archivedCount={archivedCards.length}
           onReplace={confirmReplace}
           onMerge={confirmMerge}
           onCancel={cancelImport}

@@ -8,6 +8,7 @@ import {
   loadBoard,
   reindexOrders,
   saveCards,
+  type LoadBoardResult,
 } from '../lib/storage'
 import type { Card, ColumnId, Priority } from '../types'
 
@@ -17,6 +18,9 @@ function newId(): string {
   }
   return `card-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`
 }
+
+const SAVE_ERROR =
+  'Could not save the board to browser storage (quota or private mode). Changes stay on screen until you fix storage or Export a backup.'
 
 export type AddCardInput = {
   title: string
@@ -33,16 +37,24 @@ export type UpdateCardInput = {
   completedAt?: string
 }
 
+/** Read localStorage once per mount (not every render). */
+function readInitialBoard(): LoadBoardResult {
+  return loadBoard()
+}
+
 /**
  * Board state with localStorage persistence + live drag preview.
  * Drag previews stay in memory only; disk writes on commit / non-drag edits.
  */
 export function useBoard() {
-  const initial = loadBoard()
-  const [cards, setCards] = useState<Card[]>(() => initial.cards)
-  const [loadError, setLoadError] = useState<string | null>(
-    () => initial.loadError,
-  )
+  const initialRef = useRef<LoadBoardResult | null>(null)
+  if (initialRef.current === null) {
+    initialRef.current = readInitialBoard()
+  }
+  const initial = initialRef.current
+
+  const [cards, setCards] = useState<Card[]>(initial.cards)
+  const [loadError, setLoadError] = useState<string | null>(initial.loadError)
   /** Card just dragged into Priority — the UI should ask for its rank. */
   const [priorityPromptCardId, setPriorityPromptCardId] = useState<
     string | null
@@ -66,11 +78,22 @@ export function useBoard() {
     setLoadError(null)
   }, [])
 
-  const persistIfAllowed = useCallback((next: Card[]) => {
-    if (!allowPersistRef.current) return
-    if (isDraggingRef.current) return
-    saveCards(next)
+  const reportSaveResult = useCallback((ok: boolean) => {
+    if (ok) {
+      setLoadError((prev) => (prev === SAVE_ERROR ? null : prev))
+      return
+    }
+    setLoadError(SAVE_ERROR)
   }, [])
+
+  const persistIfAllowed = useCallback(
+    (next: Card[]) => {
+      if (!allowPersistRef.current) return
+      if (isDraggingRef.current) return
+      reportSaveResult(saveCards(next))
+    },
+    [reportSaveResult],
+  )
 
   useEffect(() => {
     persistIfAllowed(cards)
@@ -217,65 +240,87 @@ export function useBoard() {
     [],
   )
 
-  /** Drop finished — keep layout, persist, and prompt if a card entered Priority. */
-  const commitDrag = useCallback(() => {
-    const snapshot = dragSnapshotRef.current
-    dragSnapshotRef.current = null
-    isDraggingRef.current = false
-    if (allowPersistRef.current) {
-      saveCards(cardsRef.current)
-    }
+  /**
+   * Drop finished — apply final placement synchronously, then persist that
+   * board. Optional active/over re-applies the last drop (avoids a
+   * one-frame-stale save). Afterwards, column entry/exit rules run against
+   * the pre-drag snapshot: an unranked card entering Priority opens the
+   * rank prompt; entering Completed strips priority and stamps today's
+   * completion date; leaving Completed clears the date.
+   */
+  const commitDrag = useCallback(
+    (activeId?: string, overId?: string, hint?: MoveHint) => {
+      const snapshot = dragSnapshotRef.current
+      dragSnapshotRef.current = null
+      isDraggingRef.current = false
 
-    if (snapshot) {
-      const movedTo = (card: Card) => {
-        const before = snapshot.find((s) => s.id === card.id)
-        return before != null && before.column !== card.column
+      let next = cardsRef.current
+      let persistsViaEffect = false
+      if (activeId && overId && activeId !== overId) {
+        const moved = applyCardMove(next, activeId, overId, hint)
+        if (!boardsEqual(next, moved)) {
+          next = moved
+          cardsRef.current = next
+          setCards(next)
+          // Persist via the cards effect — avoid a second identical write
+          persistsViaEffect = true
+        }
       }
 
-      // Prompt only when a card arrives unranked in a column that requires a rank.
-      const entered = cardsRef.current.find(
-        (card) =>
-          !card.archived &&
-          columnDef(card.column).requiresPriority &&
-          card.priority == null &&
-          movedTo(card),
-      )
-      if (entered) {
-        setPriorityPromptCardId(entered.id)
+      if (!persistsViaEffect && allowPersistRef.current) {
+        // Board already matched the drop (live preview); effect will not re-run
+        reportSaveResult(saveCards(next))
       }
 
-      // Apply column entry/exit rules to the moved card: Completed strips
-      // priority and stamps today's completion date; leaving Completed
-      // clears the date (returning to Priority re-prompts via the block above).
-      const needsRules = cardsRef.current.some((card) => {
-        if (!movedTo(card)) return false
-        const def = columnDef(card.column)
-        return (
-          (def.clearsPriority && card.priority != null) ||
-          def.tracksCompletedDate ||
-          (!def.tracksCompletedDate && card.completedAt != null)
+      if (snapshot) {
+        const movedTo = (card: Card) => {
+          const before = snapshot.find((s) => s.id === card.id)
+          return before != null && before.column !== card.column
+        }
+
+        // Prompt only when a card arrives unranked in a column that requires a rank.
+        const entered = next.find(
+          (card) =>
+            !card.archived &&
+            columnDef(card.column).requiresPriority &&
+            card.priority == null &&
+            movedTo(card),
         )
-      })
-      if (needsRules) {
-        setCards((prev) =>
-          prev.map((card) => {
-            if (!movedTo(card)) return card
-            const def = columnDef(card.column)
-            let next = card
-            if (def.clearsPriority && next.priority != null) {
-              next = { ...next, priority: undefined }
-            }
-            if (def.tracksCompletedDate) {
-              next = { ...next, completedAt: todayIsoDate() }
-            } else if (next.completedAt != null) {
-              next = { ...next, completedAt: undefined }
-            }
-            return next
-          }),
-        )
+        if (entered) {
+          setPriorityPromptCardId(entered.id)
+        }
+
+        const needsRules = next.some((card) => {
+          if (!movedTo(card)) return false
+          const def = columnDef(card.column)
+          return (
+            (def.clearsPriority && card.priority != null) ||
+            def.tracksCompletedDate ||
+            (!def.tracksCompletedDate && card.completedAt != null)
+          )
+        })
+        if (needsRules) {
+          setCards((prev) =>
+            prev.map((card) => {
+              if (!movedTo(card)) return card
+              const def = columnDef(card.column)
+              let updated = card
+              if (def.clearsPriority && updated.priority != null) {
+                updated = { ...updated, priority: undefined }
+              }
+              if (def.tracksCompletedDate) {
+                updated = { ...updated, completedAt: todayIsoDate() }
+              } else if (updated.completedAt != null) {
+                updated = { ...updated, completedAt: undefined }
+              }
+              return updated
+            }),
+          )
+        }
       }
-    }
-  }, [])
+    },
+    [reportSaveResult],
+  )
 
   const dismissPriorityPrompt = useCallback(() => {
     setPriorityPromptCardId(null)
@@ -287,12 +332,13 @@ export function useBoard() {
     dragSnapshotRef.current = null
     isDraggingRef.current = false
     if (snap) {
+      cardsRef.current = snap
       setCards(snap)
       // setCards will persist via effect once isDragging is false
     } else if (allowPersistRef.current) {
-      saveCards(cardsRef.current)
+      reportSaveResult(saveCards(cardsRef.current))
     }
-  }, [])
+  }, [reportSaveResult])
 
   const getCard = useCallback(
     (id: string) => cards.find((card) => card.id === id),

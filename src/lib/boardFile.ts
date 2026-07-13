@@ -56,11 +56,12 @@ export function parseBoardFileJson(text: string): ParseBoardFileResult {
     }
   }
 
-  const cards = normalizeCards(rawCards)
+  const { cards } = normalizeCards(rawCards)
   if (cards.length === 0 && Array.isArray(rawCards) && rawCards.length > 0) {
     return {
       ok: false,
-      error: 'No valid cards found. Each card needs id, title, and a valid column.',
+      error:
+        'No valid cards found. Each card needs a unique id (not a column name), title, and a valid column.',
     }
   }
 

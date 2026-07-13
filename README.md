@@ -2,11 +2,11 @@
 
 A calm, personal four-column board: **Ideas → Ready → Priority → Completed**.
 
-**Status (handoff):** Solo v1 is **usable daily** and live on Netlify.
+**Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**.
 
-Shipped: board CRUD + drag, notes collapse/copy, icons, **card priority** (badge + auto-sort + prompt), **export/import**, **title search**, **Completed archive**, **mobile CSS**, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, safer confirm focus).
+Shipped: board CRUD + drag, notes collapse/copy, **card priority** (badge + auto-sort + prompt), **completed dates** (auto-stamp + newest-first sort), card actions (copy / edit / delete; archive on Completed), **export/import**, **title search**, **Completed archive**, **phone polish** (column tabs, header/card **···** menus, bottom-sheet modals, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
 
-Not multi-user. Next: daily use + friction fixes; multi-user only if asked.
+Not multi-user. **Next:** daily-use friction fixes only. Multi-user only if asked.
 
 ### Live site
 
@@ -49,7 +49,26 @@ That writes production files to `dist/` only. Preview with `pnpm run preview`, o
 
 ## Resume tomorrow (session handoff)
 
-Read these in order when starting a new session:
+### Before you edit (stay on the right branch)
+
+Always work in **this folder only** (the git clone), not a second copy or a GitHub ZIP.
+
+**Default:**
+
+```powershell
+cd <your local clone>
+git checkout main
+git pull origin main
+git status
+```
+
+You want: **`On branch main`**, **`up to date with 'origin/main'`**. Then edit; when ready, commit and `git push origin main` so GitHub and Netlify match your PC.
+
+**While a feature branch is in flight** (e.g. `sean-dev`): stay on it — do **not** force-checkout `main` (that drops in-flight work). Pull and push that branch instead.
+
+Grok (or any agent) can run `git pull` for you at session start — just ask, or it should do this as part of its session checklist.
+
+### Read these in order
 
 1. **`PRODUCT.md`** — what Focus is, v1 scope, non-goals, roadmap  
 2. **`AGENTS.md`** — how agents should behave in this repo  
@@ -60,7 +79,7 @@ Read these in order when starting a new session:
 | Priority | Idea | Notes |
 |----------|------|--------|
 | Habit | Weekly **Export** backup | Browser-only data |
-| From use | Fix real friction only | Phone drag, archive extras, etc. |
+| From use | Fix real friction only | Anything that slows daily planning (no large redesign without asking) |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
 | Out of scope for now | Separate tax/tools hub site | Owner may do later in another repo — leave Focus alone |
 
@@ -101,49 +120,53 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | Feature | Behavior |
 |---------|----------|
 | **Columns** | Ideas, Ready, Priority, Completed (fixed; internal ids stay `ideas/ready/focus/done`) |
-| **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column. **Completed has no add** — cards only arrive there by drag |
-| **Edit** | Top-right pencil icon → centered modal (title + notes + priority); title required (red asterisk) |
+| **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column; modal titled per column (**New Idea / New Ready Task / New Priority Task**). **Completed has no add** — cards only arrive there by drag |
+| **Edit** | Pencil icon → modal (title + notes + priority; completed date on Completed); title required (red asterisk); empty title shows red message + brief shake |
 | **Priority** | Low → Immediate (6 levels): dropdown on create/edit, colored badge on card, every column sorts ranked cards first. Dropping an unranked card into Priority prompts for a rank (Cancel = Medium); entering Completed clears it |
 | **Completed date** | Entering Completed stamps today's date (shown on the card); editable via date picker in the edit modal; Completed sorts newest-first by it; leaving Completed clears it |
-| **Delete** | Top-right trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
-| **Copy notes** | Top-right clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
+| **Delete** | Trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
+| **Copy notes** | Clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
 | **Notes expand** | Long notes start collapsed (~3 lines); bold **Expand** / **Collapse** under the notes |
-| **Drag** | Drag from **anywhere on the card** (not action icons / Expand) |
+| **Card actions** | Desktop: top-right icons — copy (if notes), **archive (Completed only)**, edit, delete. Phone: same actions behind card **···** |
+| **Header actions** | Desktop: Archive / Export / Import as a row next to **Add card**. Phone: those three behind header **···**; **Add card** stays primary |
+| **Drag** | Drag from **anywhere on the card** (not action icons / Expand / Collapse). Mouse: small move threshold. Touch: **long-press** so list scroll can win first |
 | **Live preview** | Other cards shift while dragging to show insert order |
 | **Column highlight** | Column under cursor lights up (including source column) |
 | **Cursor snap** | Floating card centers under the pointer (`snapCenterToCursor`) |
+| **Phone columns** | **Tabs** (Ideas / Ready / Priority / Completed) show one column at a time — no horizontal column scroll; drag onto a tab to move a card across columns |
+| **Modals** | Desktop: centered. Phone: **bottom sheet** with handle; full-width actions where helpful |
 | **Save** | Auto-saves to `localStorage` key `focus.board.v1` (not during live drag preview; saves on drop / other edits) |
-| **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner, **no overwrite** until user edits/imports |
+| **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner + Dismiss, **no overwrite** until user edits/imports |
 | **Empty start** | No sample cards; board empty until you add some |
 | **Crash recovery** | `ErrorBoundary` shows reload UI instead of a blank page |
-| **Export** | Header **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards) |
-| **Import** | Header **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
+| **Export** | **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards, incl. archived) |
+| **Import** | **Import** → pick JSON → **Replace** (wipe board) or **Merge** (same id updates; new ids add) |
 | **Search** | Header **Search titles…** — filters visible cards by title only (case-insensitive); full board still saved; **drag disabled** while search is active |
-| **Archive** | Completed cards only: archive icon → confirm → leaves board. Header **Archive (N)** lists Restore / permanent Delete; search titles in that modal. Export includes archived |
+| **Archive** | Completed cards only: archive control → confirm → leaves board. **Archive (N)** lists Restore / permanent Delete; search titles in that modal. Export includes archived |
 
 ### Known limits
 
 - Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
 - `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Phone: four columns swipe horizontally; header stacks; desktop unchanged.
+- Live Netlify is **`main` only** — phone polish on `ui-polish` is not public until that branch merges.
 - No keyboard shortcuts (by choice so far).
 - Multi-tab: last write wins (no live sync between tabs).
 
 ### Manual smoke test
 
-1. Add cards via global and column **+**  
-2. Reject empty title (validation message)  
-3. Edit notes → Save (pencil icon)  
-4. Long notes: collapsed preview, **Expand** / **Collapse**, **Copy** icon pastes notes  
+1. Add cards via global and column **+** (modal says **New card**)  
+2. Reject empty title (red message + brief shake)  
+3. Edit notes → Save (pencil / card menu)  
+4. Long notes: collapsed preview, **Expand** / **Collapse**, **Copy** pastes notes  
 5. Drag between columns (search empty); confirm live reordering; refresh → order kept  
 6. Search on → drag disabled; clear search → drag works  
 7. Delete / Archive / Import confirms → **Cancel** is focused first  
 8. Export → open the JSON file → should list cards (incl. archived if any)  
 9. Import → Merge and Replace both work; bad file shows error modal  
-10. Completed → archive icon → confirm → Archive list → Restore / Delete  
-11. Priority: create a ranked card (badge shows, column sorts); drag an unranked card into Priority → prompt appears; drag a ranked card into Completed → badge clears  
-12. Phone/narrow: swipe columns; header stacks  
+10. Completed → archive → confirm → Archive list → Restore / Delete  
+11. Priority: create a ranked card (badge shows, column sorts); drag an unranked card into Priority → prompt appears; drag a ranked card into Completed → badge clears + completed date stamps  
+12. Phone/narrow: column tabs; header **···** for Archive/Export/Import; card **···** for actions; long-press to drag; modals rise as bottom sheets  
 
 ---
 
@@ -152,11 +175,12 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | Token area | Where | Notes |
 |------------|--------|--------|
 | Colors, radii, type, space | `src/index.css` → `:root` | Theme tokens |
-| Font | **Source Code Pro** (Google Fonts in `index.html`) | Titles **700**, body **400** |
-| Palette | Near-black / greys, **white accent** | Calm dark. Two sanctioned color exceptions: priority-badge ramp (`--color-priority-*`) and required-field red (`--color-required`) |
+| Font | **Source Code Pro** (Google Fonts in `index.html`) | Titles **700**, body **400**, header wordmark **500** |
+| Palette | Near-black / greys, **white accent** | Calm dark. Sanctioned color exceptions: action hues (`--color-danger/edit/archive`), priority-badge ramp (`--color-priority-*`), required-field red (`--color-required`) |
 | Columns | Soft `--color-column` fill | Quieter than cards |
 | Cards | Lighter fill + box-shadow | Drag whole card |
-| Modals | Centered `.modal` + blurred `.modal-backdrop` | Add/edit + delete |
+| Motion | `--motion-duration` / `--motion-ease` in `:root` | Buttons/hovers; cards stay transform-free for drag |
+| Modals | `.modal` + blurred `.modal-backdrop` | Desktop centered; phone bottom sheet |
 
 **Theme token** = named CSS variable (e.g. `--color-bg`) so redesigns are one-file edits.
 
@@ -185,7 +209,9 @@ Focus/
 ├── index.html                 Loads fonts + app
 ├── vite.config.ts
 ├── tsconfig*.json
-├── public/favicon.svg
+├── public/
+│   ├── favicon.svg
+│   └── icons.svg              Vite leftover; app icons are inline SVG in Card.tsx
 └── src/
     ├── main.tsx               React mount + ErrorBoundary
     ├── App.tsx                Header, board, modals wiring
@@ -272,7 +298,9 @@ Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defa
 - **Live preview:** `onDragOver` → `previewMove` / `applyCardMove` so other cards make room
 - **Stability:** skip no-op moves; do not reshuffle when hovering **same column chrome** only (prevents React update loops / blank screen)
 - **Cancel:** snapshot at drag start; restore if drop cancelled / no `over`
-- **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; Edit/Delete `stopPropagation` on pointer down
+- **Sensors:** `MouseSensor` (distance) + `TouchSensor` (long-press ~220ms so list scroll wins first); both use huge thresholds when search disables drag  
+- **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; copy / archive / edit / delete / Expand-Collapse use `stopPropagation` on pointer down  
+- **Phone:** column tabs in `Board` (`board-nav__tab`); inactive columns use `display: none` but stay mounted for DnD; tabs are droppable (`tab:ideas` …) so cross-column moves still work
 
 If drag ever blanks the UI again: check console + ErrorBoundary message; avoid setState loops in `onDragOver`.
 
