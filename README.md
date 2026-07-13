@@ -126,7 +126,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Completed date** | Entering Completed stamps today's date (shown on the card); editable via date picker in the edit modal; Completed sorts newest-first by it; leaving Completed clears it |
 | **Delete** | Trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
 | **Copy notes** | Clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
-| **Notes expand** | Long notes start collapsed (~3 lines); bold **Expand** / **Collapse** under the notes |
+| **Notes expand** | Notes that wrap past ~2 lines collapse with **Expand** / **Collapse** (measured, not a character cutoff) |
 | **Card actions** | Desktop: top-right icons — copy (if notes), **archive (Completed only)**, edit, delete. Phone: same actions behind card **···** |
 | **Header actions** | Desktop: Archive / Export / Import as a row next to **Add card**. Phone: those three behind header **···**; **Add card** stays primary |
 | **Drag** | Drag from **anywhere on the card** (not action icons / Expand / Collapse). Mouse: small move threshold. Touch: **long-press** so list scroll can win first |

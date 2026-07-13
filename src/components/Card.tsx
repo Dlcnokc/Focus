@@ -2,6 +2,7 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type ReactNode,
@@ -21,9 +22,19 @@ type Props = {
   onRequestArchive?: (cardId: string) => void
 }
 
-/** Long enough that full notes would crowd the column. */
-function notesAreLong(notes: string): boolean {
-  return notes.length > 120 || notes.split('\n').length > 3
+/** True when notes paint taller than the 2-line collapsed preview. */
+function notesExceedTwoLines(el: HTMLElement, expanded: boolean): boolean {
+  if (expanded) {
+    // Full height is visible — compare against two line-heights
+    const styles = getComputedStyle(el)
+    let lineHeight = parseFloat(styles.lineHeight)
+    if (Number.isNaN(lineHeight)) {
+      lineHeight = parseFloat(styles.fontSize) * 1.55
+    }
+    return el.scrollHeight > lineHeight * 2 + 1
+  }
+  // Collapsed (line-clamp): overflow means more than 2 lines
+  return el.scrollHeight > el.clientHeight + 1
 }
 
 const iconSvgProps: SVGProps<SVGSVGElement> = {
@@ -135,11 +146,13 @@ export function Card({
   })
 
   const hasNotes = Boolean(card.notes)
-  const longNotes = hasNotes && notesAreLong(card.notes)
   const [expanded, setExpanded] = useState(false)
+  /** Measured: notes wrap past the 2-line clamp (not character count). */
+  const [notesOverflow, setNotesOverflow] = useState(false)
   const [copied, setCopied] = useState(false)
   const [actionsOpen, setActionsOpen] = useState(false)
   const actionsRootRef = useRef<HTMLDivElement>(null)
+  const notesRef = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
     if (!copied) return
@@ -153,7 +166,30 @@ export function Card({
 
   useEffect(() => {
     setActionsOpen(false)
-  }, [card.id])
+    setExpanded(false)
+  }, [card.id, card.notes])
+
+  /** Collapse any notes that actually paint past 2 lines (wrapping or newlines). */
+  useLayoutEffect(() => {
+    if (!hasNotes) {
+      setNotesOverflow(false)
+      return
+    }
+
+    const el = notesRef.current
+    if (!el) return
+
+    function measure() {
+      const node = notesRef.current
+      if (!node) return
+      setNotesOverflow(notesExceedTwoLines(node, expanded))
+    }
+
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [hasNotes, card.notes, expanded, card.id])
 
   /** Phone ··· menu: close on outside tap or Escape (matches header menu). */
   useEffect(() => {
@@ -192,7 +228,10 @@ export function Card({
     if (ok) setCopied(true)
   }
 
-  const notesCollapsed = longNotes && !expanded
+  // Keep the 2-line clamp while collapsed so measurement and wrapping match the UI.
+  // Expand only appears when content actually overflows those two lines.
+  const clampNotes = hasNotes && !expanded
+  const showNotesToggle = notesOverflow || expanded
 
   return (
     <article
@@ -287,11 +326,12 @@ export function Card({
       {hasNotes ? (
         <div className="card__notes-block">
           <p
-            className={`card__notes${notesCollapsed ? ' card__notes--collapsed' : ''}`}
+            ref={notesRef}
+            className={`card__notes${clampNotes ? ' card__notes--collapsed' : ''}`}
           >
             {card.notes}
           </p>
-          {longNotes ? (
+          {showNotesToggle ? (
             <button
               type="button"
               className="card__notes-toggle"

@@ -619,8 +619,8 @@ p {
 .card__notes--collapsed {
   display: -webkit-box;
   -webkit-box-orient: vertical;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
   overflow: hidden;
   white-space: normal;
 }
@@ -636,12 +636,12 @@ p {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-ui);
   line-height: 1.3;
-  /* Match column card-count grey */
-  color: var(--color-text-muted);
+  /* Slightly lighter than column card-count grey */
+  color: color-mix(in srgb, var(--color-text-muted) 72%, white);
   cursor: pointer;
   text-decoration: underline;
   text-underline-offset: 0.15em;
-  text-decoration-color: rgba(255, 255, 255, 0.22);
+  text-decoration-color: rgba(255, 255, 255, 0.28);
   transition: var(--motion-transition-colors);
 }
 

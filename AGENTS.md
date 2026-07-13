@@ -77,7 +77,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Columns quieter than cards; cards use subtle fill + box-shadow.  
 - Whole **card** is draggable; action controls (copy / edit / delete / archive on Completed) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
 - Desktop: top-right action **icons** always visible. Phone: card actions behind **···**; header Archive/Export/Import behind **···**; **Add card** stays primary.  
-- Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via action control.  
+- Notes that paint past ~2 lines collapse with Expand/Collapse (layout-measured, not character length); copy notes via action control.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
 - Phone: column **tabs** (one column at a time; no horizontal column scroll); touch long-press to start drag; drag onto a tab to move across columns.  
 - Motion: use shared CSS motion tokens; respect `prefers-reduced-motion`.  
