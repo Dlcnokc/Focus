@@ -1,0 +1,12 @@
+# Netlify build configuration.
+# Added with the npm -> pnpm switch: pins the build command, publish dir,
+# and a Node version new enough for Vite 8 / TypeScript 6, so the deploy
+# does not depend on dashboard defaults. Netlify installs with pnpm
+# automatically (pnpm-lock.yaml + the packageManager pin in package.json).
+
+[build]
+  command = "pnpm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
