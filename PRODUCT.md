@@ -35,7 +35,7 @@ A simple four-column board where work moves from ideas → ready → priority �
 - **Titles:** max **20 characters** (form `maxLength` + `0/20` counter; empty / over-limit rejected with red message + shake). Load/import clamps legacy long titles. Card face: single line + ellipsis. *On `ui-polish` until merge → `main`.*  
 - Column header counts optically centered with titles; Completed keeps header height via invisible **+** spacer (`9c13d25`)  
 - Export/import JSON; Completed-only archive + list search / restore / permanent delete  
-- **Phone:** column **tabs** (one full-width column at a time; droppable tabs for cross-column drag), stacked header, **···** menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
+- **Phone:** column **selector** (one full-width column at a time; drop chips while dragging for cross-column moves), stacked header, **···** menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
 - **Phone add/edit form:** tall bottom sheet (~full height); notes field grows; **×** close (no fake drag-handle bar)  
 - Desktop: four columns side-by-side; icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
 - Themed scrollbars; storage safety (corrupt-load backup, no mid-drag saves, Cancel-first confirms)  
@@ -152,7 +152,7 @@ One board only in v1.
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
 - [x] Archive Completed cards (confirm + Archive list modal; restore or permanent delete)  
-- [x] Phone polish: column tabs (Ideas / Ready / Priority / Completed), stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
+- [x] Phone polish: column selector (Ideas / Ready / Priority / Completed), stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
 
 ### Nice-to-have / next
 
@@ -208,7 +208,7 @@ One board only in v1.
 - Delete: themed modal, not `window.confirm`  
 - Drag: whole card surface; live reorder preview; all columns can highlight; touch long-press  
 - Card chrome: desktop top-right icons; phone **···** menu (copy / edit / delete; **archive on Completed only**); notes past ~2 lines collapse (measured) with Expand/Collapse  
-- Phone columns: **tabs**, not horizontal swipe  
+- Phone columns: singular **selector**, not tabs or horizontal swipe; drop chips appear while dragging  
 - Header secondary actions (Archive / Export / Import): desktop row; phone **···** overflow  
 - Global Add → **Ideas** by default  
 - Column count badge: plain muted number (no grey pill)

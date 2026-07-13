@@ -82,7 +82,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Desktop: top-right action **icons** always visible. Phone: card actions behind **···**; header Archive/Export/Import behind **···**; **Add card** stays primary.  
 - Notes that paint past ~2 lines collapse with Expand/Collapse (layout-measured, not character length); copy notes via action control.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
-- Phone: column **tabs** (one column at a time; no horizontal column scroll); touch long-press to start drag; drag onto a tab to move across columns.  
+- Phone: singular column **selector** (one column at a time; no horizontal column scroll); touch long-press to start drag; while dragging, drop chips replace the selector for cross-column moves.  
 - Motion: use shared CSS motion tokens; respect `prefers-reduced-motion`.  
 - Design changes: update tokens first, then layout if needed.
 
@@ -110,7 +110,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | completedAt helpers / date sort | `src/lib/dates.ts` |
 | Drag collision helpers | `src/lib/dnd.ts` (incl. phone `tab:` droppables) |
 | Pure move/reorder | `src/lib/boardMove.ts` |
-| DnD UI / overlay / phone tabs | `src/components/Board.tsx` |
+| DnD UI / overlay / phone column selector | `src/components/Board.tsx` |
 | Notes 2-line measure / Expand | `src/components/Card.tsx` |
 | Theme / layout CSS | `src/index.css` |
 | Column definitions + flags | `src/data/placeholderBoard.ts` |

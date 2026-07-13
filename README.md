@@ -193,7 +193,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 9. Import → Merge and Replace both work; bad file shows error modal  
 10. Completed → archive → confirm → Archive list → Restore / Delete  
 11. Priority: create a ranked card (badge shows, column sorts); drag an unranked card into Priority → prompt appears; drag a ranked card into Completed → badge clears + completed date stamps  
-12. Phone/narrow: column tabs; drag onto a tab to change column; header **···**; card **···**; long-press to drag; bottom-sheet modals  
+12. Phone/narrow: column **selector**; while dragging, drop chips to change column; header **···**; card **···**; long-press to drag; bottom-sheet modals  
 
 ---
 
@@ -260,7 +260,7 @@ Focus/
     │   ├── placeholderBoard.ts  COLUMNS + flags + DEFAULT_NEW_COLUMN (no seed cards)
     │   └── priorities.ts        Priority levels, rank, sort, labels, default
     └── components/
-        ├── Board.tsx              DndContext, phone column tabs, overlay
+        ├── Board.tsx              DndContext, phone column selector, overlay
         ├── Column.tsx             Droppable column + list
         ├── Card.tsx               Sortable card + icons + measured notes collapse
         ├── CardFormPanel.tsx      Add/edit modal (desktop centered; phone tall sheet)
@@ -335,7 +335,7 @@ Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defa
 - **Cancel:** snapshot at drag start; restore if drop cancelled / no `over`
 - **Sensors:** `MouseSensor` (distance) + `TouchSensor` (long-press ~220ms so list scroll wins first); both use huge thresholds when search disables drag  
 - **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; copy / archive / edit / delete / Expand-Collapse use `stopPropagation` on pointer down  
-- **Phone:** column tabs in `Board` (`board-nav__tab`); inactive columns use `display: none` but stay mounted for DnD; tabs are droppable (`tab:ideas` …) so cross-column moves still work
+- **Phone:** column **selector** in `Board` (`board-nav__select`); inactive columns use `display: none` but stay mounted; while dragging, drop chips (`tab:ideas` …) replace the select for cross-column moves
 
 If drag ever blanks the UI again: check console + ErrorBoundary message; avoid setState loops in `onDragOver`.
 

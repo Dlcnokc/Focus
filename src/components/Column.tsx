@@ -54,14 +54,12 @@ export function Column({
     <section
       ref={setNodeRef}
       className={`column${showDropHighlight ? ' column--over' : ''}${mobileActive ? ' column--mobile-active' : ''}`}
-      aria-labelledby={`col-${column.id}`}
+      aria-label={column.label}
     >
       <header className="column__header">
         <div className="column__heading">
           <div className="column__heading-text">
-            <h2 id={`col-${column.id}`} className="column__label">
-              {column.label}
-            </h2>
+            <h2 className="column__label">{column.label}</h2>
             <span className="column__count" aria-label={`${cards.length} cards`}>
               {cards.length}
             </span>

@@ -66,17 +66,18 @@ function moveHintFromEvent(
   }
 }
 
-/** Phone-only column tab — droppable so drag can move cards between columns. */
-function BoardColumnTab({
+/**
+ * Phone-only drop target for one column — shown while dragging so cards can
+ * move across columns without the multi-tab chrome.
+ */
+function BoardColumnDropTarget({
   column,
   count,
   isActive,
-  onSelect,
 }: {
   column: ColumnDef
   count: number
   isActive: boolean
-  onSelect: (columnId: ColumnId) => void
 }) {
   const { setNodeRef, isOver } = useDroppable({
     id: columnTabId(column.id),
@@ -84,19 +85,14 @@ function BoardColumnTab({
   })
 
   return (
-    <button
+    <div
       ref={setNodeRef}
-      type="button"
-      className={`board-nav__tab${isActive ? ' is-active' : ''}${isOver ? ' is-over' : ''}`}
-      aria-label={`${column.label}, ${count} cards`}
-      aria-current={isActive ? 'true' : undefined}
-      onClick={() => onSelect(column.id)}
+      className={`board-nav__drop${isActive ? ' is-active' : ''}${isOver ? ' is-over' : ''}`}
+      aria-hidden="true"
     >
-      <span className="board-nav__tab-label">{column.label}</span>
-      <span className="board-nav__tab-count" aria-hidden="true">
-        {count}
-      </span>
-    </button>
+      <span className="board-nav__drop-label">{column.label}</span>
+      <span className="board-nav__drop-count">{count}</span>
+    </div>
   )
 }
 
@@ -115,7 +111,7 @@ export function Board({
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overColumnId, setOverColumnId] = useState<ColumnId | null>(null)
   const [overlayCard, setOverlayCard] = useState<Card | null>(null)
-  /** Which column tab is selected on phone (CSS-hidden on desktop). */
+  /** Which column the phone selector is showing (CSS-hidden on desktop). */
   const [mobileColumnId, setMobileColumnId] = useState<ColumnId>('ideas')
 
   /** Skip preview updates that would not change placement (stops update loops). */
@@ -175,7 +171,7 @@ export function Board({
       prev === nextOverColumn ? prev : nextOverColumn,
     )
 
-    // On phone: reveal the column under the pointer (tab or cards) so drop works
+    // On phone: reveal the column under the pointer (drop chip or cards)
     if (nextOverColumn) {
       setMobileColumnId((prev) =>
         prev === nextOverColumn ? prev : nextOverColumn,
@@ -242,16 +238,42 @@ export function Board({
       onDragEnd={handleDragEnd}
       onDragCancel={handleDragCancel}
     >
-      <nav className="board-nav" aria-label="Board columns">
-        {COLUMNS.map((column) => (
-          <BoardColumnTab
-            key={column.id}
-            column={column}
-            count={cardsInColumn(cards, column.id).length}
-            isActive={mobileColumnId === column.id}
-            onSelect={setMobileColumnId}
-          />
-        ))}
+      <nav
+        className={`board-nav${activeId ? ' board-nav--dragging' : ''}`}
+        aria-label="Board columns"
+      >
+        {activeId ? (
+          /* Drop chips only while dragging — select cannot be a drop target */
+          <div className="board-nav__drop-row">
+            {COLUMNS.map((column) => (
+              <BoardColumnDropTarget
+                key={column.id}
+                column={column}
+                count={cardsInColumn(cards, column.id).length}
+                isActive={mobileColumnId === column.id}
+              />
+            ))}
+          </div>
+        ) : (
+          <label className="board-nav__selector">
+            <span className="visually-hidden">Column</span>
+            <select
+              className="board-nav__select"
+              value={mobileColumnId}
+              onChange={(e) => setMobileColumnId(e.target.value as ColumnId)}
+              aria-label="Select column"
+            >
+              {COLUMNS.map((column) => {
+                const count = cardsInColumn(cards, column.id).length
+                return (
+                  <option key={column.id} value={column.id}>
+                    {column.label} ({count})
+                  </option>
+                )
+              })}
+            </select>
+          </label>
+        )}
       </nav>
 
       <div className="board" data-mobile-column={mobileColumnId}>

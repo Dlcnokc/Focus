@@ -734,7 +734,7 @@ button.card__actions-toggle.btn--icon {
   display: block;
 }
 
-/* Phone column tabs — hidden on desktop; shown above the board on small screens */
+/* Phone column selector — hidden on desktop; shown above the board on small screens */
 .board-nav {
   display: none;
 }
@@ -1458,7 +1458,7 @@ body.modal-open {
     font-size: var(--font-size-sm);
   }
 
-  /* ----- Single-column tabs (no horizontal column scroll) ----- */
+  /* ----- Single-column selector (no horizontal column scroll) ----- */
   .app__main {
     overflow-x: hidden;
     padding-top: var(--space-2);
@@ -1466,16 +1466,76 @@ body.modal-open {
 
   .board-nav {
     display: flex;
-    flex-wrap: nowrap;
-    justify-content: stretch;
-    align-items: stretch;
-    gap: var(--space-1);
+    flex-direction: column;
+    gap: var(--space-2);
     padding: 0 0 var(--space-3);
     width: 100%;
     z-index: 2;
   }
 
-  .board-nav__tab {
+  .board-nav__selector {
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .board-nav__select {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: var(--touch-min);
+    padding: 0.55rem 2.25rem 0.55rem 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--color-surface);
+    background-image: linear-gradient(
+        45deg,
+        transparent 50%,
+        var(--color-text-muted) 50%
+      ),
+      linear-gradient(135deg, var(--color-text-muted) 50%, transparent 50%);
+    background-position:
+      calc(100% - 1rem) calc(50% - 0.15rem),
+      calc(100% - 0.7rem) calc(50% - 0.15rem);
+    background-size:
+      0.35rem 0.35rem,
+      0.35rem 0.35rem;
+    background-repeat: no-repeat;
+    color: var(--color-text);
+    font-family: var(--font-sans);
+    font-size: 1rem; /* 16px — avoids iOS zoom-on-focus */
+    font-weight: var(--font-weight-ui);
+    line-height: 1.3;
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+    transition: var(--motion-transition-colors);
+  }
+
+  .board-nav__select:hover {
+    border-color: var(--color-border);
+    background-color: var(--color-surface-hover);
+  }
+
+  .board-nav__select:focus {
+    outline: none;
+    border-color: var(--color-accent-ring);
+    box-shadow: 0 0 0 3px var(--color-accent-soft);
+  }
+
+  .board-nav__select:focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  /* While dragging: compact drop chips replace the select */
+  .board-nav__drop-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: var(--space-1);
+    width: 100%;
+  }
+
+  .board-nav__drop {
     flex: 1 1 0;
     min-width: 0;
     min-height: var(--touch-min);
@@ -1484,7 +1544,7 @@ body.modal-open {
     align-items: center;
     justify-content: center;
     gap: 0.1rem;
-    padding: 0.4rem 0.25rem;
+    padding: 0.35rem 0.2rem;
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-sm);
     background: transparent;
@@ -1493,44 +1553,38 @@ body.modal-open {
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-ui);
     line-height: 1.2;
-    cursor: pointer;
     transition: var(--motion-transition-interactive);
+    pointer-events: auto;
   }
 
-  .board-nav__tab-label {
+  .board-nav__drop-label {
     max-width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .board-nav__tab-count {
+  .board-nav__drop-count {
     font-size: 0.65rem;
     font-weight: var(--font-weight-body);
     color: var(--color-text-faint);
     line-height: 1;
   }
 
-  .board-nav__tab.is-active {
+  .board-nav__drop.is-active {
     color: var(--color-text);
     border-color: var(--color-accent-ring);
     background: var(--color-accent-soft);
   }
 
-  .board-nav__tab.is-active .board-nav__tab-count {
+  .board-nav__drop.is-active .board-nav__drop-count {
     color: var(--color-text-muted);
   }
 
-  /* While dragging: tab under pointer is a drop target */
-  .board-nav__tab.is-over {
+  .board-nav__drop.is-over {
     color: var(--color-text);
     border-color: var(--color-accent);
     background: var(--color-accent-soft);
-  }
-
-  .board-nav__tab:focus-visible {
-    outline: 2px solid var(--color-accent);
-    outline-offset: 2px;
   }
 
   .board {
@@ -1541,27 +1595,14 @@ body.modal-open {
     min-height: 260px;
   }
 
-  /* Keep all columns mounted for drag droppables; show only the selected tab */
+  /* Keep all columns mounted for drag droppables; show only the selected column */
   .column:not(.column--mobile-active) {
     display: none;
   }
 
+  /* Selector already names the column — hide redundant header (+ via empty state / global Add) */
   .column__header {
-    padding: var(--space-3);
-  }
-
-  .column__hint {
     display: none;
-  }
-
-  .column__heading {
-    min-height: var(--touch-min);
-  }
-
-  .column__heading .btn--icon,
-  .column__add-slot {
-    width: var(--touch-min);
-    height: var(--touch-min);
   }
 
   .column__body {
@@ -1661,6 +1702,12 @@ body.modal-open {
   .modal--form {
     height: min(92dvh, 100%);
     max-height: min(92dvh, 100%);
+  }
+
+  /* Slightly heavier than desktop form fields (300) for phone readability */
+  .modal--form .field__input:not(.field__input--date),
+  .modal--form .field__textarea {
+    font-weight: 400;
   }
 
   .modal--form .modal__form {
