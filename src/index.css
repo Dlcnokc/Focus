@@ -1047,6 +1047,16 @@ body.modal-open {
   flex: 1;
 }
 
+/* Add/edit card form — calmer header; lighter typed text in title + notes */
+.modal--form .modal__title {
+  font-weight: var(--font-weight-ui);
+}
+
+.modal--form .field__input:not(.field__input--date),
+.modal--form .field__textarea {
+  font-weight: 300;
+}
+
 .modal__close {
   margin: -0.25rem -0.25rem -0.25rem 0;
   font-size: 1.35rem;
