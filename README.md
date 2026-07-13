@@ -4,9 +4,11 @@ A calm, personal four-column board: **Ideas → Ready → Priority → Completed
 
 **Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**.
 
-Shipped: board CRUD + drag, notes collapse/copy, **card priority** (badge + auto-sort + prompt), **completed dates** (auto-stamp + newest-first sort), card actions (copy / edit / delete; archive on Completed), **export/import**, **title search**, **Completed archive**, **phone polish** (column tabs, header/card **···** menus, bottom-sheet modals, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
+**Active branch:** **`ui-polish`** (ahead of `main` by the notes 2-line measure commit). Stay on it until merge → `main`.
 
-Not multi-user. **Next:** daily-use friction fixes only. Multi-user only if asked.
+Shipped: board CRUD + drag, **notes collapse** (measured ~2 lines + Expand/Collapse), **card priority** (badge + auto-sort + prompt), **completed dates** (auto-stamp + newest-first sort), card actions (copy / edit / delete; archive on Completed), **export/import**, **title search**, **Completed archive**, **phone polish** (column tabs, header/card **···** menus, tall form sheet with **×**, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
+
+Not multi-user. **Next:** merge **`ui-polish` → `main`** when ready for live notes polish; then daily-use friction only. Multi-user only if asked.
 
 ### Live site
 
@@ -53,31 +55,49 @@ That writes production files to `dist/` only. Preview with `pnpm run preview`, o
 
 Always work in **this folder only** (the git clone), not a second copy or a GitHub ZIP.
 
-**Default:**
+**Right now (2026-07-13):** work is on **`ui-polish`**. Use:
 
 ```powershell
 cd <your local clone>
+git checkout ui-polish
+git pull origin ui-polish
+git status
+```
+
+You want: **`On branch ui-polish`**, **`up to date with 'origin/ui-polish'`**. Commit and `git push origin ui-polish`. Merge to `main` only when the owner wants the live site updated.
+
+**When back on `main` only** (no feature branch):
+
+```powershell
 git checkout main
 git pull origin main
 git status
 ```
 
-You want: **`On branch main`**, **`up to date with 'origin/main'`**. Then edit; when ready, commit and `git push origin main` so GitHub and Netlify match your PC.
+Then push `main` for Netlify. Do **not** force-checkout `main` while `ui-polish` has unmerged commits.
 
-**While a feature branch is in flight** (e.g. `sean-dev`): stay on it — do **not** force-checkout `main` (that drops in-flight work). Pull and push that branch instead.
-
-Grok (or any agent) can run `git pull` for you at session start — just ask, or it should do this as part of its session checklist.
+Grok (or any agent) should pull the active branch at session start (see `AGENTS.md`).
 
 ### Read these in order
 
-1. **`PRODUCT.md`** — what Focus is, v1 scope, non-goals, roadmap  
+1. **`PRODUCT.md`** — current status, branch table, v1 scope, non-goals, roadmap  
 2. **`AGENTS.md`** — how agents should behave in this repo  
 3. **This file** — how to run, folder map, current behavior  
+
+### What changed last session (ui-polish)
+
+| Change | Detail |
+|--------|--------|
+| Notes clamp | **2 lines** (was 3); Expand when layout says content overflows |
+| Notes measure | `Card.tsx` ResizeObserver — wrapping short notes count, not only long strings |
+| Expand/Collapse style | Slightly lighter muted grey; **white** on hover |
+| Earlier on this line of work (mostly already on `main`) | Phone **tabs**, tall form + **×**, no drag-handle bar, quieter column counts |
 
 ### Suggested next work (pick with the owner)
 
 | Priority | Idea | Notes |
 |----------|------|--------|
+| Ship | Merge **`ui-polish` → `main`** | Puts measured 2-line notes collapse on Netlify |
 | Habit | Weekly **Export** backup | Browser-only data |
 | From use | Fix real friction only | Anything that slows daily planning (no large redesign without asking) |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
@@ -134,7 +154,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Column highlight** | Column under cursor lights up (including source column) |
 | **Cursor snap** | Floating card centers under the pointer (`snapCenterToCursor`) |
 | **Phone columns** | **Tabs** (Ideas / Ready / Priority / Completed) show one column at a time — no horizontal column scroll; drag onto a tab to move a card across columns |
-| **Modals** | Desktop: centered. Phone: **bottom sheet** with handle; full-width actions where helpful |
+| **Modals** | Desktop: centered. Phone: **bottom sheet** (no drag handle); add/edit is **tall** with **×** close; full-width actions where helpful |
 | **Save** | Auto-saves to `localStorage` key `focus.board.v1` (not during live drag preview; saves on drop / other edits) |
 | **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner + Dismiss, **no overwrite** until user edits/imports |
 | **Empty start** | No sample cards; board empty until you add some |
@@ -149,16 +169,16 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 - Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
 - `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Live Netlify is **`main` only** — phone polish on `ui-polish` is not public until that branch merges.
+- Live Netlify is **`main` only**. Latest notes 2-line measure lives on **`ui-polish`** until that branch merges.
 - No keyboard shortcuts (by choice so far).
 - Multi-tab: last write wins (no live sync between tabs).
 
 ### Manual smoke test
 
-1. Add cards via global and column **+** (modal says **New card**)  
+1. Add cards via global and column **+** (modal titled per column, e.g. **New Idea**)  
 2. Reject empty title (red message + brief shake)  
-3. Edit notes → Save (pencil / card menu)  
-4. Long notes: collapsed preview, **Expand** / **Collapse**, **Copy** pastes notes  
+3. Edit notes → Save (pencil / card menu); phone form is tall with **×**  
+4. Notes past ~2 lines (including short wrapping text): collapsed preview, **Expand** / **Collapse**, **Copy** pastes notes  
 5. Drag between columns (search empty); confirm live reordering; refresh → order kept  
 6. Search on → drag disabled; clear search → drag works  
 7. Delete / Archive / Import confirms → **Cancel** is focused first  
@@ -166,7 +186,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 9. Import → Merge and Replace both work; bad file shows error modal  
 10. Completed → archive → confirm → Archive list → Restore / Delete  
 11. Priority: create a ranked card (badge shows, column sorts); drag an unranked card into Priority → prompt appears; drag a ranked card into Completed → badge clears + completed date stamps  
-12. Phone/narrow: column tabs; header **···** for Archive/Export/Import; card **···** for actions; long-press to drag; modals rise as bottom sheets  
+12. Phone/narrow: column tabs; drag onto a tab to change column; header **···**; card **···**; long-press to drag; bottom-sheet modals  
 
 ---
 
@@ -218,20 +238,23 @@ Focus/
     ├── index.css              Theme tokens + all styles
     ├── types.ts               Card, ColumnId, EditorMode
     ├── hooks/
-    │   └── useBoard.ts        State: CRUD, persist, drag preview API
+    │   ├── useBoard.ts        State: CRUD, persist, drag preview API
+    │   └── useModalChrome.ts  Escape stack + body scroll lock for modals
     ├── lib/
     │   ├── storage.ts         loadBoard/saveCards (`focus.board.v1` + `.bak`)
     │   ├── boardFile.ts       Export/import JSON parse, merge, download
-    │   ├── dnd.ts             Collision detection, column helpers
-    │   └── boardMove.ts       Pure move/reorder for live preview + drop
+    │   ├── dnd.ts             Collision detection, column + tab droppable helpers
+    │   ├── boardMove.ts       Pure move/reorder for live preview + drop
+    │   └── dates.ts           ISO date helpers for completedAt
     ├── data/
-    │   ├── placeholderBoard.ts  COLUMNS + DEFAULT_NEW_COLUMN (no seed cards)
+    │   ├── placeholderBoard.ts  COLUMNS + flags + DEFAULT_NEW_COLUMN (no seed cards)
     │   └── priorities.ts        Priority levels, rank, sort, labels, default
     └── components/
-        ├── Board.tsx              DndContext, overlay, column highlight
+        ├── Board.tsx              DndContext, phone column tabs, overlay
         ├── Column.tsx             Droppable column + list
-        ├── Card.tsx               Sortable card + icons + notes expand
-        ├── CardFormPanel.tsx      Centered add/edit modal
+        ├── Card.tsx               Sortable card + icons + measured notes collapse
+        ├── CardFormPanel.tsx      Add/edit modal (desktop centered; phone tall sheet)
+        ├── PriorityBadge.tsx      Shared priority chip on cards
         ├── PriorityPromptModal.tsx  Rank prompt on drop into Priority
         ├── DeleteConfirmModal.tsx Centered delete confirm
         ├── ArchiveConfirmModal.tsx  Archive confirm

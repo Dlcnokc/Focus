@@ -8,7 +8,7 @@ This document is the source of truth for *what* we are building and *why*. Imple
 
 ## One-sentence pitch
 
-A simple four-column board where work moves from ideas → ready → in progress → done — without the clutter or cost of heavy project tools.
+A simple four-column board where work moves from ideas → ready → priority → completed — without the clutter or cost of heavy project tools.
 
 ---
 
@@ -16,15 +16,29 @@ A simple four-column board where work moves from ideas → ready → in progress
 
 **Solo v1 is shipped and usable daily** (export weekly).
 
+### Branch state (read this first)
+
+| Branch | Role | Tip (as of 2026-07-13 handoff) |
+|--------|------|--------------------------------|
+| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | `cddb294` — notes collapse at **2 lines** (layout-measured) + quieter Expand/Collapse |
+| **`main`** | What Netlify deploys | `aaee213` — full app **except** that notes-collapse commit |
+
+**Next agent:** `git checkout ui-polish && git pull origin ui-polish`. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
+
+### Shipped product (both branches unless noted)
+
 - Four columns (Ideas / Ready / Priority / Completed), CRUD, drag + live preview, localStorage  
 - Card **priority** (Low → Immediate: badge, all-column auto-sort, prompt on unranked drop into Priority) and **completed dates** (auto-stamp, editable, newest-first sort in Completed)  
-- Card actions (copy / edit / delete; **archive on Completed only**), notes collapse/copy, title search (drag off while searching)  
+- Card actions (copy / edit / delete; **archive on Completed only**), title search (drag off while searching)  
+- **Notes:** collapse when text paints past **~2 lines** (ResizeObserver / layout measure — not a character cutoff); Expand/Collapse control; copy notes  
+  - *On `ui-polish` only until merge:* measured 2-line clamp + lighter Expand styling (`cddb294`)  
 - Export/import JSON; Completed-only archive + list search / restore / permanent delete  
-- **Phone polish:** column **tabs** (one column at a time), stacked header, **···** overflow menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
-- Desktop: icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
+- **Phone:** column **tabs** (one full-width column at a time; droppable tabs for cross-column drag), stacked header, **···** menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
+- **Phone add/edit form:** tall bottom sheet (~full height); notes field grows; **×** close (no fake drag-handle bar)  
+- Desktop: four columns side-by-side; icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
 - Themed scrollbars; storage safety (corrupt-load backup, no mid-drag saves, Cancel-first confirms)  
 - Design: calm dark greyscale, white accent, Source Code Pro; package manager **pnpm**  
-- **Live:** https://coruscating-travesseiro-be1b90.netlify.app/ (tracks `main`)  
+- **Live:** https://coruscating-travesseiro-be1b90.netlify.app/ (tracks `main` only)  
 - **Code:** https://github.com/Dlcnokc/Focus (private); push `main` → Netlify; docs-only: `[skip ci]`  
 
 **Not built / park for later:**
@@ -104,7 +118,7 @@ One board only in v1.
 - [x] Edit card (title + notes + priority; completed date on Completed) — themed modal, blurred backdrop (desktop **centered**; phone **bottom sheet**)  
 - [x] Delete card — **custom** confirm modal (no browser alert)  
 - [x] Card actions: copy notes, edit, delete; **archive on Completed** — desktop top-right icons; phone **···** menu  
-- [x] Long notes **collapse** by default; bold Expand/Collapse under notes  
+- [x] Notes that paint past **~2 lines** collapse (layout-measured); Expand/Collapse under notes  
 - [x] **Copy notes** to clipboard from the card  
 - [x] Board starts empty (no sample/seed cards)  
 - [x] Drag entire card (action icons / Expand excluded from drag start)  
@@ -169,17 +183,20 @@ One board only in v1.
 - Near-black page, soft column panels, slightly lifted cards + shadow  
 - **White / off-white accent** for primary actions and focus  
 - **Source Code Pro** — bold card/column titles (700), regular body (400); header wordmark medium (500)  
-- Modals with **blurred** backdrop: desktop centered; phone bottom sheet with handle  
+- Modals with **blurred** backdrop: desktop **centered**; phone **bottom sheet** (no decorative drag handle)  
+- Phone add/edit form: tall sheet; notes grow into leftover space; **×** in header + Cancel  
 - Header: brand mark (unfilled ring) + **Focus** only (no subtitle); no phase footer  
 
 ### UX decisions locked in recent sessions
 
-- Add/edit: themed modal (not side panel); **Cancel** + backdrop click close; no extra Close button; create heading **New card**  
+- Add/edit: themed modal (not side panel); **Cancel** + backdrop + **×** close; create headings per column (**New Idea / New Ready Task / New Priority Task**)  
 - Delete: themed modal, not `window.confirm`  
 - Drag: whole card surface; live reorder preview; all columns can highlight; touch long-press  
-- Card chrome: desktop top-right icons; phone **···** menu (copy / edit / delete; **archive on Completed only**); long notes collapse with bold Expand under notes  
+- Card chrome: desktop top-right icons; phone **···** menu (copy / edit / delete; **archive on Completed only**); notes past ~2 lines collapse (measured) with Expand/Collapse  
+- Phone columns: **tabs**, not horizontal swipe  
 - Header secondary actions (Archive / Export / Import): desktop row; phone **···** overflow  
 - Global Add → **Ideas** by default  
+- Column count badge: plain muted number (no grey pill)
 
 
 ### Theme flexibility
@@ -207,8 +224,8 @@ One board only in v1.
 | **Phase 2 / 2.1** | CRUD + centered modals + empty board | Done |
 | **Phase 3** | Persist + drag move/reorder + live preview | Done |
 | **Deploy** | Static host + GitHub auto-deploy | **Done** (Netlify) |
-| **Archive** | Done-only archive + list (restore / delete) | **Done** |
-| **Mobile / phone polish** | Swipe, dots, menus, bottom sheets, touch drag | **Done** on `ui-polish` (merge → `main` still open) |
+| **Archive** | Completed-only archive + list (restore / delete) | **Done** |
+| **Mobile / phone polish** | Column tabs, ··· menus, bottom sheets, touch drag, tall form + × | **Done** (on `main`); notes 2-line measure polish on **`ui-polish`** until merge |
 | **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **v3+** | Cooperative features if still wanted | Later |
 
@@ -271,3 +288,6 @@ One board only in v1.
 | 2026-07-12 | Completed date: entering Completed stamps `completedAt` (today), shown on the card and editable via a date picker in the edit modal; Completed sorts newest-first by it; leaving Completed clears it. New `tracksCompletedDate` column flag. |
 | 2026-07-13 | Phone: replaced column swipe/dots with **tabs** (one column at a time); tabs are droppable for cross-column drag. |
 | 2026-07-13 | Merged `sean-dev` (priority, completed dates, column flags, pnpm) with `ui-polish` (phone tabs, motion tokens, modal chrome, title shake). Per-column create-modal headings kept over ui-polish's "New card". |
+| 2026-07-13 | Phone form: tall add/edit sheet (notes grow); removed fake drag-handle bar; **×** close on form. Column count: no grey circle. Expand/Collapse quieter greys; white on hover. |
+| 2026-07-13 | Notes collapse: **2-line** clamp; show Expand when layout measures overflow (wrapping counts, not only long character strings). On branch **`ui-polish`** (`cddb294`); merge → `main` still open for that commit. |
+| 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS aligned to branch state and measured notes collapse. |

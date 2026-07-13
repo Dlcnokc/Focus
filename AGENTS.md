@@ -7,19 +7,21 @@ Instructions for any coding agent working in this repository. Follow these every
 ## Session start (do this first)
 
 1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
-   - If the owner is on a **feature branch** (e.g. `sean-dev`), **stay there** — do not force-checkout `main` (that drops in-flight work).
+   - **Current active branch: `ui-polish`** (ahead of `main` with notes 2-line measure until merge). Stay there unless the owner says otherwise:
      ```powershell
-     git pull
+     git checkout ui-polish
+     git pull origin ui-polish
      git status
      ```
-   - Otherwise use latest **`main`** (what Netlify deploys):
+   - Other feature branches: same idea — **stay** on the in-flight branch; do not force-checkout `main` (that drops unmerged work).
+   - Only when work is intentionally on **`main`** (what Netlify deploys):
      ```powershell
      git checkout main
      git pull origin main
      git status
      ```
    Confirm: on the expected branch, up to date with its remote (or only the owner’s current uncommitted edits).
-2. Read **`PRODUCT.md`** — especially current status, shipped checklist, non-goals.  
+2. Read **`PRODUCT.md`** — especially **Current status (handoff)** branch table, shipped checklist, non-goals.  
 3. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
 4. Skim this file.  
 5. Run the app if changing code: `pnpm run dev` from the repo root.  
@@ -64,7 +66,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 4. **One board only** in v1.  
 5. **Browser-only persistence** — do not add backend, auth, or cloud sync unless asked.  
 6. **Theme tokens** — colors/fonts/spacing via CSS variables in `src/index.css`; avoid scattered hard-coded colors.  
-7. **Modals** — add/edit/delete use themed modals with blurred backdrop (not browser `alert`/`confirm`, not a side drawer). Desktop: **centered**. Phone: **bottom sheet**.  
+7. **Modals** — themed modals with blurred backdrop (not browser `alert`/`confirm`, not a side drawer). Desktop: **centered**. Phone: **bottom sheet** (no decorative drag handle). Add/edit on phone: **tall sheet**, notes grow, header **×** + Cancel.  
 8. **No keyboard shortcuts** unless the user asks for them.
 
 ---
@@ -101,12 +103,14 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Card CRUD + persist hooks | `src/hooks/useBoard.ts` |
 | localStorage load/save | `src/lib/storage.ts` |
 | Export/import JSON | `src/lib/boardFile.ts` + header + import modals |
-| Archive / restore | `useBoard` + Archive confirm/list modals; Done-only archive icon |
-| Drag collision helpers | `src/lib/dnd.ts` |
+| Archive / restore | `useBoard` + Archive confirm/list modals; Completed-only archive icon |
+| Drag collision helpers | `src/lib/dnd.ts` (incl. phone `tab:` droppables) |
 | Pure move/reorder | `src/lib/boardMove.ts` |
-| DnD UI / overlay / highlight | `src/components/Board.tsx` |
+| DnD UI / overlay / phone tabs | `src/components/Board.tsx` |
+| Notes 2-line measure / Expand | `src/components/Card.tsx` |
 | Theme / layout CSS | `src/index.css` |
-| Column definitions | `src/data/placeholderBoard.ts` |
+| Column definitions + flags | `src/data/placeholderBoard.ts` |
+| Modal Escape / scroll lock | `src/hooks/useModalChrome.ts` |
 
 ### Quality bar
 
@@ -139,10 +143,11 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Deploy (Netlify + GitHub) | **Done** (tracks `main` only) |
 | Export / import JSON | **Done** |
 | Title search | **Done** |
-| Archive Done cards | **Done** |
-| Mobile / phone polish (column tabs, ··· menus, bottom sheets, touch drag) | **Done** on `ui-polish` — merge → `main` still open |
+| Archive Completed cards | **Done** |
+| Mobile / phone polish (column tabs, ··· menus, tall form + ×, touch drag) | **Done** on `main`; notes 2-line measure on **`ui-polish`** until merge |
 | Storage / drag safety hardening | **Done** |
-| UI motion / hover / form polish | **Done** on `ui-polish` |
+| UI motion / hover / form polish | **Done** (on `main` / `ui-polish` line) |
+| Notes collapse (2-line layout measure) | **Done** on **`ui-polish`** (`cddb294`) — merge → `main` still open |
 | Daily-use friction fixes | **As needed** — ask before large redesign |
 | Cooperative / multi-user | **Not started** — ask first |
 | External tools hub / tax app | **Out of repo** — do not build here unless asked |
