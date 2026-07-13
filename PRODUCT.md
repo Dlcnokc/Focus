@@ -20,10 +20,10 @@ A simple four-column board where work moves from ideas → ready → priority �
 
 | Branch | Role | Tip (as of 2026-07-13 handoff) |
 |--------|------|--------------------------------|
-| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Notes measure `cddb294` + docs audit (sort rules, column flags, storage normalize; tip advances with this handoff) |
-| **`main`** | What Netlify deploys | `aaee213` — full app **except** the notes-collapse commit (and docs on this branch) |
+| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Title max 20, favicon = header mark, dead-code cleanup + `strict` TS (after `9c13d25` column-count polish) |
+| **`main`** | What Netlify deploys | `aaee213` — full app **except** notes 2-line measure, column-count polish, title limit, cleanup, and branch docs |
 
-**Next agent:** `git checkout ui-polish && git pull origin ui-polish`. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
+**Next agent:** `git checkout ui-polish && git pull origin ui-polish` then **`git status`**. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
 
 ### Shipped product (both branches unless noted)
 
@@ -32,6 +32,8 @@ A simple four-column board where work moves from ideas → ready → priority �
 - Card actions (copy / edit / delete; **archive on Completed only**), title search (drag off while searching)  
 - **Notes:** collapse when text paints past **~2 lines** (ResizeObserver / layout measure — not a character cutoff); Expand/Collapse control; copy notes  
   - *On `ui-polish` only until merge → `main` / Netlify:* measured 2-line clamp + lighter Expand styling (`cddb294`)  
+- **Titles:** max **20 characters** (form `maxLength` + `0/20` counter; empty / over-limit rejected with red message + shake). Load/import clamps legacy long titles. Card face: single line + ellipsis. *On `ui-polish` until merge → `main`.*  
+- Column header counts optically centered with titles; Completed keeps header height via invisible **+** spacer (`9c13d25`)  
 - Export/import JSON; Completed-only archive + list search / restore / permanent delete  
 - **Phone:** column **tabs** (one full-width column at a time; droppable tabs for cross-column drag), stacked header, **···** menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
 - **Phone add/edit form:** tall bottom sheet (~full height); notes field grows; **×** close (no fake drag-handle bar)  
@@ -44,6 +46,7 @@ A simple four-column board where work moves from ideas → ready → priority �
 **Not built / park for later:**
 
 - Daily-use friction only (fix from real use; no large redesign without asking)  
+- Title max length is intentionally tight (single-line cards) — raise only if owner asks  
 - Archive extras, multi-user, backend/cloud sync  
 - Separate “tools hub” / tax calculator (other repos later; leave Focus alone)  
 
@@ -106,7 +109,7 @@ One board only in v1.
 | Field | Required | Notes |
 |-------|----------|--------|
 | `id` | yes | Stable unique id |
-| `title` | yes | Required to create/save (trim; empty rejected) |
+| `title` | yes | Required to create/save (trim; empty rejected). **Max 20 characters** (`MAX_CARD_TITLE_LENGTH` in `src/lib/cardTitle.ts`): form counter `n/20`, `maxLength`, save rejects over-limit with shake (same UX as empty). Load/import **clamps** longer legacy titles so the board stays clean. |
 | `notes` | no | Plain text string (may be `""`) |
 | `column` | yes | One of the four column ids |
 | `order` | yes | Position within the column (drag reorder; display may re-sort — see priority / completedAt) |
@@ -123,7 +126,7 @@ One board only in v1.
 ### Shipped (v1 core)
 
 - [x] Four-column board layout  
-- [x] Create card (title required) — column **+**, empty-state add, global **Add card** (defaults to Ideas); modal titled per column (**New Idea / New Ready Task / New Priority Task**). Completed has no direct add — cards only arrive there by drag  
+- [x] Create card (title required, max 20 chars) — column **+**, empty-state add, global **Add card** (defaults to Ideas); modal titled per column (**New Idea / New Ready Task / New Priority Task**). Completed has no direct add — cards only arrive there by drag  
 - [x] Edit card (title + notes + priority; completed date on Completed) — themed modal, blurred backdrop (desktop **centered**; phone **bottom sheet**)  
 - [x] Delete card — **custom** confirm modal (no browser alert)  
 - [x] Card actions: copy notes, edit, delete; **archive on Completed** — desktop top-right icons; phone **···** menu  
@@ -139,7 +142,8 @@ One board only in v1.
 - [x] Persist to `localStorage` (`focus.board.v1`) — survives refresh  
 - [x] Storage safety: corrupt load backup + block overwrite; no persist mid-drag; drag disabled during title search  
 - [x] Destructive confirms focus **Cancel** first (delete / archive / import)  
-- [x] Empty title rejected with red message + brief shake  
+- [x] Title validation: empty or **>20 characters** rejected with red message + brief shake; form shows **`n/20`** counter (red when over) + `maxLength`  
+
 - [x] Calm dark greyscale + white accent + Source Code Pro (700 card/column titles / 400 body; header wordmark 500)  
 - [x] Theme tokens + shared motion tokens in CSS  
 - [x] Empty column states  
@@ -302,3 +306,6 @@ One board only in v1.
 | 2026-07-13 | Notes collapse: **2-line** clamp; show Expand when layout measures overflow (wrapping counts, not only long character strings). On branch **`ui-polish`** (`cddb294`); merge → `main` still open for that commit. |
 | 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS aligned to branch state and measured notes collapse. |
 | 2026-07-13 | Docs audit vs code: priority auto-sort = Ideas/Ready/Priority only (Completed sorts by date); “Archive Done” → Completed; widen `.bak` / normalize notes; column flag table; export `exportedAt`. |
+| 2026-07-13 | Column header counts: match title type metrics then `scale()` so digits sit mid-line (not baseline); Completed header uses invisible **+** slot for even height (`9c13d25`). |
+| 2026-07-13 | Card **title max 20 characters** (keeps single-line faces): `src/lib/cardTitle.ts` validate/normalize/clamp; form `maxLength` + `n/20` counter; save rejects over-limit like empty title; load/import clamps legacy long titles; card title CSS nowrap + ellipsis. |
+| 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS updated for title limit, column counts, uncommitted status, resume path. |

@@ -1,5 +1,6 @@
-import { useId, useState } from 'react'
+import { useCallback, useId, useState } from 'react'
 import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
+import { useModalChrome } from '../hooks/useModalChrome'
 import type { Priority } from '../types'
 
 type Props = {
@@ -16,6 +17,8 @@ type Props = {
 export function PriorityPromptModal({ cardTitle, onConfirm, onCancel }: Props) {
   const selectId = useId()
   const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY)
+  const onEscape = useCallback(() => onCancel(), [onCancel])
+  useModalChrome(onEscape)
 
   return (
     <div className="modal-backdrop" onClick={onCancel} role="presentation">

@@ -4,12 +4,13 @@ import {
   isColumnId,
 } from '../data/placeholderBoard'
 import { DEFAULT_PRIORITY, isPriority } from '../data/priorities'
+import { clampCardTitle } from './cardTitle'
 import { isIsoDate } from './dates'
 import type { Card, ColumnId } from '../types'
 
-export const BOARD_STORAGE_KEY = 'focus.board.v1'
+const BOARD_STORAGE_KEY = 'focus.board.v1'
 /** Last good raw payload when the main key fails to parse or drops rows. */
-export const BOARD_STORAGE_BACKUP_KEY = 'focus.board.v1.bak'
+const BOARD_STORAGE_BACKUP_KEY = 'focus.board.v1.bak'
 
 /** Apply column priority rules to a raw stored value. */
 function priorityFor(
@@ -22,12 +23,10 @@ function priorityFor(
   return def.requiresPriority ? { priority: DEFAULT_PRIORITY } : {}
 }
 
-export type NormalizeResult = {
+type NormalizeResult = {
   cards: Card[]
   /** Rows skipped as invalid (bad shape, empty title, reserved id, etc.). */
   skippedInvalid: number
-  /** Duplicate ids collapsed (last occurrence kept). */
-  skippedDuplicate: number
 }
 
 /**
@@ -40,7 +39,7 @@ export type NormalizeResult = {
  */
 export function normalizeCards(raw: unknown): NormalizeResult {
   if (!Array.isArray(raw)) {
-    return { cards: [], skippedInvalid: 0, skippedDuplicate: 0 }
+    return { cards: [], skippedInvalid: 0 }
   }
 
   let skippedInvalid = 0
@@ -70,7 +69,7 @@ export function normalizeCards(raw: unknown): NormalizeResult {
     }
     const column = rec.column
 
-    const title = rec.title.trim()
+    const title = clampCardTitle(rec.title)
     if (!title) {
       skippedInvalid += 1
       return
@@ -99,12 +98,10 @@ export function normalizeCards(raw: unknown): NormalizeResult {
   for (const card of partial) {
     byId.set(card.id, card)
   }
-  const skippedDuplicate = partial.length - byId.size
 
   return {
     cards: reindexOrders([...byId.values()]),
     skippedInvalid,
-    skippedDuplicate,
   }
 }
 

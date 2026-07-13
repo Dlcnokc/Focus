@@ -8,7 +8,7 @@ import { isColumnId } from '../data/placeholderBoard'
 import type { ColumnId } from '../types'
 
 /** Prefix for phone column-tab droppables (must not clash with card or column ids). */
-export const COLUMN_TAB_PREFIX = 'tab:'
+const COLUMN_TAB_PREFIX = 'tab:'
 
 /** Droppable id for a mobile column tab. */
 export function columnTabId(columnId: ColumnId): string {
@@ -29,7 +29,7 @@ export function columnIdFromDroppableId(id: string): ColumnId | null {
 }
 
 /** True for column body or mobile tab droppables (not cards). */
-export function isColumnLikeDroppableId(id: string): boolean {
+function isColumnLikeDroppableId(id: string): boolean {
   return columnIdFromDroppableId(id) != null
 }
 
@@ -71,11 +71,6 @@ export function resolveColumnFromOverId(
   const fromDroppable = columnIdFromDroppableId(overId)
   if (fromDroppable) return fromDroppable
   return findCardColumn(overId) ?? null
-}
-
-/** Droppable data attached to each column container. */
-export function columnDroppableData(columnId: ColumnId) {
-  return { type: 'column' as const, columnId }
 }
 
 /** Droppable data attached to mobile column tabs. */

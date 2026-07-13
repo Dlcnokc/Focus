@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { columnDef } from '../data/placeholderBoard'
 import { applyCardMove, boardsEqual, type MoveHint } from '../lib/boardMove'
+import { normalizeCardTitle, validateCardTitle } from '../lib/cardTitle'
 import { todayIsoDate } from '../lib/dates'
 import { mergeCardLists } from '../lib/boardFile'
 import {
@@ -22,14 +23,14 @@ function newId(): string {
 const SAVE_ERROR =
   'Could not save the board to browser storage (quota or private mode). Changes stay on screen until you fix storage or Export a backup.'
 
-export type AddCardInput = {
+type AddCardInput = {
   title: string
   notes: string
   column: ColumnId
   priority?: Priority
 }
 
-export type UpdateCardInput = {
+type UpdateCardInput = {
   id: string
   title: string
   notes: string
@@ -101,10 +102,11 @@ export function useBoard() {
 
   const addCard = useCallback(
     (input: AddCardInput) => {
-      const title = input.title.trim()
-      if (!title) {
-        return { ok: false as const, error: 'Title is required.' }
+      const titleError = validateCardTitle(input.title)
+      if (titleError) {
+        return { ok: false as const, error: titleError }
       }
+      const title = normalizeCardTitle(input.title)
 
       enablePersist()
       setCards((prev) => {
@@ -130,10 +132,11 @@ export function useBoard() {
 
   const updateCard = useCallback(
     (input: UpdateCardInput) => {
-      const title = input.title.trim()
-      if (!title) {
-        return { ok: false as const, error: 'Title is required.' }
+      const titleError = validateCardTitle(input.title)
+      if (titleError) {
+        return { ok: false as const, error: titleError }
       }
+      const title = normalizeCardTitle(input.title)
 
       enablePersist()
       setCards((prev) =>

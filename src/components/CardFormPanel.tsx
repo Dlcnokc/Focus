@@ -10,6 +10,11 @@ import {
 import { columnDef } from '../data/placeholderBoard'
 import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
 import { useModalChrome } from '../hooks/useModalChrome'
+import {
+  clampCardTitle,
+  MAX_CARD_TITLE_LENGTH,
+  validateCardTitle,
+} from '../lib/cardTitle'
 import type { Card, ColumnId, Priority } from '../types'
 
 type CreateProps = {
@@ -43,7 +48,7 @@ const NO_PRIORITY = ''
 
 /**
  * Modal for creating or editing a card.
- * Title is required (validated on submit, marked with a red asterisk).
+ * Title is required and max 20 characters (validated on submit like empty title).
  * Priority is pickable in any column; in the Priority column it is
  * always set (no "none" choice there).
  * Remount via parent `key` when target changes so form state resets cleanly.
@@ -54,6 +59,7 @@ export function CardFormPanel(props: Props) {
   const priorityId = useId()
   const completedId = useId()
   const errorId = useId()
+  const titleCounterId = useId()
   const shakeRafRef = useRef<number | null>(null)
 
   const targetColumn: ColumnId =
@@ -65,8 +71,9 @@ export function CardFormPanel(props: Props) {
   // Completed cards get an editable completion date instead.
   const showCompletedDate = props.mode === 'edit' && targetDef.tracksCompletedDate
 
+  // Clamp on open so legacy long titles can be saved without a false error
   const [title, setTitle] = useState(
-    props.mode === 'edit' ? props.card.title : '',
+    props.mode === 'edit' ? clampCardTitle(props.card.title) : '',
   )
   const [notes, setNotes] = useState(
     props.mode === 'edit' ? props.card.notes : '',
@@ -125,8 +132,9 @@ export function CardFormPanel(props: Props) {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
-    if (!title.trim()) {
-      flashTitleError('Title is required.')
+    const titleError = validateCardTitle(title)
+    if (titleError) {
+      flashTitleError(titleError)
       return
     }
 
@@ -171,6 +179,11 @@ export function CardFormPanel(props: Props) {
     props.onClose()
   }
 
+  const titleOverLimit = title.trim().length > MAX_CARD_TITLE_LENGTH
+  const titleDescribedBy = [titleCounterId, error ? errorId : null]
+    .filter(Boolean)
+    .join(' ')
+
   return (
     <div className="modal-backdrop" onClick={props.onClose} role="presentation">
       <div
@@ -197,19 +210,28 @@ export function CardFormPanel(props: Props) {
 
         <form className="modal__form" onSubmit={handleSubmit} noValidate>
           <div className="field">
-            <label className="field__label" htmlFor={titleId}>
-              Title
-              <span className="field__asterisk" aria-hidden="true">
-                *
+            <div className="field__label-row">
+              <label className="field__label" htmlFor={titleId}>
+                Title
+                <span className="field__asterisk" aria-hidden="true">
+                  *
+                </span>
+              </label>
+              <span
+                id={titleCounterId}
+                className={`field__counter${titleOverLimit ? ' field__counter--over' : ''}`}
+                aria-live="polite"
+              >
+                {title.trim().length}/{MAX_CARD_TITLE_LENGTH}
               </span>
-            </label>
+            </div>
             <input
               id={titleId}
               className={`field__input${titleShaking ? ' field__input--shake' : ''}`}
               type="text"
               value={title}
               onChange={(e) => {
-                setTitle(e.target.value)
+                setTitle(e.target.value.slice(0, MAX_CARD_TITLE_LENGTH))
                 if (error) setError(null)
                 if (titleShaking) setTitleShaking(false)
               }}
@@ -217,9 +239,10 @@ export function CardFormPanel(props: Props) {
               placeholder="What needs doing?"
               autoFocus
               required
+              maxLength={MAX_CARD_TITLE_LENGTH}
               aria-required="true"
-              aria-invalid={error ? true : undefined}
-              aria-describedby={error ? errorId : undefined}
+              aria-invalid={error || titleOverLimit ? true : undefined}
+              aria-describedby={titleDescribedBy || undefined}
             />
             {error ? (
               <p id={errorId} className="field__error" role="alert">

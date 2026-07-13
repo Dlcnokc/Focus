@@ -1,7 +1,7 @@
 import type { Card, Priority } from '../types'
 
 /** Lowest → highest. Array position doubles as the sort rank. */
-export const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
+const PRIORITY_OPTIONS: { value: Priority; label: string }[] = [
   { value: 'low', label: 'Low' },
   { value: 'medium-low', label: 'Medium Low' },
   { value: 'medium', label: 'Medium' },

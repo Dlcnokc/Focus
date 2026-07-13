@@ -4,11 +4,11 @@ A calm, personal four-column board: **Ideas → Ready → Priority → Completed
 
 **Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**.
 
-**Active branch:** **`ui-polish`** (ahead of `main` by notes 2-line measure `cddb294` + docs audit). Stay on it until merge → `main`.
+**Active branch:** **`ui-polish`** (ahead of `main`: notes 2-line measure, column-count polish, title max 20, favicon/cleanup, docs). Stay until merge → `main`.
 
-Shipped (code on this branch): board CRUD + drag, **notes collapse** (measured ~2 lines + Expand/Collapse — *live Netlify still on `main` until merge*), **card priority** (badge + sort on Ideas/Ready/Priority + prompt), **completed dates** (auto-stamp + newest-first sort), card actions (copy / edit / delete; archive on Completed), **export/import**, **title search**, **Completed archive**, **phone polish** (column tabs, header/card **···** menus, tall form sheet with **×**, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
+Shipped (code on this branch): board CRUD + drag, **notes collapse** (measured ~2 lines — *Netlify still on `main` until merge*), **title max 20** (`n/20` counter + shake validation), **column counts** centered with titles, favicon matches header mark, **card priority**, **completed dates**, card actions, **export/import**, **title search**, **Completed archive**, **phone polish**, motion tokens, **storage safety**.
 
-Not multi-user. **Next:** merge **`ui-polish` → `main`** when ready for live notes polish; then daily-use friction only. Multi-user only if asked.
+Not multi-user. **Next:** push **`ui-polish`** if not pushed; merge **`ui-polish` → `main`** when ready for live; then daily-use friction only. Multi-user only if asked.
 
 ### Live site
 
@@ -88,20 +88,23 @@ Grok (or any agent) should pull the active branch at session start (see `AGENTS.
 
 | Change | Detail |
 |--------|--------|
-| Notes clamp | **2 lines** (was 3); Expand when layout says content overflows |
-| Notes measure | `Card.tsx` ResizeObserver — wrapping short notes count, not only long strings |
-| Expand/Collapse style | Slightly lighter muted grey; **white** on hover |
-| Earlier on this line of work (mostly already on `main`) | Phone **tabs**, tall form + **×**, no drag-handle bar, quieter column counts |
+| **Title max 20** | `src/lib/cardTitle.ts` — validate / normalize / clamp; form `maxLength` + **`n/20`** counter; empty or over-limit → red message + shake; load/import clamps long titles; card CSS single-line ellipsis |
+| Favicon + cleanup | Tab icon matches header ring mark; remove unused `icons.svg` / dead exports; `PriorityPromptModal` uses modal chrome; TypeScript `strict` |
+| Column counts | Count digits use same em metrics as title then `scale()` so they sit mid-line; Completed keeps header height with invisible **+** spacer (`9c13d25`) |
+| Notes clamp (earlier) | **2 lines** layout-measured (`cddb294`); quieter Expand/Collapse |
+| Docs | PRODUCT / README / AGENTS aligned to sort rules, flags, storage, title limit |
 
 ### Suggested next work (pick with the owner)
 
 | Priority | Idea | Notes |
 |----------|------|--------|
-| Ship | Merge **`ui-polish` → `main`** | Puts measured 2-line notes collapse on Netlify |
+| First | **Push** `ui-polish` if not on origin yet | Then owner can review on branch |
+| Ship | Merge **`ui-polish` → `main`** | Notes measure + column counts + title limit + cleanup on Netlify |
+| Optional | Raise title max if 20 feels too tight | Owner asked for 20 for clean single-line cards; CSS ellipsis also helps |
 | Habit | Weekly **Export** backup | Browser-only data |
-| From use | Fix real friction only | Anything that slows daily planning (no large redesign without asking) |
+| From use | Fix real friction only | No large redesign without asking |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
-| Out of scope for now | Separate tax/tools hub site | Owner may do later in another repo — leave Focus alone |
+| Out of scope for now | Separate tax/tools hub site | Leave Focus alone |
 
 Do **not** start multi-user, auth, or a backend unless the owner asks.
 
@@ -141,7 +144,8 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 |---------|----------|
 | **Columns** | Ideas, Ready, Priority, Completed (fixed; internal ids stay `ideas/ready/focus/done`) |
 | **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column; modal titled per column (**New Idea / New Ready Task / New Priority Task**). **Completed has no add** — cards only arrive there by drag |
-| **Edit** | Pencil icon → modal (title + notes + priority; completed date on Completed); title required (red asterisk); empty title shows red message + brief shake |
+| **Edit** | Pencil icon → modal (title + notes + priority; completed date on Completed); title required (red asterisk), **max 20 chars** with **`n/20`** counter; empty or over-limit → red message + brief shake |
+| **Title length** | Max **20** characters (`MAX_CARD_TITLE_LENGTH`). Input cannot type past 20; create/edit save validates the same rules; load/import shortens legacy long titles |
 | **Priority** | Low → Immediate (6 levels): dropdown on create/edit, colored badge on card. **Ideas / Ready / Priority** sort ranked cards first (unranked keep manual order below). Dropping an unranked card into Priority prompts for a rank (Cancel = Medium); entering Completed clears it |
 | **Completed date** | Entering Completed stamps today's date (shown on the card); editable via date picker in the edit modal; **Completed sorts newest-first by date** (not priority); leaving Completed clears it |
 | **Delete** | Trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
@@ -169,16 +173,18 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 - Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
 - `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Live Netlify is **`main` only**. Latest notes 2-line measure lives on **`ui-polish`** until that branch merges.
+- Live Netlify is **`main` only**. Latest notes measure, column-count polish, and title limit live on **`ui-polish`** until merge (and title limit may need a commit first).
+- Title max **20** is intentional and tight — longer wording must be shortened or the limit raised by the owner.
 - No keyboard shortcuts (by choice so far).
 - Multi-tab: last write wins (no live sync between tabs).
 
 ### Manual smoke test
 
-1. Add cards via global and column **+** (modal titled per column, e.g. **New Idea**)  
-2. Reject empty title (red message + brief shake)  
+1. Add cards via global and column **+** (modal titled per column, e.g. **New Idea**); title counter shows **`n/20`**  
+2. Reject empty title (red message + brief shake); typing stops at 20 chars; over-limit save shows too-long message + shake if forced past max  
 3. Edit notes → Save (pencil / card menu); phone form is tall with **×**  
 4. Notes past ~2 lines (including short wrapping text): collapsed preview, **Expand** / **Collapse**, **Copy** pastes notes  
+4b. Column headers: count sits mid-line with title; Completed header aligns with columns that have **+**  
 5. Drag between columns (search empty); confirm live reordering; refresh → order kept  
 6. Search on → drag disabled; clear search → drag works  
 7. Delete / Archive / Import confirms → **Cancel** is focused first  
@@ -233,8 +239,7 @@ Focus/
 ├── vite.config.ts
 ├── tsconfig*.json
 ├── public/
-│   ├── favicon.svg
-│   └── icons.svg              Vite leftover; app icons are inline SVG in Card.tsx
+│   └── favicon.svg            Tab icon (matches header ring mark)
 └── src/
     ├── main.tsx               React mount + ErrorBoundary
     ├── App.tsx                Header, board, modals wiring
@@ -245,6 +250,7 @@ Focus/
     │   └── useModalChrome.ts  Escape stack + body scroll lock for modals
     ├── lib/
     │   ├── storage.ts         loadBoard/saveCards (`focus.board.v1` + `.bak`)
+    │   ├── cardTitle.ts       Title max length, validate, normalize, load clamp
     │   ├── boardFile.ts       Export/import JSON parse, merge, download
     │   ├── dnd.ts             Collision detection, column + tab droppable helpers
     │   ├── boardMove.ts       Pure move/reorder for live preview + drop

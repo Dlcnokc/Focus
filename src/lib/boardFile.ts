@@ -1,21 +1,22 @@
 import type { Card } from '../types'
+import { todayIsoDate } from './dates'
 import { normalizeCards } from './storage'
 
 /** Envelope written by Export. Import also accepts a bare card array. */
-export type BoardExportFile = {
+type BoardExportFile = {
   version: 1
   exportedAt: string
   cards: Card[]
 }
 
-export type ParseBoardFileResult =
+type ParseBoardFileResult =
   | { ok: true; cards: Card[] }
   | { ok: false; error: string }
 
 /**
  * Build a versioned JSON payload for download.
  */
-export function buildExportPayload(cards: Card[]): BoardExportFile {
+function buildExportPayload(cards: Card[]): BoardExportFile {
   return {
     version: 1,
     exportedAt: new Date().toISOString(),
@@ -84,11 +85,8 @@ export function mergeCardLists(current: Card[], imported: Card[]): Card[] {
 }
 
 /** Safe download filename, e.g. focus-board-2026-07-11.json */
-export function exportFilename(date = new Date()): string {
-  const y = date.getFullYear()
-  const m = String(date.getMonth() + 1).padStart(2, '0')
-  const d = String(date.getDate()).padStart(2, '0')
-  return `focus-board-${y}-${m}-${d}.json`
+function exportFilename(date = new Date()): string {
+  return `focus-board-${todayIsoDate(date)}.json`
 }
 
 /** Trigger a browser download of the board JSON. */
