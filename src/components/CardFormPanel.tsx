@@ -127,6 +127,15 @@ export function CardFormPanel(props: Props) {
           <h2 id="card-form-title" className="modal__title">
             {heading}
           </h2>
+          <button
+            type="button"
+            className="btn btn--ghost btn--icon modal__close"
+            onClick={props.onClose}
+            aria-label="Close"
+            title="Close"
+          >
+            <span aria-hidden="true">×</span>
+          </button>
         </header>
 
         <form className="modal__form" onSubmit={handleSubmit} noValidate>
@@ -157,7 +166,7 @@ export function CardFormPanel(props: Props) {
             ) : null}
           </div>
 
-          <div className="field">
+          <div className="field field--grow">
             <label className="field__label" htmlFor={notesId}>
               Notes
             </label>

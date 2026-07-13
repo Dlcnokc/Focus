@@ -3,6 +3,7 @@ import {
   DragOverlay,
   MouseSensor,
   TouchSensor,
+  useDroppable,
   useSensor,
   useSensors,
   type DragEndEvent,
@@ -18,10 +19,12 @@ import {
 } from '../lib/boardMove'
 import {
   boardCollisionDetection,
+  columnTabDroppableData,
+  columnTabId,
   resolveColumnFromOverId,
 } from '../lib/dnd'
 import { cardsInColumn } from '../lib/storage'
-import type { Card, ColumnId } from '../types'
+import type { Card, ColumnDef, ColumnId } from '../types'
 import { Column } from './Column'
 
 type Props = {
@@ -62,6 +65,40 @@ function moveHintFromEvent(
   }
 }
 
+/** Phone-only column tab — droppable so drag can move cards between columns. */
+function BoardColumnTab({
+  column,
+  count,
+  isActive,
+  onSelect,
+}: {
+  column: ColumnDef
+  count: number
+  isActive: boolean
+  onSelect: (columnId: ColumnId) => void
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: columnTabId(column.id),
+    data: columnTabDroppableData(column.id),
+  })
+
+  return (
+    <button
+      ref={setNodeRef}
+      type="button"
+      className={`board-nav__tab${isActive ? ' is-active' : ''}${isOver ? ' is-over' : ''}`}
+      aria-label={`${column.label}, ${count} cards`}
+      aria-current={isActive ? 'true' : undefined}
+      onClick={() => onSelect(column.id)}
+    >
+      <span className="board-nav__tab-label">{column.label}</span>
+      <span className="board-nav__tab-count" aria-hidden="true">
+        {count}
+      </span>
+    </button>
+  )
+}
+
 export function Board({
   cards,
   dragDisabled = false,
@@ -77,8 +114,8 @@ export function Board({
   const [activeId, setActiveId] = useState<string | null>(null)
   const [overColumnId, setOverColumnId] = useState<ColumnId | null>(null)
   const [overlayCard, setOverlayCard] = useState<Card | null>(null)
-  /** Which column is centered in the phone horizontal scroller (CSS-hidden on desktop). */
-  const [snapIndex, setSnapIndex] = useState(0)
+  /** Which column tab is selected on phone (CSS-hidden on desktop). */
+  const [mobileColumnId, setMobileColumnId] = useState<ColumnId>('ideas')
 
   /** Skip preview updates that would not change placement (stops update loops). */
   const lastPreviewSigRef = useRef<string | null>(null)
@@ -93,7 +130,7 @@ export function Board({
       },
     }),
     useSensor(TouchSensor, {
-      // Long-press so column swipe / scroll can win first; huge delay when drag off
+      // Long-press so vertical list scroll can win first; huge delay when drag off
       activationConstraint: dragDisabled
         ? { delay: 99999, tolerance: 8 }
         : { delay: 220, tolerance: 8 },
@@ -105,50 +142,6 @@ export function Board({
     else document.body.classList.remove('is-dragging')
     return () => document.body.classList.remove('is-dragging')
   }, [activeId])
-
-  /** Track horizontal snap for phone column dots (main is the scrollport). */
-  useEffect(() => {
-    const main = document.querySelector('.app__main')
-    if (!(main instanceof HTMLElement)) return
-
-    function updateSnap() {
-      if (!(main instanceof HTMLElement)) return
-      const cols = main.querySelectorAll('.column')
-      if (!cols.length) return
-      const mainRect = main.getBoundingClientRect()
-      const centerX = mainRect.left + mainRect.width / 2
-      let best = 0
-      let bestDist = Infinity
-      cols.forEach((col, i) => {
-        const r = col.getBoundingClientRect()
-        const c = r.left + r.width / 2
-        const d = Math.abs(c - centerX)
-        if (d < bestDist) {
-          bestDist = d
-          best = i
-        }
-      })
-      setSnapIndex((prev) => (prev === best ? prev : best))
-    }
-
-    updateSnap()
-    main.addEventListener('scroll', updateSnap, { passive: true })
-    window.addEventListener('resize', updateSnap)
-    return () => {
-      main.removeEventListener('scroll', updateSnap)
-      window.removeEventListener('resize', updateSnap)
-    }
-    // Mount-only: do not rebind on every drag preview (cards change often).
-  }, [])
-
-  function scrollToColumn(index: number) {
-    const main = document.querySelector('.app__main')
-    if (!(main instanceof HTMLElement)) return
-    const col = main.querySelectorAll('.column')[index]
-    if (col instanceof HTMLElement) {
-      col.scrollIntoView({ behavior: 'smooth', inline: 'start', block: 'nearest' })
-    }
-  }
 
   function columnOfCard(cardId: string): ColumnId | undefined {
     return cardsRef.current.find((c) => c.id === cardId)?.column
@@ -162,6 +155,7 @@ export function Board({
     setActiveId(id)
     setOverlayCard(card)
     setOverColumnId(card?.column ?? null)
+    if (card) setMobileColumnId(card.column)
     onBeginDrag()
   }
 
@@ -179,6 +173,13 @@ export function Board({
     setOverColumnId((prev) =>
       prev === nextOverColumn ? prev : nextOverColumn,
     )
+
+    // On phone: reveal the column under the pointer (tab or cards) so drop works
+    if (nextOverColumn) {
+      setMobileColumnId((prev) =>
+        prev === nextOverColumn ? prev : nextOverColumn,
+      )
+    }
 
     if (activeIdStr === overIdStr) return
 
@@ -211,6 +212,10 @@ export function Board({
     const activeIdStr = String(active.id)
     const overIdStr = String(over.id)
     const hint = moveHintFromEvent(event)
+
+    const destColumn = resolveColumnFromOverId(overIdStr, columnOfCard)
+    if (destColumn) setMobileColumnId(destColumn)
+
     // Final move applied inside commitDrag (sync) so disk matches drop position
     onCommitDrag(
       activeIdStr === overIdStr ? undefined : activeIdStr,
@@ -237,22 +242,22 @@ export function Board({
       onDragCancel={handleDragCancel}
     >
       <nav className="board-nav" aria-label="Board columns">
-        {COLUMNS.map((column, index) => (
-          <button
+        {COLUMNS.map((column) => (
+          <BoardColumnTab
             key={column.id}
-            type="button"
-            className={`board-nav__dot${snapIndex === index ? ' is-active' : ''}`}
-            aria-label={column.label}
-            aria-current={snapIndex === index ? 'true' : undefined}
-            onClick={() => scrollToColumn(index)}
+            column={column}
+            count={cardsInColumn(cards, column.id).length}
+            isActive={mobileColumnId === column.id}
+            onSelect={setMobileColumnId}
           />
         ))}
       </nav>
 
-      <div className="board">
+      <div className="board" data-mobile-column={mobileColumnId}>
         {COLUMNS.map((column) => {
           const showDropHighlight =
             activeId !== null && overColumnId === column.id
+          const isMobileActive = mobileColumnId === column.id
 
           return (
             <Column
@@ -261,6 +266,7 @@ export function Board({
               cards={cardsInColumn(cards, column.id)}
               dragDisabled={dragDisabled}
               showDropHighlight={showDropHighlight}
+              mobileActive={isMobileActive}
               onAdd={onAdd}
               onEdit={onEdit}
               onRequestDelete={onRequestDelete}

@@ -19,7 +19,7 @@ A simple four-column board where work moves from ideas → ready → in progress
 - Four columns, CRUD, drag + live preview, localStorage  
 - Card icons (copy / edit / delete; **archive on Done only**), notes collapse/copy, title search (drag off while searching)  
 - Export/import JSON; Done-only archive + list search / restore / permanent delete  
-- **Phone polish shipped** (on `ui-polish`): column swipe + snap, page dots, stacked header, **···** overflow menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
+- **Phone polish shipped** (on `ui-polish`): column **tabs** (one column at a time), stacked header, **···** overflow menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
 - Desktop: icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
 - Themed scrollbars; storage safety (corrupt-load backup, no mid-drag saves, Cancel-first confirms)  
 - Design: calm dark greyscale, white accent, Source Code Pro  
@@ -107,7 +107,7 @@ One board only in v1.
 - [x] Live drag preview (other cards make room for insert position)  
 - [x] Column drop highlight under cursor (including source column)  
 - [x] Floating card snaps center to cursor while dragging  
-- [x] Touch: long-press to drag so column swipe wins first; mouse: small distance threshold  
+- [x] Touch: long-press to drag so list scroll wins first; mouse: small distance threshold  
 - [x] Persist to `localStorage` (`focus.board.v1`) — survives refresh  
 - [x] Storage safety: corrupt load backup + block overwrite; no persist mid-drag; drag disabled during title search  
 - [x] Destructive confirms focus **Cancel** first (delete / archive / import)  
@@ -120,7 +120,7 @@ One board only in v1.
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
 - [x] Archive Done cards (confirm + Archive list modal; restore or permanent delete)  
-- [x] Phone polish: column swipe + snap, page dots, stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
+- [x] Phone polish: column tabs (Ideas / Ready / Focus / Done), stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
 
 ### Nice-to-have / next
 
@@ -257,3 +257,4 @@ One board only in v1.
 | 2026-07-11 | Docs audit: archive marked Done; mobile further polish = next; docs aligned to code (icons, Cancel focus, roadmap). |
 | 2026-07-11 | **ui-polish** branch: phone overhaul (header/card ··· menus, column dots + snap, bottom-sheet modals, TouchSensor long-press, safe areas); motion tokens; form polish (**New card**, title shake); soft action-icon hovers. |
 | 2026-07-11 | Docs updated to match `ui-polish` (mobile polish = Done on branch; merge to `main` / Netlify still open). |
+| 2026-07-13 | Phone: replaced column swipe/dots with **tabs** (one column at a time); tabs are droppable for cross-column drag. |

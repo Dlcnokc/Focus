@@ -8,8 +8,34 @@ import type { ColumnId } from '../types'
 
 export const COLUMN_IDS: ColumnId[] = ['ideas', 'ready', 'focus', 'done']
 
+/** Prefix for phone column-tab droppables (must not clash with card or column ids). */
+export const COLUMN_TAB_PREFIX = 'tab:'
+
 export function isColumnId(id: string): id is ColumnId {
   return (COLUMN_IDS as readonly string[]).includes(id)
+}
+
+/** Droppable id for a mobile column tab. */
+export function columnTabId(columnId: ColumnId): string {
+  return `${COLUMN_TAB_PREFIX}${columnId}`
+}
+
+/**
+ * Resolve a droppable id to a column: bare column id, `tab:ideas`, etc.
+ * Card ids return null (caller looks those up separately).
+ */
+export function columnIdFromDroppableId(id: string): ColumnId | null {
+  if (isColumnId(id)) return id
+  if (id.startsWith(COLUMN_TAB_PREFIX)) {
+    const col = id.slice(COLUMN_TAB_PREFIX.length)
+    if (isColumnId(col)) return col
+  }
+  return null
+}
+
+/** True for column body or mobile tab droppables (not cards). */
+export function isColumnLikeDroppableId(id: string): boolean {
+  return columnIdFromDroppableId(id) != null
 }
 
 /**
@@ -21,8 +47,10 @@ export const boardCollisionDetection: CollisionDetection = (args) => {
 
   if (pointerHits.length > 0) {
     // Cards first so reorder targets win when the pointer is over a card;
-    // column droppables still count when the pointer is in empty column space.
-    const cardHits = pointerHits.filter((c) => !isColumnId(String(c.id)))
+    // column / tab droppables still count when the pointer is in empty space.
+    const cardHits = pointerHits.filter(
+      (c) => !isColumnLikeDroppableId(String(c.id)),
+    )
     if (cardHits.length > 0) return cardHits
     return pointerHits
   }
@@ -30,7 +58,9 @@ export const boardCollisionDetection: CollisionDetection = (args) => {
   // Slightly forgiving fallback near edges
   const rectHits = rectIntersection(args)
   if (rectHits.length > 0) {
-    const cardHits = rectHits.filter((c) => !isColumnId(String(c.id)))
+    const cardHits = rectHits.filter(
+      (c) => !isColumnLikeDroppableId(String(c.id)),
+    )
     if (cardHits.length > 0) return cardHits
     return rectHits
   }
@@ -43,11 +73,17 @@ export function resolveColumnFromOverId(
   findCardColumn: (cardId: string) => ColumnId | undefined,
 ): ColumnId | null {
   if (!overId) return null
-  if (isColumnId(overId)) return overId
+  const fromDroppable = columnIdFromDroppableId(overId)
+  if (fromDroppable) return fromDroppable
   return findCardColumn(overId) ?? null
 }
 
 /** Droppable data attached to each column container. */
 export function columnDroppableData(columnId: ColumnId) {
   return { type: 'column' as const, columnId }
+}
+
+/** Droppable data attached to mobile column tabs. */
+export function columnTabDroppableData(columnId: ColumnId) {
+  return { type: 'column-tab' as const, columnId }
 }

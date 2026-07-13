@@ -4,7 +4,7 @@ A calm, personal four-column board: **Ideas → Ready → Focus → Done**.
 
 **Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**. Phone/UI polish is on branch **`ui-polish`** until merge.
 
-Shipped (this branch): board CRUD + drag, notes collapse/copy, card icons (copy / edit / delete; archive on Done), **export/import**, **title search**, **Done archive**, **phone polish** (swipe + snap, column dots, header/card **···** menus, bottom-sheet modals, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
+Shipped (this branch): board CRUD + drag, notes collapse/copy, card icons (copy / edit / delete; archive on Done), **export/import**, **title search**, **Done archive**, **phone polish** (column tabs, header/card **···** menus, bottom-sheet modals, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
 
 Not multi-user. **Next:** merge **`ui-polish` → `main`** (so the live site gets phone polish), then daily-use friction fixes only. Multi-user only if asked.
 
@@ -132,11 +132,11 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Notes expand** | Long notes start collapsed (~3 lines); bold **Expand** / **Collapse** under the notes |
 | **Card actions** | Desktop: top-right icons — copy (if notes), **archive (Done only)**, edit, delete. Phone: same actions behind card **···** |
 | **Header actions** | Desktop: Archive / Export / Import as a row next to **Add card**. Phone: those three behind header **···**; **Add card** stays primary |
-| **Drag** | Drag from **anywhere on the card** (not action icons / Expand / Collapse). Mouse: small move threshold. Touch: **long-press** so swipe can win first |
+| **Drag** | Drag from **anywhere on the card** (not action icons / Expand / Collapse). Mouse: small move threshold. Touch: **long-press** so list scroll can win first |
 | **Live preview** | Other cards shift while dragging to show insert order |
 | **Column highlight** | Column under cursor lights up (including source column) |
 | **Cursor snap** | Floating card centers under the pointer (`snapCenterToCursor`) |
-| **Phone columns** | Horizontal swipe with scroll-snap; **page dots** under the board jump to a column; swipe locks while a drag is active |
+| **Phone columns** | **Tabs** (Ideas / Ready / Focus / Done) show one column at a time — no horizontal column scroll; drag onto a tab to move a card across columns |
 | **Modals** | Desktop: centered. Phone: **bottom sheet** with handle; full-width actions where helpful |
 | **Save** | Auto-saves to `localStorage` key `focus.board.v1` (not during live drag preview; saves on drop / other edits) |
 | **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner + Dismiss, **no overwrite** until user edits/imports |
@@ -168,7 +168,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 8. Export → open the JSON file → should list cards (incl. archived if any)  
 9. Import → Merge and Replace both work; bad file shows error modal  
 10. Done → archive → confirm → Archive list → Restore / Delete  
-11. Phone/narrow: swipe columns + dots; header **···** for Archive/Export/Import; card **···** for actions; long-press to drag; modals rise as bottom sheets  
+11. Phone/narrow: column tabs; header **···** for Archive/Export/Import; card **···** for actions; long-press to drag; modals rise as bottom sheets  
 
 ---
 
@@ -295,9 +295,9 @@ Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defa
 - **Live preview:** `onDragOver` → `previewMove` / `applyCardMove` so other cards make room
 - **Stability:** skip no-op moves; do not reshuffle when hovering **same column chrome** only (prevents React update loops / blank screen)
 - **Cancel:** snapshot at drag start; restore if drop cancelled / no `over`
-- **Sensors:** `MouseSensor` (distance) + `TouchSensor` (long-press ~220ms so column swipe wins first); both use huge thresholds when search disables drag  
+- **Sensors:** `MouseSensor` (distance) + `TouchSensor` (long-press ~220ms so list scroll wins first); both use huge thresholds when search disables drag  
 - **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; copy / archive / edit / delete / Expand-Collapse use `stopPropagation` on pointer down  
-- **Phone:** `body.is-dragging` locks horizontal column scroll while a card is dragged; column page dots track scroll position on `.app__main`
+- **Phone:** column tabs in `Board` (`board-nav__tab`); inactive columns use `display: none` but stay mounted for DnD; tabs are droppable (`tab:ideas` …) so cross-column moves still work
 
 If drag ever blanks the UI again: check console + ErrorBoundary message; avoid setState loops in `onDragOver`.
 

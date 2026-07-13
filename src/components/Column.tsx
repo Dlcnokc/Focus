@@ -13,6 +13,8 @@ type Props = {
   dragDisabled?: boolean
   /** Light up as a valid drop target while dragging (includes source column). */
   showDropHighlight: boolean
+  /** Phone: which single column is visible (tabs); ignored by desktop CSS. */
+  mobileActive?: boolean
   onAdd: (columnId: ColumnDef['id']) => void
   onEdit: (cardId: string) => void
   onRequestDelete: (cardId: string) => void
@@ -24,6 +26,7 @@ export function Column({
   cards,
   dragDisabled = false,
   showDropHighlight,
+  mobileActive = false,
   onAdd,
   onEdit,
   onRequestDelete,
@@ -41,7 +44,7 @@ export function Column({
   return (
     <section
       ref={setNodeRef}
-      className={`column${showDropHighlight ? ' column--over' : ''}`}
+      className={`column${showDropHighlight ? ' column--over' : ''}${mobileActive ? ' column--mobile-active' : ''}`}
       aria-labelledby={`col-${column.id}`}
     >
       <header className="column__header">

@@ -79,7 +79,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Desktop: top-right action **icons** always visible. Phone: card actions behind **···**; header Archive/Export/Import behind **···**; **Add card** stays primary.  
 - Long notes: collapse by default (~3 lines); bold Expand/Collapse under notes; copy notes via action control.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
-- Phone: column swipe + scroll-snap + page dots; touch long-press to start drag; lock horizontal scroll while dragging.  
+- Phone: column **tabs** (one column at a time; no horizontal column scroll); touch long-press to start drag; drag onto a tab to move across columns.  
 - Motion: use shared CSS motion tokens; respect `prefers-reduced-motion`.  
 - Design changes: update tokens first, then layout if needed.
 
@@ -140,7 +140,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Export / import JSON | **Done** |
 | Title search | **Done** |
 | Archive Done cards | **Done** |
-| Mobile / phone polish (swipe, dots, ··· menus, bottom sheets, touch drag) | **Done** on `ui-polish` — merge → `main` still open |
+| Mobile / phone polish (column tabs, ··· menus, bottom sheets, touch drag) | **Done** on `ui-polish` — merge → `main` still open |
 | Storage / drag safety hardening | **Done** |
 | UI motion / hover / form polish | **Done** on `ui-polish` |
 | Daily-use friction fixes | **As needed** — ask before large redesign |
