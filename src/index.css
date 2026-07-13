@@ -458,7 +458,8 @@ p {
 .column__hint {
   margin-top: var(--space-1);
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-body);
+  /* One step above board body (300) so the subtitle reads a bit clearer */
+  font-weight: 400;
   color: var(--color-text-faint);
 }
 
@@ -1055,6 +1056,13 @@ body.modal-open {
 .modal--form .field__input:not(.field__input--date),
 .modal--form .field__textarea {
   font-weight: 300;
+}
+
+/* Placeholder a hair heavier than typed text (300) so hints stay readable */
+.modal--form .field__input:not(.field__input--date)::placeholder,
+.modal--form .field__textarea::placeholder {
+  font-weight: 400;
+  color: var(--color-text-faint);
 }
 
 .modal__close {
@@ -1708,6 +1716,11 @@ body.modal-open {
   .modal--form .field__input:not(.field__input--date),
   .modal--form .field__textarea {
     font-weight: 400;
+  }
+
+  .modal--form .field__input:not(.field__input--date)::placeholder,
+  .modal--form .field__textarea::placeholder {
+    font-weight: 500;
   }
 
   .modal--form .modal__form {
