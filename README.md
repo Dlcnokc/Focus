@@ -4,11 +4,11 @@ A calm, personal four-column board: **Ideas → Ready → Priority → Completed
 
 **Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**.
 
-**Active branch:** **`ui-polish`** (ahead of `main`: notes measure, column-count, title max 20, favicon/cleanup, type + badge polish, docs). Stay until merge → `main`.
+**Active branch:** **`ui-polish`** tip **`f8c9c12`** (pushed; clean vs origin). Ahead of **`main`** (`aaee213` / Netlify): notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** (not tabs) + hidden headers, quiet empty columns, docs. Stay until merge → `main`.
 
-Shipped (code on this branch): board CRUD + drag, **notes collapse** (measured ~2 lines — *Netlify still on `main` until merge*), **title max 20**, **column counts** centered, favicon = header ring, lighter board type + compact priority chips, **card priority**, **completed dates**, card actions, **export/import**, **title search**, **Completed archive**, **phone polish**, motion tokens, **storage safety**.
+Shipped on this branch: board CRUD + drag, **notes collapse** (~2 lines measured), **title max 20**, **column counts** centered, favicon = header ring, board type polish + compact chips, phone **selector** + drop chips, **card priority**, **completed dates**, archive/export/import/search, motion tokens, **storage safety**.
 
-Not multi-user. **Next:** push **`ui-polish`** if not pushed; merge **`ui-polish` → `main`** when ready for live; then daily-use friction only. Multi-user only if asked.
+Not multi-user. **Next:** merge **`ui-polish` → `main`** when ready for live; then daily-use friction only. Multi-user only if asked.
 
 ### Live site
 
@@ -84,25 +84,25 @@ Grok (or any agent) should pull the active branch at session start (see `AGENTS.
 2. **`AGENTS.md`** — how agents should behave in this repo  
 3. **This file** — how to run, folder map, current behavior  
 
-### What changed last session (ui-polish)
+### What changed last session (ui-polish) — tip `f8c9c12`
 
 | Change | Detail |
 |--------|--------|
-| **Type polish** | Wordmark **200** + open tracking; board titles **400**, board body **300**, card notes **400**; Google Fonts loads 200–700. Compact priority chips (smaller type, tighter pad) |
-| **Title max 20** | `src/lib/cardTitle.ts` — validate / normalize / clamp; form `maxLength` + **`n/20`**; empty/over-limit → red + shake; load/import clamps; card ellipsis |
-| Favicon + cleanup | Tab icon matches header ring; remove unused `icons.svg` / dead exports; `PriorityPromptModal` modal chrome; TypeScript `strict` |
-| Column counts | Count digits share title metrics then `scale()`; Completed header **+** spacer (`9c13d25`) |
-| Notes clamp (earlier) | **2 lines** layout-measured (`cddb294`); quieter Expand/Collapse |
-| Docs | PRODUCT / README / AGENTS aligned to type weights, title limit, handoff |
+| **Phone selector** | Tabs → singular **`<select>`** (`board-nav__select`); drop chips while dragging; **column headers hidden** on phone (`9be99e9`) |
+| **Empty columns** | Quiet **“Nothing here yet”** only — no dashed placeholder box (`f8c9c12`) |
+| **Type polish** | Wordmark **200** + open tracking; board titles **400** / body **300** / notes **400** / hints **400**; form typed **300** (phone **400**); placeholders heavier; compact chips |
+| **Title max 20** | `src/lib/cardTitle.ts` + form `n/20` / `maxLength`; load clamp; card ellipsis (`61ded8b`) |
+| Favicon + cleanup | Favicon = header ring; no `icons.svg`; `PriorityPromptModal` modal chrome; TS **`strict`** |
+| Column counts / headers | Optical count center + Completed **+** spacer (`9c13d25`); denser header padding (`ea6d6b6`) |
+| Notes clamp | **2 lines** layout-measured (`cddb294`) |
 
 ### Suggested next work (pick with the owner)
 
 | Priority | Idea | Notes |
 |----------|------|--------|
-| First | **Push** `ui-polish` if not on origin yet | Then owner can review on branch |
-| Ship | Merge **`ui-polish` → `main`** | Notes measure + column counts + title limit + type polish on Netlify |
-| Optional | Raise title max if 20 feels too tight | Owner asked for 20 for clean single-line cards; CSS ellipsis also helps |
+| Ship | Merge **`ui-polish` → `main`** | Puts selector, title 20, type polish, empty chrome on Netlify |
 | Habit | Weekly **Export** backup | Browser-only data |
+| Optional | Raise title max if 20 feels too tight | Owner chose 20 for single-line cards |
 | From use | Fix real friction only | No large redesign without asking |
 | Later | Cooperative / multi-user | Only if still wanted after daily solo use |
 | Out of scope for now | Separate tax/tools hub site | Leave Focus alone |
@@ -158,7 +158,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Live preview** | Other cards shift while dragging to show insert order |
 | **Column highlight** | Column under cursor lights up (including source column) |
 | **Cursor snap** | Floating card centers under the pointer (`snapCenterToCursor`) |
-| **Phone columns** | **Tabs** (Ideas / Ready / Priority / Completed) show one column at a time — no horizontal column scroll; drag onto a tab to move a card across columns |
+| **Phone columns** | Singular **selector** (`Label (count)`) — one column at a time, no horizontal scroll; **column headers hidden** (selector is enough); while dragging, **drop chips** replace the select for cross-column moves |
 | **Modals** | Desktop: centered. Phone: **bottom sheet** (no drag handle); add/edit is **tall** with **×** close; full-width actions where helpful |
 | **Save** | Auto-saves to `localStorage` key `focus.board.v1` (not during live drag preview; saves on drop / other edits) |
 | **Corrupt load** | Bad JSON / non-array / zero valid cards → backup key `focus.board.v1.bak`, banner + Dismiss, **no overwrite** until user edits/imports. Partial invalid rows: keep good cards, write `.bak`, still allow save |
@@ -174,8 +174,9 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 - Data is **this browser only** on this machine / origin. Clearing site data can wipe the board — use **Export** as a backup.
 - `localhost` and Netlify are **different** boards (different origins).
 - No accounts, sync, or second device (export/import is the cross-device path).
-- Live Netlify is **`main` only**. Latest notes measure, column-count polish, and title limit live on **`ui-polish`** until merge (and title limit may need a commit first).
+- Live Netlify is **`main` only**. Full **`ui-polish`** stack (notes measure, title 20, selector, type polish, empty chrome, …) is tip **`f8c9c12`** until merge → `main`.
 - Title max **20** is intentional and tight — longer wording must be shortened or the limit raised by the owner.
+- Empty columns show quiet text only (no dashed “placeholder card”).
 - No keyboard shortcuts (by choice so far).
 - Multi-tab: last write wins (no live sync between tabs).
 
@@ -193,7 +194,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 9. Import → Merge and Replace both work; bad file shows error modal  
 10. Completed → archive → confirm → Archive list → Restore / Delete  
 11. Priority: create a ranked card (badge shows, column sorts); drag an unranked card into Priority → prompt appears; drag a ranked card into Completed → badge clears + completed date stamps  
-12. Phone/narrow: column **selector**; while dragging, drop chips to change column; header **···**; card **···**; long-press to drag; bottom-sheet modals  
+12. Phone/narrow: column **selector** (no column header row); while dragging, drop chips to change column; empty = text only; header **···**; card **···**; long-press to drag; bottom-sheet modals  
 
 ---
 
@@ -202,7 +203,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | Token area | Where | Notes |
 |------------|--------|--------|
 | Colors, radii, type, space | `src/index.css` → `:root` | Theme tokens |
-| Font | **Source Code Pro** (Google Fonts in `index.html`, weights 200–700) | Chrome: titles **700**, UI **500**, body **400**, wordmark **200**. Board: titles **400**, UI **400**, body **300**, notes **400** |
+| Font | **Source Code Pro** (Google Fonts 200–700) | Chrome: **700 / 500 / 400**, wordmark **200**. Board: titles/UI **400**, body **300**, notes/hints **400**. Form: typed **300** (phone **400**); placeholders **400** / **500** |
 | Palette | Near-black / greys, **white accent** | Calm dark. Sanctioned color exceptions: action hues (`--color-danger/edit/archive`), priority-badge ramp (`--color-priority-*`), required-field red (`--color-required`) |
 | Columns | Soft `--color-column` fill | Quieter than cards |
 | Cards | Lighter fill + box-shadow | Drag whole card |
@@ -253,7 +254,7 @@ Focus/
     │   ├── storage.ts         loadBoard/saveCards (`focus.board.v1` + `.bak`)
     │   ├── cardTitle.ts       Title max length, validate, normalize, load clamp
     │   ├── boardFile.ts       Export/import JSON parse, merge, download
-    │   ├── dnd.ts             Collision detection, column + tab droppable helpers
+    │   ├── dnd.ts             Collision detection; phone drop chips use `tab:` ids
     │   ├── boardMove.ts       Pure move/reorder for live preview + drop
     │   └── dates.ts           ISO date helpers for completedAt
     ├── data/
@@ -327,15 +328,15 @@ Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defa
 ## Drag implementation notes (for agents)
 
 - **Library:** `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/modifiers`, `@dnd-kit/utilities`
-- **Collision:** `pointerWithin` → else `rectIntersection` → else `closestCorners` (`src/lib/dnd.ts`); within hits, prefer **card** droppables over column/tab chrome so columns activate under the cursor
+- **Collision:** `pointerWithin` → else `rectIntersection` → else `closestCorners` (`src/lib/dnd.ts`); within hits, prefer **card** droppables over column/drop-chip chrome so columns activate under the cursor
 - **Live preview:** `onDragOver` → `previewMove` / `applyCardMove` so other cards make room
-- **Drop on empty column / tab:** appends to end of that column (`boardMove.ts`)
+- **Drop on empty column / phone drop chip:** appends to end of that column (`boardMove.ts`)
 - **Display sort vs `order`:** Column re-sorts for display (priority on Ideas/Ready/Priority; date on Completed). Stored `order` still survives refresh; mixed ranks may not match pure drag order after re-sort
 - **Stability:** skip no-op moves; do not reshuffle when hovering **same column chrome** only (prevents React update loops / blank screen)
 - **Cancel:** snapshot at drag start; restore if drop cancelled / no `over`
 - **Sensors:** `MouseSensor` (distance) + `TouchSensor` (long-press ~220ms so list scroll wins first); both use huge thresholds when search disables drag  
 - **Overlay:** `DragOverlay` + `snapCenterToCursor`; whole card is draggable; copy / archive / edit / delete / Expand-Collapse use `stopPropagation` on pointer down  
-- **Phone:** column **selector** in `Board` (`board-nav__select`); inactive columns use `display: none` but stay mounted; while dragging, drop chips (`tab:ideas` …) replace the select for cross-column moves
+- **Phone:** column **selector** in `Board` (`board-nav__select`); inactive columns use `display: none` but stay mounted; **column headers hidden**; while dragging, drop chips (`tab:ideas` … internal ids) replace the select for cross-column moves; empty state is text-only
 
 If drag ever blanks the UI again: check console + ErrorBoundary message; avoid setState loops in `onDragOver`.
 
@@ -346,8 +347,9 @@ If drag ever blanks the UI again: check console + ErrorBoundary message; avoid s
 | Want… | Change… |
 |-------|---------|
 | Page / column / card colors | `:root` tokens in `src/index.css` |
-| Font weights | `--font-weight-*` in `:root`; board overrides on `.board` / `.card--overlay` / `.board-nav`; notes use 400 on `.card__notes` |
+| Font weights | `--font-weight-*` in `:root`; board overrides on `.board` / `.card--overlay` / `.board-nav`; notes/hints/form rules in `index.css` |
 | Priority chip size | `.card__priority` padding / font-size / margin |
+| Phone column UI | `.board-nav__select` / drop chips; hide `.column__header` under 640px |
 | Column names / hints | `COLUMNS` in `src/data/placeholderBoard.ts` |
 | Default column for global Add | `DEFAULT_NEW_COLUMN` (currently `ideas`) |
 | Priority levels / labels / default | `src/data/priorities.ts`; badge colors via `--color-priority-*` tokens |

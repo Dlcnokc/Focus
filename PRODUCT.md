@@ -20,8 +20,8 @@ A simple four-column board where work moves from ideas → ready → priority �
 
 | Branch | Role | Tip (as of 2026-07-13 handoff) |
 |--------|------|--------------------------------|
-| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Title max 20, favicon = header mark, cleanup/`strict`, type + priority-badge polish (after `9c13d25` column-count) |
-| **`main`** | What Netlify deploys | `aaee213` — full app **except** notes measure, column-count, title limit, cleanup, type polish, and branch docs |
+| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Tip **`f8c9c12`** (pushed): notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + badge + form weights, phone **selector** + hidden headers, quiet empty columns, tighter headers |
+| **`main`** | What Netlify deploys | `aaee213` — full app **except** the `ui-polish` stack above (phone still **tabs**; no title-20 / type polish / selector / empty-chrome polish) |
 
 **Next agent:** `git checkout ui-polish && git pull origin ui-polish` then **`git status`**. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
 
@@ -33,13 +33,14 @@ A simple four-column board where work moves from ideas → ready → priority �
 - **Notes:** collapse when text paints past **~2 lines** (ResizeObserver / layout measure — not a character cutoff); Expand/Collapse control; copy notes  
   - *On `ui-polish` only until merge → `main` / Netlify:* measured 2-line clamp + lighter Expand styling (`cddb294`)  
 - **Titles:** max **20 characters** (form `maxLength` + `0/20` counter; empty / over-limit rejected with red message + shake). Load/import clamps legacy long titles. Card face: single line + ellipsis. *On `ui-polish` until merge → `main`.*  
-- Column header counts optically centered with titles; Completed keeps header height via invisible **+** spacer (`9c13d25`)  
+- Column header counts optically centered with titles; Completed keeps header height via invisible **+** spacer (`9c13d25`); headers slightly denser (`ea6d6b6`)  
+- Empty columns: quiet **“Nothing here yet”** text only (no dashed placeholder box) — *ui-polish* (`f8c9c12`)  
 - Export/import JSON; Completed-only archive + list search / restore / permanent delete  
-- **Phone:** column **selector** (one full-width column at a time; drop chips while dragging for cross-column moves), stacked header, **···** menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
-- **Phone add/edit form:** tall bottom sheet (~full height); notes field grows; **×** close (no fake drag-handle bar)  
+- **Phone (main):** column **tabs**, ··· menus, bottom sheets, touch long-press, safe areas  
+- **Phone (ui-polish until merge):** singular column **selector** (not tabs); while dragging, **drop chips** for cross-column moves; **column headers hidden** (selector shows name + count); tall add/edit sheet; form type weights  
 - Desktop: four columns side-by-side; icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
 - Themed scrollbars; storage safety (corrupt-load backup, no mid-drag saves, Cancel-first confirms)  
-- Design: calm dark greyscale, white accent, Source Code Pro (wordmark **200** + open tracking; board titles/notes lighter than chrome; compact priority chips); package manager **pnpm**  
+- Design: calm dark greyscale, white accent, Source Code Pro (see Design direction for weight map); package manager **pnpm**  
 - **Live:** https://coruscating-travesseiro-be1b90.netlify.app/ (tracks `main` only)  
 - **Code:** https://github.com/Dlcnokc/Focus (private); push `main` → Netlify; docs-only: `[skip ci]`  
 
@@ -152,7 +153,7 @@ One board only in v1.
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
 - [x] Archive Completed cards (confirm + Archive list modal; restore or permanent delete)  
-- [x] Phone polish: column selector (Ideas / Ready / Priority / Completed), stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
+- [x] Phone polish: column selector on **ui-polish** (tabs still on **main**); stacked header; header **···** for Archive/Export/Import; bottom-sheet modals; safe areas; headers hidden under selector on ui-polish  
 
 ### Nice-to-have / next
 
@@ -196,11 +197,13 @@ One board only in v1.
 
 - Near-black page, soft column panels, slightly lifted cards + shadow  
 - **White / off-white accent** for primary actions and focus  
-- **Source Code Pro** — app chrome: titles **700**, UI **500**, body **400**; header wordmark **200** with open letter-spacing; board (columns/cards) lighter: titles **400**, UI **400**, body **300**, card notes **400**  
+- **Source Code Pro** (Google Fonts **200–700**): app chrome titles **700** / UI **500** / body **400**; header wordmark **200** + open tracking; board titles/UI **400**, body **300**, card notes **400**, column hints **400**  
+- Add/edit form: header **500**; title/notes typed **300** desktop / **400** phone; placeholders one step heavier (**400** / **500**)  
 - Priority chips: compact size, tighter pad, slight pull-in to neighbors  
+- Empty columns: text only (no dashed placeholder card)  
 - Modals with **blurred** backdrop: desktop **centered**; phone **bottom sheet** (no decorative drag handle)  
 - Phone add/edit form: tall sheet; notes grow into leftover space; **×** in header + Cancel  
-- Header: brand mark (unfilled ring) + **Focus** only (no subtitle); tab favicon matches the ring; no phase footer  
+- Header: brand mark (unfilled ring) + **Focus** only (no subtitle); browser tab favicon matches the ring; no phase footer  
 
 ### UX decisions locked in recent sessions
 
@@ -208,7 +211,7 @@ One board only in v1.
 - Delete: themed modal, not `window.confirm`  
 - Drag: whole card surface; live reorder preview; all columns can highlight; touch long-press  
 - Card chrome: desktop top-right icons; phone **···** menu (copy / edit / delete; **archive on Completed only**); notes past ~2 lines collapse (measured) with Expand/Collapse  
-- Phone columns: singular **selector**, not tabs or horizontal swipe; drop chips appear while dragging  
+- Phone columns (*ui-polish*): singular **selector**, not tabs or horizontal swipe; drop chips while dragging; column header chrome hidden (selector is enough)  
 - Header secondary actions (Archive / Export / Import): desktop row; phone **···** overflow  
 - Global Add → **Ideas** by default  
 - Column count badge: plain muted number (no grey pill)
@@ -240,7 +243,8 @@ One board only in v1.
 | **Phase 3** | Persist + drag move/reorder + live preview | Done |
 | **Deploy** | Static host + GitHub auto-deploy | **Done** (Netlify) |
 | **Archive** | Completed-only archive + list (restore / delete) | **Done** |
-| **Mobile / phone polish** | Column tabs, ··· menus, bottom sheets, touch drag, tall form + × | **Done** (on `main`); notes 2-line measure polish on **`ui-polish`** until merge |
+| **Mobile / phone polish** | ··· menus, bottom sheets, touch drag, tall form + × | **Done** on `main` (tabs); **ui-polish** adds **selector**, hidden headers, form weights — merge open |
+| **ui-polish type / chrome** | Title 20, type weights, compact chips, empty quiet chrome, favicon | **Done** on **`ui-polish`** (`f8c9c12`); merge → `main` open |
 | **v2** | Stronger persistence if needed (beyond localStorage) | Later |
 | **v3+** | Cooperative features if still wanted | Later |
 
@@ -254,7 +258,7 @@ One board only in v1.
 | App name | Focus | Decided |
 | Storage | Browser `localStorage` | Decided |
 | Theme | Calm dark greyscale + white accent | Decided |
-| Font | Source Code Pro (chrome 700/500/400; wordmark 200; board 400/400/300 + notes 400) | Decided |
+| Font | Source Code Pro (chrome 700/500/400; wordmark 200; board 400/400/300; notes/hints 400; form fields lighter) | Decided |
 | Columns | Ideas / Ready / Priority / Completed (ids `ideas/ready/focus/done`) | Decided |
 | Stack | Vite + React + TypeScript + @dnd-kit | Decided |
 | Global add default column | Ideas | Decided |
@@ -280,7 +284,6 @@ One board only in v1.
 | 2026-07-09 | Named **Focus**. Solo-first. Four columns. Browser storage. Calm dark. PRODUCT + AGENTS before code. |
 | 2026-07-09 | Columns: Ideas / Ready / Focus / Done. Greys/blacks + white accent. Phase 1 shell. |
 | 2026-07-09 | Font: Source Code Pro. Phase 2 CRUD. Phase 2.1 centered modals + custom delete + empty board. |
-| 2026-07-13 | Type polish: wordmark 200 + open tracking; board titles/notes weights; compact priority chips; favicon = header ring. |
 | 2026-07-09 | Phase 3: localStorage, full-card drag, live preview, column highlight (incl. source), snap center to cursor. |
 | 2026-07-09 | Docs handoff for next session: README/AGENTS/PRODUCT updated to match shipped v1 core. |
 | 2026-07-11 | Deployed to Netlify; private GitHub repo; push to `main` auto-builds. Live URL recorded in README. |
@@ -309,5 +312,9 @@ One board only in v1.
 | 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS aligned to branch state and measured notes collapse. |
 | 2026-07-13 | Docs audit vs code: priority auto-sort = Ideas/Ready/Priority only (Completed sorts by date); “Archive Done” → Completed; widen `.bak` / normalize notes; column flag table; export `exportedAt`. |
 | 2026-07-13 | Column header counts: match title type metrics then `scale()` so digits sit mid-line (not baseline); Completed header uses invisible **+** slot for even height (`9c13d25`). |
-| 2026-07-13 | Card **title max 20 characters** (keeps single-line faces): `src/lib/cardTitle.ts` validate/normalize/clamp; form `maxLength` + `n/20` counter; save rejects over-limit like empty title; load/import clamps legacy long titles; card title CSS nowrap + ellipsis. |
-| 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS updated for title limit, column counts, uncommitted status, resume path. |
+| 2026-07-13 | Card **title max 20 characters** (keeps single-line faces): `src/lib/cardTitle.ts` validate/normalize/clamp; form `maxLength` + `n/20` counter; save rejects over-limit like empty title; load/import clamps legacy long titles; card title CSS nowrap + ellipsis (`61ded8b`). |
+| 2026-07-13 | Type polish: wordmark **200** + open tracking; board titles/notes weights; compact priority chips; favicon = header ring; dead-code cleanup + TS `strict` (`61ded8b`–`a9a9866`). |
+| 2026-07-13 | Add/edit form type: header **500**; title/notes typed **300** (phone **400**); placeholders one step heavier (`219f7b9`, `5e53c9e`). |
+| 2026-07-13 | Phone: **tabs → singular column selector**; drop chips while dragging; **column headers hidden** on phone; tighter desktop column headers (`9be99e9`, `ea6d6b6`). |
+| 2026-07-13 | Empty columns: drop dashed placeholder chrome — quiet **“Nothing here yet”** text only (`f8c9c12`). |
+| 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS aligned to tip **`f8c9c12`** (selector, type map, empty chrome, merge-open stack). |

@@ -7,7 +7,7 @@ Instructions for any coding agent working in this repository. Follow these every
 ## Session start (do this first)
 
 1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
-   - **Current active branch: `ui-polish`** (ahead of `main`: notes measure, column-count, title max 20, favicon/cleanup, type + badge polish, docs). Stay there unless the owner says otherwise:
+   - **Current active branch: `ui-polish`** tip **`f8c9c12`** (ahead of `main` `aaee213`: notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + form weights, phone **selector** + hidden headers, quiet empty columns, docs). Stay there unless the owner says otherwise:
      ```powershell
      git checkout ui-polish
      git pull origin ui-polish
@@ -75,14 +75,14 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 ## Design & theme rules
 
 - Mood: **calm dark greyscale**; **white/off-white accent**. Sanctioned semantic color exceptions: the quiet action hues (`--color-danger` / `--color-edit` / `--color-archive`), the priority-badge ramp (`--color-priority-*`), and the required-field red asterisk (`--color-required`) — keep them muted, add no other color without asking.  
-- Font: **Source Code Pro** — app chrome: titles **700**, UI **500**, body **400**, wordmark **200**. Board: column/card titles **400**, UI **400**, body **300**, card notes **400** (slightly heavier than board body).  
-- Header: brand mark + **Focus** only (no marketing subtitle).  
-- Columns quieter than cards; cards use subtle fill + box-shadow.  
+- Font: **Source Code Pro** (weights **200–700** loaded) — chrome titles **700** / UI **500** / body **400** / wordmark **200**. Board: titles/UI **400**, body **300**, notes **400**, hints **400**. Add/edit form: header **500**; title/notes typed **300** (phone **400**); placeholders one step heavier.  
+- Header: brand mark (ring) + **Focus** only (no marketing subtitle); favicon matches the ring.  
+- Columns quieter than cards; cards use subtle fill + box-shadow; empty columns = quiet text only (no dashed placeholder box).  
 - Whole **card** is draggable; action controls (copy / edit / delete / archive on Completed) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
 - Desktop: top-right action **icons** always visible. Phone: card actions behind **···**; header Archive/Export/Import behind **···**; **Add card** stays primary.  
 - Notes that paint past ~2 lines collapse with Expand/Collapse (layout-measured, not character length); copy notes via action control.  
 - While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
-- Phone: singular column **selector** (one column at a time; no horizontal column scroll); touch long-press to start drag; while dragging, drop chips replace the selector for cross-column moves.  
+- Phone: singular column **selector** (one column at a time; no horizontal scroll); **column headers hidden** (selector shows name + count); touch long-press to drag; while dragging, drop chips replace the selector for cross-column moves.  
 - Motion: use shared CSS motion tokens; respect `prefers-reduced-motion`.  
 - Design changes: update tokens first, then layout if needed.
 
@@ -108,7 +108,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Archive / restore | `useBoard` + Archive confirm/list modals; Completed-only archive icon |
 | Priority levels / rank / sort | `src/data/priorities.ts` + `PriorityBadge` / `PriorityPromptModal` |
 | completedAt helpers / date sort | `src/lib/dates.ts` |
-| Drag collision helpers | `src/lib/dnd.ts` (incl. phone `tab:` droppables) |
+| Drag collision helpers | `src/lib/dnd.ts` (phone drop chips still use internal `tab:` ids) |
 | Pure move/reorder | `src/lib/boardMove.ts` |
 | DnD UI / overlay / phone column selector | `src/components/Board.tsx` |
 | Notes 2-line measure / Expand | `src/components/Card.tsx` |
@@ -149,14 +149,15 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Export / import JSON | **Done** |
 | Title search | **Done** |
 | Archive Completed cards | **Done** |
-| Mobile / phone polish (column tabs, ··· menus, tall form + ×, touch drag) | **Done** on `main`; notes 2-line measure on **`ui-polish`** until merge |
+| Mobile / phone polish (··· menus, tall form + ×, touch drag) | **Done** on `main` (tabs); **ui-polish** = **selector** + hidden headers (`9be99e9`) |
 | Storage / drag safety hardening | **Done** |
 | UI motion / hover / form polish | **Done** (on `main` / `ui-polish` line) |
-| Notes collapse (2-line layout measure) | **Done** on **`ui-polish`** (`cddb294`) — merge → `main` still open |
-| Column count optical center + header spacer | **Done** on **`ui-polish`** (`9c13d25`, pushed) |
-| Title max 20 chars | **Done** on **`ui-polish`** — merge → `main` still open |
-| Dead-code cleanup + strict TS + favicon mark | **Done** on **`ui-polish`** — merge → `main` still open |
-| Type + priority-badge polish | **Done** on **`ui-polish`** — wordmark 200, board weights, compact chips |
+| Notes collapse (2-line layout measure) | **Done** on **`ui-polish`** (`cddb294`) — merge → `main` open |
+| Column count optical center + header spacer | **Done** on **`ui-polish`** (`9c13d25`) |
+| Title max 20 chars | **Done** on **`ui-polish`** (`61ded8b`) — merge → `main` open |
+| Dead-code cleanup + strict TS + favicon mark | **Done** on **`ui-polish`** (`61ded8b`) |
+| Type + priority-badge + form weights | **Done** on **`ui-polish`** (`a9a9866`–`5e53c9e`) |
+| Quiet empty columns (no dashed chrome) | **Done** on **`ui-polish`** (`f8c9c12`) |
 | Daily-use friction fixes | **As needed** — ask before large redesign |
 | Cooperative / multi-user | **Not started** — ask first |
 | External tools hub / tax app | **Out of repo** — do not build here unless asked |
