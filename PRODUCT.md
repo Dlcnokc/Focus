@@ -20,8 +20,8 @@ A simple four-column board where work moves from ideas → ready → priority �
 
 | Branch | Role | Tip (as of 2026-07-13 handoff) |
 |--------|------|--------------------------------|
-| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Title max 20, favicon = header mark, dead-code cleanup + `strict` TS (after `9c13d25` column-count polish) |
-| **`main`** | What Netlify deploys | `aaee213` — full app **except** notes 2-line measure, column-count polish, title limit, cleanup, and branch docs |
+| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Title max 20, favicon = header mark, cleanup/`strict`, type + priority-badge polish (after `9c13d25` column-count) |
+| **`main`** | What Netlify deploys | `aaee213` — full app **except** notes measure, column-count, title limit, cleanup, type polish, and branch docs |
 
 **Next agent:** `git checkout ui-polish && git pull origin ui-polish` then **`git status`**. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
 
@@ -39,7 +39,7 @@ A simple four-column board where work moves from ideas → ready → priority �
 - **Phone add/edit form:** tall bottom sheet (~full height); notes field grows; **×** close (no fake drag-handle bar)  
 - Desktop: four columns side-by-side; icon row always visible; calm motion tokens; soft action-icon hovers; title validation shake  
 - Themed scrollbars; storage safety (corrupt-load backup, no mid-drag saves, Cancel-first confirms)  
-- Design: calm dark greyscale, white accent, Source Code Pro; package manager **pnpm**  
+- Design: calm dark greyscale, white accent, Source Code Pro (wordmark **200** + open tracking; board titles/notes lighter than chrome; compact priority chips); package manager **pnpm**  
 - **Live:** https://coruscating-travesseiro-be1b90.netlify.app/ (tracks `main` only)  
 - **Code:** https://github.com/Dlcnokc/Focus (private); push `main` → Netlify; docs-only: `[skip ci]`  
 
@@ -144,7 +144,7 @@ One board only in v1.
 - [x] Destructive confirms focus **Cancel** first (delete / archive / import)  
 - [x] Title validation: empty or **>20 characters** rejected with red message + brief shake; form shows **`n/20`** counter (red when over) + `maxLength`  
 
-- [x] Calm dark greyscale + white accent + Source Code Pro (700 card/column titles / 400 body; header wordmark 500)  
+- [x] Calm dark greyscale + white accent + Source Code Pro (chrome titles 700 / UI 500 / body 400; wordmark 200; board titles 400, notes 400, board body 300)  
 - [x] Theme tokens + shared motion tokens in CSS  
 - [x] Empty column states  
 - [x] Error boundary (reload UI on crash)  
@@ -196,10 +196,11 @@ One board only in v1.
 
 - Near-black page, soft column panels, slightly lifted cards + shadow  
 - **White / off-white accent** for primary actions and focus  
-- **Source Code Pro** — bold card/column titles (700), regular body (400); header wordmark medium (500)  
+- **Source Code Pro** — app chrome: titles **700**, UI **500**, body **400**; header wordmark **200** with open letter-spacing; board (columns/cards) lighter: titles **400**, UI **400**, body **300**, card notes **400**  
+- Priority chips: compact size, tighter pad, slight pull-in to neighbors  
 - Modals with **blurred** backdrop: desktop **centered**; phone **bottom sheet** (no decorative drag handle)  
 - Phone add/edit form: tall sheet; notes grow into leftover space; **×** in header + Cancel  
-- Header: brand mark (unfilled ring) + **Focus** only (no subtitle); no phase footer  
+- Header: brand mark (unfilled ring) + **Focus** only (no subtitle); tab favicon matches the ring; no phase footer  
 
 ### UX decisions locked in recent sessions
 
@@ -253,7 +254,7 @@ One board only in v1.
 | App name | Focus | Decided |
 | Storage | Browser `localStorage` | Decided |
 | Theme | Calm dark greyscale + white accent | Decided |
-| Font | Source Code Pro (700 titles / 400 body; header 500) | Decided |
+| Font | Source Code Pro (chrome 700/500/400; wordmark 200; board 400/400/300 + notes 400) | Decided |
 | Columns | Ideas / Ready / Priority / Completed (ids `ideas/ready/focus/done`) | Decided |
 | Stack | Vite + React + TypeScript + @dnd-kit | Decided |
 | Global add default column | Ideas | Decided |
@@ -279,6 +280,7 @@ One board only in v1.
 | 2026-07-09 | Named **Focus**. Solo-first. Four columns. Browser storage. Calm dark. PRODUCT + AGENTS before code. |
 | 2026-07-09 | Columns: Ideas / Ready / Focus / Done. Greys/blacks + white accent. Phase 1 shell. |
 | 2026-07-09 | Font: Source Code Pro. Phase 2 CRUD. Phase 2.1 centered modals + custom delete + empty board. |
+| 2026-07-13 | Type polish: wordmark 200 + open tracking; board titles/notes weights; compact priority chips; favicon = header ring. |
 | 2026-07-09 | Phase 3: localStorage, full-card drag, live preview, column highlight (incl. source), snap center to cursor. |
 | 2026-07-09 | Docs handoff for next session: README/AGENTS/PRODUCT updated to match shipped v1 core. |
 | 2026-07-11 | Deployed to Netlify; private GitHub repo; push to `main` auto-builds. Live URL recorded in README. |

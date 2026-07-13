@@ -4,9 +4,9 @@ A calm, personal four-column board: **Ideas → Ready → Priority → Completed
 
 **Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**.
 
-**Active branch:** **`ui-polish`** (ahead of `main`: notes 2-line measure, column-count polish, title max 20, favicon/cleanup, docs). Stay until merge → `main`.
+**Active branch:** **`ui-polish`** (ahead of `main`: notes measure, column-count, title max 20, favicon/cleanup, type + badge polish, docs). Stay until merge → `main`.
 
-Shipped (code on this branch): board CRUD + drag, **notes collapse** (measured ~2 lines — *Netlify still on `main` until merge*), **title max 20** (`n/20` counter + shake validation), **column counts** centered with titles, favicon matches header mark, **card priority**, **completed dates**, card actions, **export/import**, **title search**, **Completed archive**, **phone polish**, motion tokens, **storage safety**.
+Shipped (code on this branch): board CRUD + drag, **notes collapse** (measured ~2 lines — *Netlify still on `main` until merge*), **title max 20**, **column counts** centered, favicon = header ring, lighter board type + compact priority chips, **card priority**, **completed dates**, card actions, **export/import**, **title search**, **Completed archive**, **phone polish**, motion tokens, **storage safety**.
 
 Not multi-user. **Next:** push **`ui-polish`** if not pushed; merge **`ui-polish` → `main`** when ready for live; then daily-use friction only. Multi-user only if asked.
 
@@ -88,18 +88,19 @@ Grok (or any agent) should pull the active branch at session start (see `AGENTS.
 
 | Change | Detail |
 |--------|--------|
-| **Title max 20** | `src/lib/cardTitle.ts` — validate / normalize / clamp; form `maxLength` + **`n/20`** counter; empty or over-limit → red message + shake; load/import clamps long titles; card CSS single-line ellipsis |
-| Favicon + cleanup | Tab icon matches header ring mark; remove unused `icons.svg` / dead exports; `PriorityPromptModal` uses modal chrome; TypeScript `strict` |
-| Column counts | Count digits use same em metrics as title then `scale()` so they sit mid-line; Completed keeps header height with invisible **+** spacer (`9c13d25`) |
+| **Type polish** | Wordmark **200** + open tracking; board titles **400**, board body **300**, card notes **400**; Google Fonts loads 200–700. Compact priority chips (smaller type, tighter pad) |
+| **Title max 20** | `src/lib/cardTitle.ts` — validate / normalize / clamp; form `maxLength` + **`n/20`**; empty/over-limit → red + shake; load/import clamps; card ellipsis |
+| Favicon + cleanup | Tab icon matches header ring; remove unused `icons.svg` / dead exports; `PriorityPromptModal` modal chrome; TypeScript `strict` |
+| Column counts | Count digits share title metrics then `scale()`; Completed header **+** spacer (`9c13d25`) |
 | Notes clamp (earlier) | **2 lines** layout-measured (`cddb294`); quieter Expand/Collapse |
-| Docs | PRODUCT / README / AGENTS aligned to sort rules, flags, storage, title limit |
+| Docs | PRODUCT / README / AGENTS aligned to type weights, title limit, handoff |
 
 ### Suggested next work (pick with the owner)
 
 | Priority | Idea | Notes |
 |----------|------|--------|
 | First | **Push** `ui-polish` if not on origin yet | Then owner can review on branch |
-| Ship | Merge **`ui-polish` → `main`** | Notes measure + column counts + title limit + cleanup on Netlify |
+| Ship | Merge **`ui-polish` → `main`** | Notes measure + column counts + title limit + type polish on Netlify |
 | Optional | Raise title max if 20 feels too tight | Owner asked for 20 for clean single-line cards; CSS ellipsis also helps |
 | Habit | Weekly **Export** backup | Browser-only data |
 | From use | Fix real friction only | No large redesign without asking |
@@ -201,7 +202,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | Token area | Where | Notes |
 |------------|--------|--------|
 | Colors, radii, type, space | `src/index.css` → `:root` | Theme tokens |
-| Font | **Source Code Pro** (Google Fonts in `index.html`) | Titles **700**, body **400**, header wordmark **500** |
+| Font | **Source Code Pro** (Google Fonts in `index.html`, weights 200–700) | Chrome: titles **700**, UI **500**, body **400**, wordmark **200**. Board: titles **400**, UI **400**, body **300**, notes **400** |
 | Palette | Near-black / greys, **white accent** | Calm dark. Sanctioned color exceptions: action hues (`--color-danger/edit/archive`), priority-badge ramp (`--color-priority-*`), required-field red (`--color-required`) |
 | Columns | Soft `--color-column` fill | Quieter than cards |
 | Cards | Lighter fill + box-shadow | Drag whole card |
@@ -345,7 +346,8 @@ If drag ever blanks the UI again: check console + ErrorBoundary message; avoid s
 | Want… | Change… |
 |-------|---------|
 | Page / column / card colors | `:root` tokens in `src/index.css` |
-| Font weights | `--font-weight-title` / `--font-weight-body` |
+| Font weights | `--font-weight-*` in `:root`; board overrides on `.board` / `.card--overlay` / `.board-nav`; notes use 400 on `.card__notes` |
+| Priority chip size | `.card__priority` padding / font-size / margin |
 | Column names / hints | `COLUMNS` in `src/data/placeholderBoard.ts` |
 | Default column for global Add | `DEFAULT_NEW_COLUMN` (currently `ideas`) |
 | Priority levels / labels / default | `src/data/priorities.ts`; badge colors via `--color-priority-*` tokens |

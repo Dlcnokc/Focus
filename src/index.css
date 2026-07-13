@@ -64,11 +64,13 @@
 
   /* Shape & type
      Source Code Pro — monospace with clear weight range.
-     Weights: 700 titles, 500 UI labels, 400 body (readable, not ultra-thin). */
+     App chrome: 700 titles, 500 UI, 400 body, 200 wordmark.
+     Board (columns/cards) overrides to one step lighter — see .board. */
   --radius-sm: 8px;
   --radius-md: 12px;
   --radius-lg: 16px;
   --font-sans: 'Source Code Pro', ui-monospace, 'Cascadia Code', 'Segoe UI Mono', monospace;
+  --font-weight-wordmark: 200;
   --font-weight-body: 400;
   --font-weight-ui: 500;
   --font-weight-title: 700;
@@ -217,10 +219,13 @@ p {
 }
 
 .app__title {
+  /* Same face as the rest of the app (inherit can lose to browser h1 styles) */
+  font-family: var(--font-sans);
   font-size: var(--font-size-xl);
-  /* Slightly lighter than body titles (700) — calmer header wordmark */
-  font-weight: var(--font-weight-ui);
-  letter-spacing: -0.02em;
+  /* Extra-light wordmark only — body UI stays 400+ for readability */
+  font-weight: var(--font-weight-wordmark);
+  /* Open tracking a touch so the short wordmark doesn’t feel cramped */
+  letter-spacing: 0.08em;
   line-height: 1.2;
 }
 
@@ -355,6 +360,18 @@ p {
   /* dvh = dynamic viewport height — better on mobile browser chrome */
   height: calc(100dvh - var(--header-height) - var(--layout-pad-y) * 2);
   min-height: 420px;
+  /* Lighter than app chrome — columns + cards inherit */
+  --font-weight-title: 400;
+  --font-weight-ui: 400;
+  --font-weight-body: 300;
+}
+
+/* Drag overlay + phone tabs sit outside .board; match board type weights */
+.card--overlay,
+.board-nav {
+  --font-weight-title: 400;
+  --font-weight-ui: 400;
+  --font-weight-body: 300;
 }
 
 /* Column — present, but softer than the first draft */
@@ -586,12 +603,15 @@ p {
 /* Priority badge — colored text on a soft tint of the same color */
 .card__priority {
   align-self: flex-start;
-  font-size: var(--font-size-xs);
+  /* Slightly smaller than body xs; tighter pad + pull neighbors closer */
+  font-size: 0.65rem;
   font-weight: var(--font-weight-ui);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   text-transform: uppercase;
   line-height: 1;
-  padding: 0.3rem 0.5rem;
+  padding: 0.15rem 0.35rem;
+  /* Card gap is space-3; shave a bit above/below the chip only */
+  margin-block: calc(var(--space-1) * -1);
   border-radius: 999px;
   color: var(--priority-color, var(--color-text-muted));
   background: color-mix(in srgb, var(--priority-color, var(--color-text-muted)) 14%, transparent);
@@ -637,7 +657,8 @@ p {
 
 .card__notes {
   font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-body);
+  /* A step heavier than board body (300) so notes stay easy to read */
+  font-weight: 400;
   color: var(--color-text-muted);
   line-height: 1.55;
   overflow-wrap: anywhere;

@@ -7,7 +7,7 @@ Instructions for any coding agent working in this repository. Follow these every
 ## Session start (do this first)
 
 1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
-   - **Current active branch: `ui-polish`** (ahead of `main`: notes 2-line measure, column-count polish, title max 20, favicon/cleanup, docs). Stay there unless the owner says otherwise:
+   - **Current active branch: `ui-polish`** (ahead of `main`: notes measure, column-count, title max 20, favicon/cleanup, type + badge polish, docs). Stay there unless the owner says otherwise:
      ```powershell
      git checkout ui-polish
      git pull origin ui-polish
@@ -75,7 +75,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 ## Design & theme rules
 
 - Mood: **calm dark greyscale**; **white/off-white accent**. Sanctioned semantic color exceptions: the quiet action hues (`--color-danger` / `--color-edit` / `--color-archive`), the priority-badge ramp (`--color-priority-*`), and the required-field red asterisk (`--color-required`) — keep them muted, add no other color without asking.  
-- Font: **Source Code Pro** — card/column titles **700**, body/notes **400**, header wordmark **500** (avoid ultra-thin weights).  
+- Font: **Source Code Pro** — app chrome: titles **700**, UI **500**, body **400**, wordmark **200**. Board: column/card titles **400**, UI **400**, body **300**, card notes **400** (slightly heavier than board body).  
 - Header: brand mark + **Focus** only (no marketing subtitle).  
 - Columns quieter than cards; cards use subtle fill + box-shadow.  
 - Whole **card** is draggable; action controls (copy / edit / delete / archive on Completed) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
@@ -156,6 +156,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Column count optical center + header spacer | **Done** on **`ui-polish`** (`9c13d25`, pushed) |
 | Title max 20 chars | **Done** on **`ui-polish`** — merge → `main` still open |
 | Dead-code cleanup + strict TS + favicon mark | **Done** on **`ui-polish`** — merge → `main` still open |
+| Type + priority-badge polish | **Done** on **`ui-polish`** — wordmark 200, board weights, compact chips |
 | Daily-use friction fixes | **As needed** — ask before large redesign |
 | Cooperative / multi-user | **Not started** — ask first |
 | External tools hub / tax app | **Out of repo** — do not build here unless asked |
