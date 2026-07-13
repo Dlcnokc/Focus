@@ -387,29 +387,55 @@ p {
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  /* Match .btn--icon so headers share one row height across columns */
+  min-height: 1.75rem;
 }
 
-.column__heading-left {
+/* Invisible stand-in when a column has no + (Completed) — same footprint as .btn--icon */
+.column__add-slot {
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+}
+
+/*
+  Title + count: same type metrics, then scale the count down.
+  Different font-sizes share a baseline (bottoms line up). Matching the
+  title size first keeps boxes aligned; scale() shrinks the digit around
+  its center so it reads vertically centered and smaller.
+*/
+.column__heading-text {
   display: flex;
   align-items: center;
   gap: var(--space-2);
   min-width: 0;
+  font-size: var(--font-size-sm);
+  line-height: 1;
 }
 
 .column__label {
-  font-size: var(--font-size-sm);
+  margin: 0;
+  min-width: 0;
+  font-size: 1em;
   font-weight: var(--font-weight-title);
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  line-height: 1;
   color: var(--color-text);
+  white-space: nowrap;
 }
 
 .column__count {
-  font-size: var(--font-size-xs);
+  flex-shrink: 0;
+  /* Same em box as the title (aligned), then scale to xs */
+  font-size: 1em;
   font-weight: var(--font-weight-ui);
-  /* Lighter than column chrome (faint); quieter than titles */
-  color: var(--color-text-muted);
   line-height: 1;
+  color: var(--color-text-muted);
+  letter-spacing: normal;
+  text-transform: none;
+  transform: scale(calc(var(--font-size-xs) / var(--font-size-sm)));
+  transform-origin: center center;
 }
 
 .column__hint {
@@ -1474,7 +1500,12 @@ body.modal-open {
     display: none;
   }
 
-  .column__heading .btn--icon {
+  .column__heading {
+    min-height: var(--touch-min);
+  }
+
+  .column__heading .btn--icon,
+  .column__add-slot {
     width: var(--touch-min);
     height: var(--touch-min);
   }

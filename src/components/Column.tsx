@@ -58,7 +58,7 @@ export function Column({
     >
       <header className="column__header">
         <div className="column__heading">
-          <div className="column__heading-left">
+          <div className="column__heading-text">
             <h2 id={`col-${column.id}`} className="column__label">
               {column.label}
             </h2>
@@ -76,7 +76,9 @@ export function Column({
             >
               +
             </button>
-          ) : null}
+          ) : (
+            <span className="column__add-slot" aria-hidden="true" />
+          )}
         </div>
         <p className="column__hint">{column.hint}</p>
       </header>
