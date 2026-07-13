@@ -4,9 +4,9 @@ A calm, personal four-column board: **Ideas → Ready → Priority → Completed
 
 **Status (handoff):** Solo v1 is **usable daily**. Live Netlify tracks **`main`**.
 
-**Active branch:** **`ui-polish`** (ahead of `main` by the notes 2-line measure commit). Stay on it until merge → `main`.
+**Active branch:** **`ui-polish`** (ahead of `main` by notes 2-line measure `cddb294` + docs audit). Stay on it until merge → `main`.
 
-Shipped: board CRUD + drag, **notes collapse** (measured ~2 lines + Expand/Collapse), **card priority** (badge + auto-sort + prompt), **completed dates** (auto-stamp + newest-first sort), card actions (copy / edit / delete; archive on Completed), **export/import**, **title search**, **Completed archive**, **phone polish** (column tabs, header/card **···** menus, tall form sheet with **×**, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
+Shipped (code on this branch): board CRUD + drag, **notes collapse** (measured ~2 lines + Expand/Collapse — *live Netlify still on `main` until merge*), **card priority** (badge + sort on Ideas/Ready/Priority + prompt), **completed dates** (auto-stamp + newest-first sort), card actions (copy / edit / delete; archive on Completed), **export/import**, **title search**, **Completed archive**, **phone polish** (column tabs, header/card **···** menus, tall form sheet with **×**, touch long-press drag), motion tokens, title validation shake, subtle scrollbars, **storage safety** (corrupt-load backup, no mid-drag saves, drag off while searching, Cancel-first confirms).
 
 Not multi-user. **Next:** merge **`ui-polish` → `main`** when ready for live notes polish; then daily-use friction only. Multi-user only if asked.
 
@@ -142,8 +142,8 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Columns** | Ideas, Ready, Priority, Completed (fixed; internal ids stay `ideas/ready/focus/done`) |
 | **Add card** | Header **Add card** → Ideas; column **+** / empty-state **Add card** → that column; modal titled per column (**New Idea / New Ready Task / New Priority Task**). **Completed has no add** — cards only arrive there by drag |
 | **Edit** | Pencil icon → modal (title + notes + priority; completed date on Completed); title required (red asterisk); empty title shows red message + brief shake |
-| **Priority** | Low → Immediate (6 levels): dropdown on create/edit, colored badge on card, every column sorts ranked cards first. Dropping an unranked card into Priority prompts for a rank (Cancel = Medium); entering Completed clears it |
-| **Completed date** | Entering Completed stamps today's date (shown on the card); editable via date picker in the edit modal; Completed sorts newest-first by it; leaving Completed clears it |
+| **Priority** | Low → Immediate (6 levels): dropdown on create/edit, colored badge on card. **Ideas / Ready / Priority** sort ranked cards first (unranked keep manual order below). Dropping an unranked card into Priority prompts for a rank (Cancel = Medium); entering Completed clears it |
+| **Completed date** | Entering Completed stamps today's date (shown on the card); editable via date picker in the edit modal; **Completed sorts newest-first by date** (not priority); leaving Completed clears it |
 | **Delete** | Trash icon → themed confirm modal (blurred backdrop); no browser `alert` |
 | **Copy notes** | Clipboard icon (only if card has notes) → copies notes text; brief checkmark feedback |
 | **Notes expand** | Notes that wrap past ~2 lines collapse with **Expand** / **Collapse** (measured, not a character cutoff) |
@@ -156,7 +156,7 @@ Vite prints a **Network** URL like `http://192.168.x.x:5173` — open that on yo
 | **Phone columns** | **Tabs** (Ideas / Ready / Priority / Completed) show one column at a time — no horizontal column scroll; drag onto a tab to move a card across columns |
 | **Modals** | Desktop: centered. Phone: **bottom sheet** (no drag handle); add/edit is **tall** with **×** close; full-width actions where helpful |
 | **Save** | Auto-saves to `localStorage` key `focus.board.v1` (not during live drag preview; saves on drop / other edits) |
-| **Corrupt load** | Bad JSON → backup key `focus.board.v1.bak`, banner + Dismiss, **no overwrite** until user edits/imports |
+| **Corrupt load** | Bad JSON / non-array / zero valid cards → backup key `focus.board.v1.bak`, banner + Dismiss, **no overwrite** until user edits/imports. Partial invalid rows: keep good cards, write `.bak`, still allow save |
 | **Empty start** | No sample cards; board empty until you add some |
 | **Crash recovery** | `ErrorBoundary` shows reload UI instead of a blank page |
 | **Export** | **Export** → downloads `focus-board-YYYY-MM-DD.json` (all cards, incl. archived) |
@@ -225,7 +225,10 @@ Focus/
 ├── PRODUCT.md                 Product source of truth
 ├── AGENTS.md                  Rules for coding agents
 ├── README.md                  Runbook + handoff (this file)
-├── package.json
+├── package.json               packageManager: pnpm
+├── pnpm-lock.yaml
+├── pnpm-workspace.yaml        build-script allowlist for pnpm
+├── netlify.toml               build command + dist publish
 ├── index.html                 Loads fonts + app
 ├── vite.config.ts
 ├── tsconfig*.json
@@ -274,7 +277,7 @@ Focus/
 }
 ```
 
-Import also accepts a bare JSON array of cards (same fields). Invalid cards are skipped; if none are valid, import fails with an error modal.
+Import also accepts a bare JSON array of cards (same fields). Invalid cards are skipped; if none are valid, import fails with an error modal. Import does **not** require or validate `version` (any object with a `cards` array works).
 
 
 ### Mental model
@@ -308,17 +311,19 @@ Import also accepts a bare JSON array of cards (same fields). Invalid cards are 
 | Key | Value |
 |-----|--------|
 | `focus.board.v1` | JSON array of cards |
-| `focus.board.v1.bak` | Raw backup if main key is corrupt |
+| `focus.board.v1.bak` | Raw backup when load fails hard (bad JSON, non-array, zero valid cards) or when some rows are invalid |
 
-Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defaults, trim titles, dedupe ids, reindex per column.
+Load/normalize: `src/lib/storage.ts` (`loadBoard`) — `order` / `archived` defaults, trim titles, drop empty titles, dedupe ids (last wins), reindex per column, Priority missing rank → Medium, Completed strips priority and keeps valid `completedAt` only. Hard failure sets `allowPersist: false` until the user acts.
 
 ---
 
 ## Drag implementation notes (for agents)
 
 - **Library:** `@dnd-kit/core`, `@dnd-kit/sortable`, `@dnd-kit/modifiers`, `@dnd-kit/utilities`
-- **Collision:** `pointerWithin` first (`src/lib/dnd.ts`) so columns activate under the cursor, not only near center
+- **Collision:** `pointerWithin` → else `rectIntersection` → else `closestCorners` (`src/lib/dnd.ts`); within hits, prefer **card** droppables over column/tab chrome so columns activate under the cursor
 - **Live preview:** `onDragOver` → `previewMove` / `applyCardMove` so other cards make room
+- **Drop on empty column / tab:** appends to end of that column (`boardMove.ts`)
+- **Display sort vs `order`:** Column re-sorts for display (priority on Ideas/Ready/Priority; date on Completed). Stored `order` still survives refresh; mixed ranks may not match pure drag order after re-sort
 - **Stability:** skip no-op moves; do not reshuffle when hovering **same column chrome** only (prevents React update loops / blank screen)
 - **Cancel:** snapshot at drag start; restore if drop cancelled / no `over`
 - **Sensors:** `MouseSensor` (distance) + `TouchSensor` (long-press ~220ms so list scroll wins first); both use huge thresholds when search disables drag  

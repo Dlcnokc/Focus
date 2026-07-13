@@ -20,18 +20,18 @@ A simple four-column board where work moves from ideas → ready → priority �
 
 | Branch | Role | Tip (as of 2026-07-13 handoff) |
 |--------|------|--------------------------------|
-| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | `cddb294` — notes collapse at **2 lines** (layout-measured) + quieter Expand/Collapse |
-| **`main`** | What Netlify deploys | `aaee213` — full app **except** that notes-collapse commit |
+| **`ui-polish`** | **Active work branch** — stay here unless owner says otherwise | Notes measure `cddb294` + docs audit (sort rules, column flags, storage normalize; tip advances with this handoff) |
+| **`main`** | What Netlify deploys | `aaee213` — full app **except** the notes-collapse commit (and docs on this branch) |
 
 **Next agent:** `git checkout ui-polish && git pull origin ui-polish`. Do **not** force-checkout `main` while this branch is ahead. When owner wants live site updated: merge `ui-polish` → `main` and push `main`.
 
 ### Shipped product (both branches unless noted)
 
 - Four columns (Ideas / Ready / Priority / Completed), CRUD, drag + live preview, localStorage  
-- Card **priority** (Low → Immediate: badge, all-column auto-sort, prompt on unranked drop into Priority) and **completed dates** (auto-stamp, editable, newest-first sort in Completed)  
+- Card **priority** (Low → Immediate: badge; **Ideas / Ready / Priority** auto-sort ranked first; prompt on unranked drop into Priority) and **completed dates** (auto-stamp, editable, newest-first sort in Completed)  
 - Card actions (copy / edit / delete; **archive on Completed only**), title search (drag off while searching)  
 - **Notes:** collapse when text paints past **~2 lines** (ResizeObserver / layout measure — not a character cutoff); Expand/Collapse control; copy notes  
-  - *On `ui-polish` only until merge:* measured 2-line clamp + lighter Expand styling (`cddb294`)  
+  - *On `ui-polish` only until merge → `main` / Netlify:* measured 2-line clamp + lighter Expand styling (`cddb294`)  
 - Export/import JSON; Completed-only archive + list search / restore / permanent delete  
 - **Phone:** column **tabs** (one full-width column at a time; droppable tabs for cross-column drag), stacked header, **···** menus (header + cards), bottom-sheet modals, touch long-press drag, safe areas  
 - **Phone add/edit form:** tall bottom sheet (~full height); notes field grows; **×** close (no fake drag-handle bar)  
@@ -81,14 +81,23 @@ Paid boards are often noisy, opinionated, or expensive. Lightweight tools miss d
 
 ### Columns (fixed for v1)
 
-| Column ID | Label | Meaning |
-|-----------|--------|---------|
-| `ideas` | Ideas | Ideas and issues not yet figured out |
-| `ready` | Ready | Clear work, not started |
+| Column ID | Label | Meaning (UI hint) |
+|-----------|--------|-------------------|
+| `ideas` | Ideas | Not figured out yet |
+| `ready` | Ready | Clear, not started |
 | `focus` | Priority | Ranked by importance (auto-sorted by priority) |
-| `done` | Completed | Finished |
+| `done` | Completed | Finished (auto-sorted by completed date, newest first) |
 
 Column ids are stable storage keys; the 2026-07-11 rename (Focus → Priority, Done → Completed) changed labels only so saved boards keep working.
+
+**Column behavior flags** (single home in `src/data/placeholderBoard.ts` — check flags, not raw ids):
+
+| id | requiresPriority | clearsPriority | allowsDirectAdd | allowsArchive | tracksCompletedDate |
+|----|------------------|----------------|-----------------|---------------|---------------------|
+| `ideas` | no | no | yes | no | no |
+| `ready` | no | no | yes | no | no |
+| `focus` | yes | no | yes | no | no |
+| `done` | no | yes | no | yes | yes |
 
 One board only in v1.
 
@@ -100,10 +109,10 @@ One board only in v1.
 | `title` | yes | Required to create/save (trim; empty rejected) |
 | `notes` | no | Plain text string (may be `""`) |
 | `column` | yes | One of the four column ids |
-| `order` | yes | Position within the column (drag reorder) |
-| `archived` | yes | `false` by default; soft-removed from the board when `true` |
-| `priority` | no* | One of Low / Medium Low / Medium / Medium High / High / Immediate. *Always set for cards in Priority (picked on create, or prompted on drop only when the card has no priority yet; defaults Medium). Shown as a colored badge; every column auto-sorts ranked cards first (unranked keep manual order below). Cleared when a card enters Completed — moving it back to Priority prompts fresh. |
-| `completedAt` | no | ISO date (YYYY-MM-DD) stamped automatically when a card enters Completed; editable there via the edit modal (date picker); cleared on leaving. Completed sorts by it, newest first (undated legacy cards sink). |
+| `order` | yes | Position within the column (drag reorder; display may re-sort — see priority / completedAt) |
+| `archived` | yes | `false` by default; soft-removed from the board when `true`. UI archives **Completed** only; import can restore archived cards in any column |
+| `priority` | no* | One of Low / Medium Low / Medium / Medium High / High / Immediate. *Always set for cards in Priority (picked on create, or prompted on drop only when the card has no priority yet; defaults Medium). Shown as a colored badge. **Ideas / Ready / Priority** auto-sort ranked cards first (unranked keep manual order below). Cleared when a card enters Completed — moving it back to Priority prompts fresh. |
+| `completedAt` | no | ISO date (YYYY-MM-DD) stamped automatically when a card enters Completed; editable there via the edit modal (date picker); cleared on leaving. **Completed** sorts by it, newest first (undated legacy cards sink) — not by priority. |
 
 **Not implemented yet** (optional later): `createdAt`, `updatedAt`, assignees, tags, due dates, attachments, comments, subtasks, multiple boards.
 
@@ -118,7 +127,7 @@ One board only in v1.
 - [x] Edit card (title + notes + priority; completed date on Completed) — themed modal, blurred backdrop (desktop **centered**; phone **bottom sheet**)  
 - [x] Delete card — **custom** confirm modal (no browser alert)  
 - [x] Card actions: copy notes, edit, delete; **archive on Completed** — desktop top-right icons; phone **···** menu  
-- [x] Notes that paint past **~2 lines** collapse (layout-measured); Expand/Collapse under notes  
+- [x] Notes that paint past **~2 lines** collapse (layout-measured); Expand/Collapse under notes — *measured 2-line clamp + quieter Expand styling on **`ui-polish` only** until merge to `main`*  
 - [x] **Copy notes** to clipboard from the card  
 - [x] Board starts empty (no sample/seed cards)  
 - [x] Drag entire card (action icons / Expand excluded from drag start)  
@@ -138,7 +147,7 @@ One board only in v1.
 - [x] Runs locally (`pnpm run dev`)  
 - [x] Export / import JSON backup (download + replace or merge confirm)  
 - [x] Search / filter by card title (header; display-only filter)  
-- [x] Archive Done cards (confirm + Archive list modal; restore or permanent delete)  
+- [x] Archive Completed cards (confirm + Archive list modal; restore or permanent delete)  
 - [x] Phone polish: column tabs (Ideas / Ready / Priority / Completed), stacked header, header **···** for Archive/Export/Import, bottom-sheet modals, safe areas  
 
 ### Nice-to-have / next
@@ -167,12 +176,13 @@ One board only in v1.
 | Key | Purpose |
 |-----|---------|
 | `focus.board.v1` | Card array JSON |
-| `focus.board.v1.bak` | Raw backup if main key fails to parse (do not overwrite main until user acts) |
+| `focus.board.v1.bak` | Raw backup of the previous main payload when load fails hard (bad JSON, non-array, or zero valid cards). Partial invalid rows: keep good cards, still write `.bak`, allow save. Hard failure: **block save** until the user edits/imports (do not write `[]` over bad data). |
 
 - No account required  
 - Data lives in this browser profile on this origin (localhost ≠ Netlify)  
 - Clearing site data can wipe the board → **Export** is the safety net  
-- Live drag previews are **not** written until drop (or cancel restore)
+- Live drag previews are **not** written until drop (or cancel restore)  
+- Load also normalizes: trim titles, drop empty titles, dedupe ids (last wins), reindex `order` per column, default Priority rank to Medium, strip priority on Completed, keep `completedAt` only when valid `YYYY-MM-DD`
 
 ---
 
@@ -246,7 +256,7 @@ One board only in v1.
 | Deploy | Netlify + GitHub `main` auto-deploy | Decided |
 | Live URL | https://coruscating-travesseiro-be1b90.netlify.app/ | Decided |
 | Code host | https://github.com/Dlcnokc/Focus (private) | Decided |
-| Export format | JSON (`version` 1 + `cards` array) | Decided |
+| Export format | JSON (`version` 1 + `exportedAt` + `cards` array); import also accepts a bare cards array | Decided |
 
 ---
 
@@ -291,3 +301,4 @@ One board only in v1.
 | 2026-07-13 | Phone form: tall add/edit sheet (notes grow); removed fake drag-handle bar; **×** close on form. Column count: no grey circle. Expand/Collapse quieter greys; white on hover. |
 | 2026-07-13 | Notes collapse: **2-line** clamp; show Expand when layout measures overflow (wrapping counts, not only long character strings). On branch **`ui-polish`** (`cddb294`); merge → `main` still open for that commit. |
 | 2026-07-13 | Docs handoff: PRODUCT / README / AGENTS aligned to branch state and measured notes collapse. |
+| 2026-07-13 | Docs audit vs code: priority auto-sort = Ideas/Ready/Priority only (Completed sorts by date); “Archive Done” → Completed; widen `.bak` / normalize notes; column flag table; export `exportedAt`. |

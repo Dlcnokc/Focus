@@ -7,7 +7,7 @@ Instructions for any coding agent working in this repository. Follow these every
 ## Session start (do this first)
 
 1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
-   - **Current active branch: `ui-polish`** (ahead of `main` with notes 2-line measure until merge). Stay there unless the owner says otherwise:
+   - **Current active branch: `ui-polish`** (ahead of `main` with notes 2-line measure + docs until merge). Stay there unless the owner says otherwise:
      ```powershell
      git checkout ui-polish
      git pull origin ui-polish
@@ -34,7 +34,8 @@ Instructions for any coding agent working in this repository. Follow these every
 **Focus** is a solo-first personal kanban board:
 
 - Columns: **Ideas → Ready → Priority → Completed** (storage ids stay `ideas/ready/focus/done`)  
-- Cards: title + notes + optional priority (Low → Immediate; always set in Priority column, which auto-sorts by it)  
+- Cards: title + notes + optional priority (Low → Immediate; always set in Priority) + optional `completedAt` on Completed + `archived`  
+- Sort: **Ideas / Ready / Priority** by priority (ranked first); **Completed** by date (newest first)  
 - Drag to move/reorder with **live preview**  
 - Persist in **`localStorage`** key `focus.board.v1`  
 
@@ -104,13 +105,15 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | localStorage load/save | `src/lib/storage.ts` |
 | Export/import JSON | `src/lib/boardFile.ts` + header + import modals |
 | Archive / restore | `useBoard` + Archive confirm/list modals; Completed-only archive icon |
+| Priority levels / rank / sort | `src/data/priorities.ts` + `PriorityBadge` / `PriorityPromptModal` |
+| completedAt helpers / date sort | `src/lib/dates.ts` |
 | Drag collision helpers | `src/lib/dnd.ts` (incl. phone `tab:` droppables) |
 | Pure move/reorder | `src/lib/boardMove.ts` |
 | DnD UI / overlay / phone tabs | `src/components/Board.tsx` |
 | Notes 2-line measure / Expand | `src/components/Card.tsx` |
 | Theme / layout CSS | `src/index.css` |
 | Column definitions + flags | `src/data/placeholderBoard.ts` |
-| Modal Escape / scroll lock | `src/hooks/useModalChrome.ts` |
+| Modal Escape / scroll lock | `src/hooks/useModalChrome.ts` (used by form + delete/archive/import/list; **not** by `PriorityPromptModal` yet) |
 
 ### Quality bar
 
@@ -118,10 +121,10 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 - Prefer `pnpm run build` when touching types or drag logic.  
 - Drag order and column placement must **survive refresh**.  
 - **Never wipe** `localStorage` user data without migration or explicit approval.  
-- Corrupt load: backup raw to `focus.board.v1.bak`, **block save** until the user changes the board (do not write `[]` over bad data).  
+- Corrupt load: backup raw to `focus.board.v1.bak` on hard failure (bad JSON / non-array / zero valid cards), **block save** until the user changes the board (do not write `[]` over bad data). Partial invalid rows may still allow save after keeping good cards.  
 - Do **not** persist live drag previews — save on drag commit / cancel restore / non-drag mutations only.  
 - Title search: disable drag while a filter is active (filtered list ≠ full board for DnD).  
-- Destructive confirms (delete / archive / import Replace|Merge): focus **Cancel** first (`autoFocus`).  
+- Destructive confirms (delete / archive / import Replace|Merge): focus **Cancel** first (`autoFocus`). Priority rank prompt focuses the select (Cancel still defaults Medium).  
 - Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; do not reshuffle when hovering same-column chrome only.  
 - No secrets in the repo.
 
@@ -147,7 +150,7 @@ If `PRODUCT.md` and a user request conflict, **ask the user** before implementin
 | Mobile / phone polish (column tabs, ··· menus, tall form + ×, touch drag) | **Done** on `main`; notes 2-line measure on **`ui-polish`** until merge |
 | Storage / drag safety hardening | **Done** |
 | UI motion / hover / form polish | **Done** (on `main` / `ui-polish` line) |
-| Notes collapse (2-line layout measure) | **Done** on **`ui-polish`** (`cddb294`) — merge → `main` still open |
+| Notes collapse (2-line layout measure) | **Done** on **`ui-polish`** (`cddb294`; branch tip includes later docs) — merge → `main` still open |
 | Daily-use friction fixes | **As needed** — ask before large redesign |
 | Cooperative / multi-user | **Not started** — ask first |
 | External tools hub / tax app | **Out of repo** — do not build here unless asked |
