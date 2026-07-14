@@ -25,10 +25,10 @@ If `PRODUCT.md` conflicts with a user request, **ask once** before implementing 
 
 ## Product snapshot
 
-Kanban: **Ideas → Ready → Priority → Completed** (ids `ideas/ready/focus/done`).
+Kanban: **Ideas → Waiting → Priority → Completed** (ids `ideas/ready/focus/done`).
 
 - Cards: title (**max 20**), notes, priority, `completedAt`, `archived`, `order`
-- Display sort: priority on Ideas/Ready/Priority; date newest-first on Completed; manual `order` is the **tiebreaker**
+- Display sort: priority on Ideas/Waiting/Priority; date newest-first on Completed; manual `order` is the **tiebreaker**
 - Drag + live preview; persist `localStorage` key `focus.board.v1`
 - Full product rules: **`PRODUCT.md`**
 

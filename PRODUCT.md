@@ -1,6 +1,6 @@
 # Focus — Product
 
-**Focus** is a kanban board: **Ideas → Ready → Priority → Completed**. Clean, calm, drag-and-drop.
+**Focus** is a kanban board: **Ideas → Waiting → Priority → Completed**. Clean, calm, drag-and-drop.
 
 | Doc | Role |
 |-----|------|
@@ -36,7 +36,7 @@
 | ID (storage) | Label | Hint |
 |--------------|--------|------|
 | `ideas` | Ideas | Not figured out yet |
-| `ready` | Ready | Clear, not started |
+| `ready` | Waiting | Clear, not started |
 | `focus` | Priority | Ranked by importance |
 | `done` | Completed | Finished |
 
@@ -67,7 +67,7 @@ Canonical shape: **`src/types.ts`**. In short:
 
 ## Behavior (invariants)
 
-- **Display sort vs order:** Ideas / Ready / Priority sort by priority (highest first), then `order` as tiebreaker. Completed sorts by `completedAt` newest first, then `order`. Manual drag order only sticks among equal rank / same date.
+- **Display sort vs order:** Ideas / Waiting / Priority sort by priority (highest first), then `order` as tiebreaker. Completed sorts by `completedAt` newest first, then `order`. Manual drag order only sticks among equal rank / same date.
 - **Priority column:** unranked drop → rank prompt (**Use Medium** / Cancel path applies Medium).
 - **Completed:** no direct add (drag only); archive only here. Entering clears priority (not restored on leave). `completedAt` is stamped on first enter if missing, **preserved** if already set when re-entering; editable on the edit form while the card is in Completed; cleared when leaving Completed.
 - **Notes:** collapse when layout exceeds ~2 lines (measure, not character count).

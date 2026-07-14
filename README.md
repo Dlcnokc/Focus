@@ -1,6 +1,6 @@
 # Focus
 
-A calm board: **Ideas → Ready → Priority → Completed**.
+A calm board: **Ideas → Waiting → Priority → Completed**.
 
 | | |
 |--|--|
@@ -71,7 +71,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 | **Add** | Header **Add card** → Ideas; column **+** (not on Completed — drag cards there) |
 | **Edit / delete** | Icons (phone: card **···**); themed modals (focus trap; danger primary on delete/archive/replace) |
 | **Title** | Required, max **20** characters (`n/20` in the form) |
-| **Priority** | Low → Immediate; badge; Ideas/Ready/Priority sort by rank (manual order ties); unranked into Priority → prompt (**Use Medium** → Medium) |
+| **Priority** | Low → Immediate; badge; Ideas/Waiting/Priority sort by rank (manual order ties); unranked into Priority → prompt (**Use Medium** → Medium) |
 | **Completed** | Date stamped on first entry (kept if already set); editable on edit form; sorts newest first; **Archive** only from here |
 | **Notes** | Long notes collapse after ~2 lines; Expand / Collapse; copy |
 | **Drag** | Drag the whole card; live preview; long-press on phone |

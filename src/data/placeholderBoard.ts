@@ -21,9 +21,9 @@ export const COLUMNS: ColumnDef[] = [
   },
   {
     id: 'ready',
-    label: 'Ready',
+    label: 'Waiting',
     hint: 'Clear, not started',
-    newLabel: 'New Ready Task',
+    newLabel: 'New Waiting Task',
     requiresPriority: false,
     clearsPriority: false,
     allowsDirectAdd: true,
