@@ -59,6 +59,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 2. Push **`main`** on GitHub  
 3. Netlify builds and publishes `dist` (uses pnpm from the lockfile)
 
+**CI:** pushes and PRs to `main` / `ui-polish` run lint, tests, and build (`.github/workflows/ci.yml`).  
 **Docs-only commits:** add **`[skip ci]`** to the commit message so Netlify does not rebuild.
 
 ---
@@ -68,7 +69,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 | | |
 |--|--|
 | **Add** | Header **Add card** → Ideas; column **+** (not on Completed — drag cards there) |
-| **Edit / delete** | Icons (phone: card **···**); themed modals, not browser alerts |
+| **Edit / delete** | Icons (phone: card **···**); themed modals (focus trap; danger primary on delete/archive/replace) |
 | **Title** | Required, max **20** characters (`n/20` in the form) |
 | **Priority** | Low → Immediate; badge; Ideas/Ready/Priority sort by rank (manual order ties); unranked into Priority → prompt (**Use Medium** → Medium) |
 | **Completed** | Date stamped on first entry (kept if already set); editable on edit form; sorts newest first; **Archive** only from here |
@@ -89,10 +90,11 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 3. Drag across columns; refresh — **column** still correct; equal-priority cards keep relative drag order  
 4. Search on → drag disabled; clear search → drag works  
 5. Priority: badge + sort; unranked into Priority → prompt; **Use Medium**  
-6. Drag into Completed → completion date stamps; edit form can change the date; leave Completed → date clears  
+6. Drag into Completed → completion date stamps; edit form can change the date; leave Completed → date clears; re-enter keeps a date already set  
 7. Archive from Completed → Archive list → restore  
 8. Export JSON; import Merge or Replace  
-9. Phone width: selector switches columns; long-press drag  
+9. Phone width: selector switches columns; long-press drag; card/header **···** menus stay usable near edges  
+10. Delete confirm: Cancel focused first; Tab stays inside the modal  
 
 ---
 

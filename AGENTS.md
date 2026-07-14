@@ -97,15 +97,17 @@ Card shape: **`src/types.ts`**.
 
 - After meaningful changes: app must **run**; say how to open/test. Prefer **`pnpm run test` + `pnpm run build`** after logic changes; always build when touching types or drag.
 - **Column placement** must survive refresh. **Display order** is priority/date first; manual `order` is a **tiebreaker** and survives among equal rank/date only.
-- Drag commit is **atomic**: column transition rules (priority clear, `completedAt` stamp/clear) apply before the committed board is saved. **No mid-drag persist** — save on commit / cancel restore / non-drag mutations only.
+- Drag commit is **atomic**: column transition rules (priority clear, `completedAt` stamp/clear/preserve) apply before the committed board is saved. **No mid-drag persist** — save on commit / cancel restore / non-drag mutations only.
 - Reserved droppable ids (column ids, `tab:…` phone chips) **must not** be used as card ids.
 - `isIsoDate` must be **calendar-valid** (`YYYY-MM-DD` that is a real date), not format-only.
 - **Never wipe** `localStorage` without migration or explicit approval.
-- Corrupt load: backup to `focus.board.v1.bak` on hard failure; **block save** until the user changes the board (do not write `[]` over bad data); surface load-error banner; `ErrorBoundary` for render crashes.
+- Corrupt load: backup to `focus.board.v1.bak` on hard failure; **block save** until the user changes the board (do not write `[]` over bad data); surface load-error banner; multi-tab `storage` notice without auto-overwrite; `ErrorBoundary` for render crashes.
 - Title search: **disable drag** while filter active.
 - Title empty or **>20 chars**: reject with red message + shake; form `n/20` + `maxLength={20}`; load/import **clamps** long titles.
-- Destructive confirms: focus **Cancel** first. Priority prompt focuses select (**Use Medium** applies Medium).
+- Destructive confirms: focus **Cancel** first (`btn--danger` primary). Priority prompt focuses select (**Use Medium** applies Medium).
+- Form create/edit: **submit lock** after a successful submit (no double cards).
 - Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; no reshuffle on same-column chrome only.
+- Pure board logic has unit tests under `src/lib/*.test.ts`. CI (`.github/workflows/ci.yml`) runs lint + test + build on `main` / `ui-polish`.
 - No secrets in the repo.
 
 ---

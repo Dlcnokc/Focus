@@ -76,6 +76,7 @@ Canonical shape: **`src/types.ts`**. In short:
 - **Desktop:** four columns; action icons always visible.
 - **Empty board** on first load (no seed cards). Empty columns: quiet text only.
 - **Modals:** themed + blur; focus trap + restore; desktop centered; phone bottom sheet (tall form + ×). Destructive confirms use muted danger primary; Cancel focused first. No browser `alert`/`confirm`.
+- **Drag commit:** column placement and entry/exit rules (priority clear, `completedAt` stamp/clear/preserve) apply in one step before save — no mid-drag persist, no pre-rules disk write.
 - **Resilience:** corrupt load → backup key + **block save** until an intentional board change; load-error banner in the UI; multi-tab change notice (no auto-overwrite); `ErrorBoundary` crash screen (reload) so a drag/render failure does not blank the session forever.
 
 Details and edge cases: **code first**, then `AGENTS.md` quality bar.
@@ -89,7 +90,7 @@ Details and edge cases: **code first**, then `AGENTS.md` quality bar.
 | `focus.board.v1` | Card array JSON |
 | `focus.board.v1.bak` | Backup on hard load failure |
 
-Browser `localStorage` only. No accounts. `localhost` ≠ Netlify (different origins). Never wipe user data without migration or explicit approval. Load/normalize rules: `src/lib/storage.ts`. Export/import: `src/lib/boardFile.ts`.
+Browser `localStorage` only. No accounts. `localhost` ≠ Netlify (different origins). Never wipe user data without migration or explicit approval. Load/normalize rules: `src/lib/storage.ts` (title clamp, column flags, calendar-valid dates, reserved droppable ids cannot be card ids). Export/import: `src/lib/boardFile.ts` (versioned JSON or bare array; Merge or Replace; size/count caps on import).
 
 ---
 
