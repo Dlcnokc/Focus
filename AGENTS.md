@@ -1,211 +1,141 @@
 # AGENTS.md — Focus
 
-Instructions for any coding agent working in this repository. Follow these every session. Prefer this file + `PRODUCT.md` + `README.md` over assumptions.
+Instructions for coding agents. Prefer this file + `PRODUCT.md` + `README.md` over assumptions. **Code wins** for shapes, flags, and styles — docs state intent and invariants.
 
 ---
 
-## Session start (do this first)
+## Session start
 
-1. **Sync with GitHub** — one clone only (this repo folder); do not edit a second copy or a ZIP download.
-   - **Current active branch: `ui-polish`** (ahead of `main` `aaee213`: notes measure, column-count, title max 20, favicon/cleanup/`strict`, type + form weights, phone **selector** + hidden headers, quiet empty columns, docs). Stay there unless the owner says otherwise:
-     ```powershell
-     git checkout ui-polish
-     git pull origin ui-polish
-     git status
-     ```
-   - Other feature branches: same idea — **stay** on the in-flight branch; do not force-checkout `main` (that drops unmerged work).
-   - Only when work is intentionally on **`main`** (what Netlify deploys):
-     ```powershell
-     git checkout main
-     git pull origin main
-     git status
-     ```
-   Confirm: on the expected branch, up to date with its remote (or only the owner’s current uncommitted edits).
-2. Read **`PRODUCT.md`** — especially **Current status (handoff)** branch table, shipped checklist, non-goals.  
-3. Read **`README.md`** — run commands, folder map, drag/storage notes, “resume tomorrow”.  
-4. Skim this file.  
-5. Run the app if changing code: `pnpm run dev` from the repo root.  
-6. Implement the **smallest** requested slice; do not invent multi-user or backend work.
+1. **One clone only** (this repo folder). Do not edit a ZIP or second copy.
+2. **Sync the active branch** (default **`ui-polish`** unless the owner says otherwise):
+   ```powershell
+   git checkout ui-polish
+   git pull origin ui-polish
+   git status
+   ```
+   Confirm branch + clean/expected dirty state. Do **not** force-checkout `main` while unmerged work lives on a feature branch.
+3. Read **`PRODUCT.md`** (model, non-goals). Skim this file.
+4. For run/deploy/smoke: **`README.md`**.
+5. If changing code: `pnpm run dev` from repo root.
+6. Implement the **smallest** requested slice. No multi-user or backend unless asked.
+
+If `PRODUCT.md` conflicts with a user request, **ask once** before implementing the conflict.
 
 ---
 
-## What this project is
+## Product snapshot
 
-**Focus** is a solo-first personal kanban board:
+Solo kanban: **Ideas → Ready → Priority → Completed** (ids `ideas/ready/focus/done`).
 
-- Columns: **Ideas → Ready → Priority → Completed** (storage ids stay `ideas/ready/focus/done`)  
-- Cards: title (**max 20 chars**) + notes + optional priority (Low → Immediate; always set in Priority) + optional `completedAt` on Completed + `archived`  
-- Sort: **Ideas / Ready / Priority** by priority (ranked first); **Completed** by date (newest first)  
-- Drag to move/reorder with **live preview**  
-- Persist in **`localStorage`** key `focus.board.v1`  
-
-If `PRODUCT.md` and a user request conflict, **ask the user** before implementing the conflict.
+- Cards: title (**max 20**), notes, priority, `completedAt`, `archived`
+- Sort: priority on Ideas/Ready/Priority; date newest-first on Completed
+- Drag + live preview; persist `localStorage` key `focus.board.v1`
+- Full product rules: **`PRODUCT.md`**
 
 ---
 
-## Who the owner is
+## Owner & communication
 
-- Learning real application development (basic web design background).  
-- Values **clean, simple UI** and will often want **theme / design** tweaks.  
-- Targets **only themselves** for v1.  
-- Prefers working software + plain-English explanations over jargon and over-architecture.
-
-### How to communicate
-
-- Explain *what* changed and *how to try it* after meaningful steps.  
-- Gloss jargon in one line when needed.  
-- Prefer small, reviewable diffs.  
-- Teach with product language (“your board,” “a card”) when helpful.
+- Learning real app development; values clean, simple UI; often wants theme tweaks.
+- Targets **only themselves** for v1.
+- After meaningful work: say **what** changed and **how to try it**.
+- Plain English; small reviewable diffs; product language (“your board,” “a card”).
 
 ---
 
-## Product constraints (do not violate without asking)
+## Constraints (do not violate without asking)
 
-1. **v1 scope** — four fixed columns, title + notes + priority, DnD, browser persistence, calm dark greyscale + white accent, Source Code Pro.  
-2. **No multi-user / cooperative** features until explicitly requested.  
-3. **No feature bloat** — tags, due dates, assignees, attachments, charts, notifications stay out unless asked.  
-4. **One board only** in v1.  
-5. **Browser-only persistence** — do not add backend, auth, or cloud sync unless asked.  
-6. **Theme tokens** — colors/fonts/spacing via CSS variables in `src/index.css`; avoid scattered hard-coded colors.  
-7. **Modals** — themed modals with blurred backdrop (not browser `alert`/`confirm`, not a side drawer). Desktop: **centered**. Phone: **bottom sheet** (no decorative drag handle). Add/edit on phone: **tall sheet**, notes grow, header **×** + Cancel.  
-8. **No keyboard shortcuts** unless the user asks for them.
-
----
-
-## Design & theme rules
-
-- Mood: **calm dark greyscale**; **white/off-white accent**. Sanctioned semantic color exceptions: the quiet action hues (`--color-danger` / `--color-edit` / `--color-archive`), the priority-badge ramp (`--color-priority-*`), and the required-field red asterisk (`--color-required`) — keep them muted, add no other color without asking.  
-- Font: **Source Code Pro** (weights **200–700** loaded) — chrome titles **700** / UI **500** / body **400** / wordmark **200**. Board: titles/UI **400**, body **300**, notes **400**, hints **400**. Add/edit form: header **500**; title/notes typed **300** (phone **400**); placeholders one step heavier.  
-- Header: brand mark (ring) + **Focus** only (no marketing subtitle); favicon matches the ring.  
-- Columns quieter than cards; cards use subtle fill + box-shadow; empty columns = quiet text only (no dashed placeholder box).  
-- Whole **card** is draggable; action controls (copy / edit / delete / archive on Completed) and notes Expand/Collapse must remain clickable (`pointerdown` stop on those controls).  
-- Desktop: top-right action **icons** always visible. Phone: card actions behind **···**; header Archive/Export/Import behind **···**; **Add card** stays primary.  
-- Notes that paint past ~2 lines collapse with Expand/Collapse (layout-measured, not character length); copy notes via action control.  
-- While dragging: live insert preview; column under cursor highlights (including source column); overlay snaps to cursor center.  
-- Phone: singular column **selector** (one column at a time; no horizontal scroll); **column headers hidden** (selector shows name + count); touch long-press to drag; while dragging, drop chips replace the selector for cross-column moves.  
-- Motion: use shared CSS motion tokens; respect `prefers-reduced-motion`.  
-- Design changes: update tokens first, then layout if needed.
+1. **v1 scope** — four fixed columns; title + notes + priority; DnD; browser persistence; calm dark greyscale + white accent; Source Code Pro.
+2. **No multi-user** / cooperative features until requested.
+3. **No feature bloat** — tags, due dates, assignees, attachments, charts, notifications stay out unless asked.
+4. **One board only.**
+5. **Browser-only persistence** — no backend, auth, or cloud sync unless asked.
+6. **Theme tokens** — colors/fonts/spacing via CSS variables in `src/index.css`; no scattered hard-coded colors.
+7. **Modals** — themed + blurred backdrop (not `alert`/`confirm`, not a drawer). Desktop: centered. Phone: bottom sheet; add/edit tall + **×** + Cancel.
+8. **No keyboard shortcuts** unless asked.
 
 ---
 
-## Engineering principles
+## Design & UX rules
 
-### Keep it simple
+- Mood: calm dark greyscale; white accent. Semantic color only for muted danger/edit/archive, priority ramp, required asterisk.
+- Type weights, board overrides, form fields: **`src/index.css`** (do not invent a second system).
+- Header: ring + **Focus** only; favicon matches ring.
+- Columns quieter than cards; empty columns = quiet text (no dashed placeholder card).
+- Whole card draggable; action controls + notes Expand must stay clickable (`pointerdown` stop on those).
+- Desktop: card/header action icons visible. Phone: **···** for secondary; **Add card** stays primary; column **selector** (headers hidden); drop chips while dragging.
+- Notes collapse at ~2 lines (layout measure). Live drag preview; column under cursor highlights; overlay snaps to cursor center.
+- Motion: shared CSS tokens; respect `prefers-reduced-motion`.
+- Design changes: tokens first, then layout if needed. No unrelated refactors while theming.
 
-- Stack is already chosen: **Vite + React + TypeScript + @dnd-kit + localStorage**; package manager is **pnpm** (lockfile: `pnpm-lock.yaml`).  
-- Do not add dependencies without a clear need.  
-- Prefer readable code over clever code.  
-- No microservices, no heavy state libraries unless complexity forces it.
+---
 
-### Where logic lives
+## Where logic lives
 
 | Concern | Location |
 |---------|----------|
-| Card CRUD + persist hooks | `src/hooks/useBoard.ts` |
+| Card CRUD + persist | `src/hooks/useBoard.ts` |
 | localStorage load/save | `src/lib/storage.ts` |
-| Title max / validate / clamp | `src/lib/cardTitle.ts` (+ `CardFormPanel` counter/`maxLength`; clamp on load in `storage.ts`) |
-| Export/import JSON | `src/lib/boardFile.ts` + header + import modals |
-| Archive / restore | `useBoard` + Archive confirm/list modals; Completed-only archive icon |
-| Priority levels / rank / sort | `src/data/priorities.ts` + `PriorityBadge` / `PriorityPromptModal` |
-| completedAt helpers / date sort | `src/lib/dates.ts` |
-| Drag collision helpers | `src/lib/dnd.ts` (phone drop chips still use internal `tab:` ids) |
-| Pure move/reorder | `src/lib/boardMove.ts` |
-| DnD UI / overlay / phone column selector | `src/components/Board.tsx` |
-| Notes 2-line measure / Expand | `src/components/Card.tsx` |
+| Title max / validate / clamp | `src/lib/cardTitle.ts` + form + load clamp |
+| Export / import | `src/lib/boardFile.ts` + header + import modals |
+| Archive / restore | `useBoard` + archive modals |
+| Priority rank / sort | `src/data/priorities.ts` + `PriorityBadge` / `PriorityPromptModal` |
+| completedAt / date sort | `src/lib/dates.ts` |
+| Drag collision / phone drop ids | `src/lib/dnd.ts` |
+| Pure move / reorder | `src/lib/boardMove.ts` |
+| DnD UI / selector / overlay | `src/components/Board.tsx` |
+| Notes measure / Expand | `src/components/Card.tsx` |
 | Theme / layout CSS | `src/index.css` |
-| Column definitions + flags | `src/data/placeholderBoard.ts` |
-| Modal Escape / scroll lock | `src/hooks/useModalChrome.ts` (form, delete/archive/import/list, priority prompt) |
+| Column defs + flags | `src/data/placeholderBoard.ts` |
+| Modal Escape / scroll lock | `src/hooks/useModalChrome.ts` |
 
-### Quality bar
+Card shape: **`src/types.ts`**.
 
-- After meaningful changes: app must **run**; say exactly how to open/test.  
-- Prefer `pnpm run build` when touching types or drag logic.  
-- Drag order and column placement must **survive refresh**.  
-- **Never wipe** `localStorage` user data without migration or explicit approval.  
-- Corrupt load: backup raw to `focus.board.v1.bak` on hard failure (bad JSON / non-array / zero valid cards), **block save** until the user changes the board (do not write `[]` over bad data). Partial invalid rows may still allow save after keeping good cards.  
-- Do **not** persist live drag previews — save on drag commit / cancel restore / non-drag mutations only.  
-- Title search: disable drag while a filter is active (filtered list ≠ full board for DnD).  
-- Title empty or **>20 characters**: reject with red message + brief shake (`validateCardTitle` in `src/lib/cardTitle.ts`); form **`n/20`** + `maxLength={20}`. Load/import **clamps** long titles (do not drop whole cards).  
-- Destructive confirms (delete / archive / import Replace|Merge): focus **Cancel** first (`autoFocus`). Priority rank prompt focuses the select (Cancel still defaults Medium).  
-- Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; do not reshuffle when hovering same-column chrome only.  
+---
+
+## Quality bar
+
+- After meaningful changes: app must **run**; say how to open/test. Prefer `pnpm run build` when touching types or drag.
+- Drag order and column placement must **survive refresh**.
+- **Never wipe** `localStorage` without migration or explicit approval.
+- Corrupt load: backup to `focus.board.v1.bak` on hard failure; **block save** until the user changes the board (do not write `[]` over bad data).
+- **No mid-drag persist** — save on commit / cancel restore / non-drag mutations only.
+- Title search: **disable drag** while filter active.
+- Title empty or **>20 chars**: reject with red message + shake; form `n/20` + `maxLength={20}`; load/import **clamps** long titles.
+- Destructive confirms: focus **Cancel** first. Priority prompt focuses select (Cancel → Medium).
+- Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; no reshuffle on same-column chrome only.
 - No secrets in the repo.
 
-### Git & risk
+---
 
-- Do not force-push or rewrite published history without asking.  
-- Prefer small commits when the user wants version control.  
-- Docs-only pushes: include **`[skip ci]`** in the commit message so Netlify does not rebuild (see README → Deploy).
+## Git & risk
+
+- No force-push or history rewrite without asking.
+- Prefer small commits when the owner wants version control.
+- **Docs-only** commits: put **`[skip ci]`** in the message so Netlify does not rebuild.
+- Netlify deploys **`main` only**.
 
 ---
 
-## Build order / phase status
+## Workflows
 
-| Phase | Status |
-|-------|--------|
-| 1 Shell + design tokens | **Done** |
-| 2 / 2.1 CRUD + centered modals + empty board | **Done** |
-| 3 Persist + drag + live preview | **Done** |
-| Deploy (Netlify + GitHub) | **Done** (tracks `main` only) |
-| Export / import JSON | **Done** |
-| Title search | **Done** |
-| Archive Completed cards | **Done** |
-| Mobile / phone polish (··· menus, tall form + ×, touch drag) | **Done** on `main` (tabs); **ui-polish** = **selector** + hidden headers (`9be99e9`) |
-| Storage / drag safety hardening | **Done** |
-| UI motion / hover / form polish | **Done** (on `main` / `ui-polish` line) |
-| Notes collapse (2-line layout measure) | **Done** on **`ui-polish`** (`cddb294`) — merge → `main` open |
-| Column count optical center + header spacer | **Done** on **`ui-polish`** (`9c13d25`) |
-| Title max 20 chars | **Done** on **`ui-polish`** (`61ded8b`) — merge → `main` open |
-| Dead-code cleanup + strict TS + favicon mark | **Done** on **`ui-polish`** (`61ded8b`) |
-| Type + priority-badge + form weights | **Done** on **`ui-polish`** (`a9a9866`–`5e53c9e`) |
-| Quiet empty columns (no dashed chrome) | **Done** on **`ui-polish`** (`f8c9c12`) |
-| Daily-use friction fixes | **As needed** — ask before large redesign |
-| Cooperative / multi-user | **Not started** — ask first |
-| External tools hub / tax app | **Out of repo** — do not build here unless asked |
+**Design change:** tokens in `index.css` → layout only if needed → describe how to preview.
 
----
+**Ambiguity:** smaller interpretation matching `PRODUCT.md`; ask **one** focused question; document lasting decisions in `PRODUCT.md`.
 
-## When the user asks to change design
-
-1. Update tokens / theme definitions first.  
-2. Touch layout components only if needed.  
-3. Describe how to preview.  
-4. Do not refactor unrelated logic while theming.
-
----
-
-## When requirements are ambiguous
-
-- Prefer the smaller interpretation that matches `PRODUCT.md`.  
-- Ask **one** focused question rather than a long questionnaire.  
-- Document product decisions in `PRODUCT.md` when they stick.
-
----
-
-## Definition of done (per task)
-
-1. Described behavior works on a manual check.  
-2. Scope stayed inside what was asked.  
-3. Theme/token and modal/drag conventions still hold.  
-4. User is told what to click and what they should see.
+**Done when:** behavior works on a manual check; scope stayed asked; theme/modal/drag conventions hold; user knows what to click and see.
 
 ---
 
 ## Out of scope unless requested
 
-- Team boards, invites, roles  
-- Cloud sync, accounts, OAuth  
-- Backend/database  
-- Mobile native apps  
-- Analytics, ads, telemetry  
-- Heavy PM features (sprints, points, burndown)  
-- Seed/sample cards on first load (owner wants empty board)
+Team boards, invites, roles · Cloud sync, accounts, OAuth · Backend · Native apps · Analytics · Heavy PM (sprints, points) · Seed/sample cards · Other products (tax/tools hub) in this repo
 
 ---
 
-## Useful commands
+## Commands
 
 ```powershell
-cd <your local clone>
 pnpm install
 pnpm run dev
 pnpm run build
