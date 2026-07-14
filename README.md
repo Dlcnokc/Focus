@@ -1,12 +1,12 @@
 # Focus
 
-A calm personal board: **Ideas → Ready → Priority → Completed**. Solo-only for now (no multi-user).
+A calm board: **Ideas → Ready → Priority → Completed**.
 
 | | |
 |--|--|
 | **Live** | https://coruscating-travesseiro-be1b90.netlify.app/ |
 | **Code** | https://github.com/Dlcnokc/Focus (private) |
-| **Data** | This browser only (`localStorage`) — live site and `localhost` are different boards |
+| **Data** | This browser only (`localStorage`) — live site and `localhost` are different boards. Export weekly. |
 
 Product decisions: **`PRODUCT.md`**. Agent rules: **`AGENTS.md`**.
 
@@ -46,6 +46,8 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 |---------|------|
 | `pnpm run dev` | Dev server (this PC) |
 | `pnpm run dev --host` | Reachable from phone on same Wi‑Fi |
+| `pnpm run test` | Unit tests (board/storage pure logic) |
+| `pnpm run lint` | Oxlint |
 | `pnpm run build` | Production build → `dist/` |
 | `pnpm run preview` | Preview that build |
 
@@ -68,15 +70,15 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 | **Add** | Header **Add card** → Ideas; column **+** (not on Completed — drag cards there) |
 | **Edit / delete** | Icons (phone: card **···**); themed modals, not browser alerts |
 | **Title** | Required, max **20** characters (`n/20` in the form) |
-| **Priority** | Low → Immediate; badge; Ideas/Ready/Priority sort by rank; drop into Priority prompts if unranked |
-| **Completed** | Date stamped on entry; sorts newest first; **Archive** only from here |
+| **Priority** | Low → Immediate; badge; Ideas/Ready/Priority sort by rank (manual order ties); unranked into Priority → prompt (**Use Medium** → Medium) |
+| **Completed** | Date stamped on first entry (kept if already set); editable on edit form; sorts newest first; **Archive** only from here |
 | **Notes** | Long notes collapse after ~2 lines; Expand / Collapse; copy |
 | **Drag** | Drag the whole card; live preview; long-press on phone |
 | **Phone** | Column **selector** at top (one column); drop chips while dragging across columns |
 | **Search** | Filters by title; drag off while searching |
 | **Export / Import** | JSON backup; import Replace or Merge |
 
-**Limits:** clearing site data wipes the board — use **Export**. No accounts or sync. Title max 20 is intentional. No keyboard shortcuts by default.
+**Notes:** data stays in **this browser** only (no accounts / cloud). Clearing site data wipes the board — **Export weekly**. Title max 20. No keyboard shortcuts.
 
 ---
 
@@ -84,12 +86,13 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 
 1. Add a card (title counter `n/20`); empty title should error + shake  
 2. Edit notes; Expand if notes wrap past ~2 lines  
-3. Drag across columns; refresh — order and column still correct  
+3. Drag across columns; refresh — **column** still correct; equal-priority cards keep relative drag order  
 4. Search on → drag disabled; clear search → drag works  
-5. Priority: badge + sort; unranked into Priority → prompt  
-6. Into Completed → date shows; archive → Archive list → restore  
-7. Export JSON; import Merge or Replace  
-8. Phone width: selector switches columns; long-press drag  
+5. Priority: badge + sort; unranked into Priority → prompt; **Use Medium**  
+6. Drag into Completed → completion date stamps; edit form can change the date; leave Completed → date clears  
+7. Archive from Completed → Archive list → restore  
+8. Export JSON; import Merge or Replace  
+9. Phone width: selector switches columns; long-press drag  
 
 ---
 
@@ -98,14 +101,14 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 ```
 Focus/
 ├── PRODUCT.md · AGENTS.md · README.md
-├── package.json · pnpm-lock.yaml · netlify.toml
+├── package.json · pnpm-lock.yaml · netlify.toml · .github/workflows/ci.yml
 ├── index.html · public/favicon.svg
 └── src/
     ├── App.tsx · main.tsx · index.css · types.ts
     ├── hooks/     useBoard, useModalChrome
-    ├── lib/       storage, cardTitle, boardFile, dnd, boardMove, dates
+    ├── lib/       storage, cardTitle, boardFile, dnd, boardMove, dates, columnRules
     ├── data/      placeholderBoard (columns + flags), priorities
-    └── components/ Board, Column, Card, CardFormPanel, modals…
+    └── components/ Board, Column, Card, ModalShell, CardFormPanel, modals…
 ```
 
 | Want to change… | Look in… |
@@ -122,4 +125,4 @@ Focus/
 
 - Weekly **Export** backup  
 - Prefer small daily-use fixes over large redesigns without deciding first  
-- Multi-user / cloud only if you still want them after solo use feels right  
+

@@ -13,6 +13,11 @@ type ParseBoardFileResult =
   | { ok: true; cards: Card[] }
   | { ok: false; error: string }
 
+/** Guard against multi-megabyte paste / accidental huge files. */
+const MAX_IMPORT_TEXT_LENGTH = 2_000_000
+/** Soft cap so normalize work stays bounded. */
+const MAX_IMPORT_CARD_COUNT = 5000
+
 /**
  * Build a versioned JSON payload for download.
  */
@@ -28,6 +33,13 @@ function buildExportPayload(cards: Card[]): BoardExportFile {
  * Parse JSON text from an import file into normalized cards.
  */
 export function parseBoardFileJson(text: string): ParseBoardFileResult {
+  if (text.length > MAX_IMPORT_TEXT_LENGTH) {
+    return {
+      ok: false,
+      error: 'That file is too large to import.',
+    }
+  }
+
   let data: unknown
   try {
     data = JSON.parse(text)
@@ -57,6 +69,13 @@ export function parseBoardFileJson(text: string): ParseBoardFileResult {
     }
   }
 
+  if (Array.isArray(rawCards) && rawCards.length > MAX_IMPORT_CARD_COUNT) {
+    return {
+      ok: false,
+      error: `That file has too many cards (max ${MAX_IMPORT_CARD_COUNT}).`,
+    }
+  }
+
   const { cards } = normalizeCards(rawCards)
   if (cards.length === 0 && Array.isArray(rawCards) && rawCards.length > 0) {
     return {
@@ -66,6 +85,7 @@ export function parseBoardFileJson(text: string): ParseBoardFileResult {
     }
   }
 
+  // Empty array import is ok — UI confirms replace before applying
   return { ok: true, cards }
 }
 
@@ -103,5 +123,8 @@ export function downloadBoardJson(cards: Card[]): void {
   document.body.appendChild(a)
   a.click()
   document.body.removeChild(a)
-  URL.revokeObjectURL(url)
+  // Delay revoke so the browser can start the download
+  setTimeout(() => {
+    URL.revokeObjectURL(url)
+  }, 1000)
 }

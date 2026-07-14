@@ -34,6 +34,17 @@ function isColumnLikeDroppableId(id: string): boolean {
 }
 
 /**
+ * Ids that clash with droppables / mobile tabs — must not be used as card ids.
+ * Covers bare column ids, column-like droppables, and any `tab:` prefix.
+ */
+export function isReservedCardId(id: string): boolean {
+  if (isColumnId(id)) return true
+  if (columnIdFromDroppableId(id) != null) return true
+  if (id.startsWith(COLUMN_TAB_PREFIX)) return true
+  return false
+}
+
+/**
  * Prefer "pointer is inside this rect" so a column activates as soon as the
  * cursor enters it — not only when near the center (closestCorners).
  */

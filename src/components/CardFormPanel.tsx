@@ -1,5 +1,4 @@
 import {
-  useCallback,
   useEffect,
   useId,
   useRef,
@@ -9,13 +8,13 @@ import {
 } from 'react'
 import { columnDef } from '../data/placeholderBoard'
 import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
-import { useModalChrome } from '../hooks/useModalChrome'
 import {
   clampCardTitle,
   MAX_CARD_TITLE_LENGTH,
   validateCardTitle,
 } from '../lib/cardTitle'
 import type { Card, ColumnId, Priority } from '../types'
+import { ModalShell } from './ModalShell'
 
 type CreateProps = {
   mode: 'create'
@@ -60,6 +59,7 @@ export function CardFormPanel(props: Props) {
   const completedId = useId()
   const errorId = useId()
   const titleCounterId = useId()
+  const formTitleId = useId()
   const shakeRafRef = useRef<number | null>(null)
 
   const targetColumn: ColumnId =
@@ -88,11 +88,10 @@ export function CardFormPanel(props: Props) {
   const [error, setError] = useState<string | null>(null)
   /** True only while the title field shake/red flash runs. */
   const [titleShaking, setTitleShaking] = useState(false)
+  /** Locks the form after a successful submit until the modal unmounts. */
+  const [submitting, setSubmitting] = useState(false)
 
   const heading = props.mode === 'create' ? targetDef.newLabel : 'Edit card'
-  const { onClose } = props
-  const onEscape = useCallback(() => onClose(), [onClose])
-  useModalChrome(onEscape)
 
   // Backup if animationend is skipped (e.g. reduced motion / interrupted)
   useEffect(() => {
@@ -132,6 +131,8 @@ export function CardFormPanel(props: Props) {
 
   function handleSubmit(event: FormEvent) {
     event.preventDefault()
+    if (submitting) return
+
     const titleError = validateCardTitle(title)
     if (titleError) {
       flashTitleError(titleError)
@@ -174,6 +175,7 @@ export function CardFormPanel(props: Props) {
       return
     }
 
+    setSubmitting(true)
     setError(null)
     setTitleShaking(false)
     props.onClose()
@@ -185,140 +187,150 @@ export function CardFormPanel(props: Props) {
     .join(' ')
 
   return (
-    <div className="modal-backdrop" onClick={props.onClose} role="presentation">
-      <div
-        className="modal modal--form"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="card-form-title"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <header className="modal__header">
-          <h2 id="card-form-title" className="modal__title">
-            {heading}
-          </h2>
-          <button
-            type="button"
-            className="btn btn--ghost btn--icon modal__close"
-            onClick={props.onClose}
-            aria-label="Close"
-            title="Close"
-          >
-            <span aria-hidden="true">×</span>
-          </button>
-        </header>
+    <ModalShell
+      role="dialog"
+      ariaLabelledBy={formTitleId}
+      onClose={props.onClose}
+      className="modal--form"
+    >
+      <header className="modal__header">
+        <h2 id={formTitleId} className="modal__title">
+          {heading}
+        </h2>
+        <button
+          type="button"
+          className="btn btn--ghost btn--icon modal__close"
+          onClick={props.onClose}
+          aria-label="Close"
+          title="Close"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </header>
 
-        <form className="modal__form" onSubmit={handleSubmit} noValidate>
+      <form className="modal__form" onSubmit={handleSubmit} noValidate>
+        <div className="field">
+          <div className="field__label-row">
+            <label className="field__label" htmlFor={titleId}>
+              Title
+              <span className="field__asterisk" aria-hidden="true">
+                *
+              </span>
+            </label>
+            <span
+              id={titleCounterId}
+              className={`field__counter${titleOverLimit ? ' field__counter--over' : ''}`}
+              aria-live="polite"
+            >
+              {title.trim().length}/{MAX_CARD_TITLE_LENGTH}
+            </span>
+          </div>
+          <input
+            id={titleId}
+            className={`field__input${titleShaking ? ' field__input--shake' : ''}`}
+            type="text"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value.slice(0, MAX_CARD_TITLE_LENGTH))
+              if (error) setError(null)
+              if (titleShaking) setTitleShaking(false)
+            }}
+            onAnimationEnd={handleTitleAnimationEnd}
+            placeholder="What needs doing?"
+            autoFocus
+            required
+            maxLength={MAX_CARD_TITLE_LENGTH}
+            aria-required="true"
+            aria-invalid={error || titleOverLimit ? true : undefined}
+            aria-describedby={titleDescribedBy || undefined}
+            disabled={submitting}
+          />
+          {error ? (
+            <p id={errorId} className="field__error" role="alert">
+              {error}
+            </p>
+          ) : null}
+        </div>
+
+        <div className="field field--grow">
+          <label className="field__label" htmlFor={notesId}>
+            Notes
+          </label>
+          <textarea
+            id={notesId}
+            className="field__textarea"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Details, links, thoughts…"
+            rows={5}
+            disabled={submitting}
+          />
+        </div>
+
+        {showCompletedDate ? (
           <div className="field">
-            <div className="field__label-row">
-              <label className="field__label" htmlFor={titleId}>
-                Title
+            <label className="field__label" htmlFor={completedId}>
+              Completed date
+            </label>
+            <input
+              id={completedId}
+              className="field__input field__input--date"
+              type="date"
+              value={completedAt}
+              onChange={(e) => setCompletedAt(e.target.value)}
+              disabled={submitting}
+            />
+          </div>
+        ) : null}
+
+        {priorityHidden ? null : (
+          <div className="field">
+            <label className="field__label" htmlFor={priorityId}>
+              Priority
+              {priorityRequired ? (
                 <span className="field__asterisk" aria-hidden="true">
                   *
                 </span>
-              </label>
-              <span
-                id={titleCounterId}
-                className={`field__counter${titleOverLimit ? ' field__counter--over' : ''}`}
-                aria-live="polite"
-              >
-                {title.trim().length}/{MAX_CARD_TITLE_LENGTH}
-              </span>
-            </div>
-            <input
-              id={titleId}
-              className={`field__input${titleShaking ? ' field__input--shake' : ''}`}
-              type="text"
-              value={title}
-              onChange={(e) => {
-                setTitle(e.target.value.slice(0, MAX_CARD_TITLE_LENGTH))
-                if (error) setError(null)
-                if (titleShaking) setTitleShaking(false)
-              }}
-              onAnimationEnd={handleTitleAnimationEnd}
-              placeholder="What needs doing?"
-              autoFocus
-              required
-              maxLength={MAX_CARD_TITLE_LENGTH}
-              aria-required="true"
-              aria-invalid={error || titleOverLimit ? true : undefined}
-              aria-describedby={titleDescribedBy || undefined}
-            />
-            {error ? (
-              <p id={errorId} className="field__error" role="alert">
-                {error}
-              </p>
-            ) : null}
-          </div>
-
-          <div className="field field--grow">
-            <label className="field__label" htmlFor={notesId}>
-              Notes
+              ) : null}
             </label>
-            <textarea
-              id={notesId}
-              className="field__textarea"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Details, links, thoughts…"
-              rows={5}
-            />
+            <select
+              id={priorityId}
+              className="field__select"
+              value={priority}
+              onChange={(e) => setPriority(e.target.value as Priority | '')}
+              aria-required={priorityRequired ? 'true' : undefined}
+              disabled={submitting}
+            >
+              {priorityRequired ? null : (
+                <option value={NO_PRIORITY}>No priority</option>
+              )}
+              {PRIORITY_OPTIONS_DESC.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
           </div>
+        )}
 
-          {showCompletedDate ? (
-            <div className="field">
-              <label className="field__label" htmlFor={completedId}>
-                Completed date
-              </label>
-              <input
-                id={completedId}
-                className="field__input field__input--date"
-                type="date"
-                value={completedAt}
-                onChange={(e) => setCompletedAt(e.target.value)}
-              />
-            </div>
-          ) : null}
-
-          {priorityHidden ? null : (
-            <div className="field">
-              <label className="field__label" htmlFor={priorityId}>
-                Priority
-                {priorityRequired ? (
-                  <span className="field__asterisk" aria-hidden="true">
-                    *
-                  </span>
-                ) : null}
-              </label>
-              <select
-                id={priorityId}
-                className="field__select"
-                value={priority}
-                onChange={(e) => setPriority(e.target.value as Priority | '')}
-                aria-required={priorityRequired ? 'true' : undefined}
-              >
-                {priorityRequired ? null : (
-                  <option value={NO_PRIORITY}>No priority</option>
-                )}
-                {PRIORITY_OPTIONS_DESC.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          <div className="modal__actions">
-            <button type="button" className="btn btn--ghost" onClick={props.onClose}>
-              Cancel
-            </button>
-            <button type="submit" className="btn btn--primary">
-              {props.mode === 'create' ? 'Add card' : 'Save'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+        <div className="modal__actions">
+          <button
+            type="button"
+            className="btn btn--ghost"
+            onClick={props.onClose}
+            disabled={submitting}
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            className="btn btn--primary"
+            disabled={submitting}
+          >
+            {props.mode === 'create' ? 'Add card' : 'Save'}
+          </button>
+        </div>
+      </form>
+    </ModalShell>
   )
 }

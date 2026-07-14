@@ -2,9 +2,11 @@ import { useSortable } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import {
   useEffect,
+  useId,
   useLayoutEffect,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
   type SVGProps,
 } from 'react'
@@ -123,6 +125,8 @@ async function writeClipboard(text: string): Promise<boolean> {
   }
 }
 
+type CopyFeedback = 'idle' | 'ok' | 'fail'
+
 export function Card({
   card,
   dragDisabled = false,
@@ -130,6 +134,8 @@ export function Card({
   onRequestDelete,
   onRequestArchive,
 }: Props) {
+  const titleDomId = useId()
+  const notesDomId = useId()
   const canArchive =
     columnDef(card.column).allowsArchive && !card.archived && onRequestArchive
   const {
@@ -143,22 +149,29 @@ export function Card({
     id: card.id,
     disabled: dragDisabled,
     data: { type: 'card', cardId: card.id, column: card.column },
+    // Avoid role=button on <article> (nested buttons would be invalid)
+    attributes: {
+      role: 'article',
+      tabIndex: -1,
+    },
   })
 
   const hasNotes = Boolean(card.notes)
   const [expanded, setExpanded] = useState(false)
   /** Measured: notes wrap past the 2-line clamp (not character count). */
   const [notesOverflow, setNotesOverflow] = useState(false)
-  const [copied, setCopied] = useState(false)
+  const [copyFeedback, setCopyFeedback] = useState<CopyFeedback>('idle')
   const [actionsOpen, setActionsOpen] = useState(false)
+  const [panelStyle, setPanelStyle] = useState<CSSProperties | undefined>()
   const actionsRootRef = useRef<HTMLDivElement>(null)
+  const actionsToggleRef = useRef<HTMLButtonElement>(null)
   const notesRef = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
-    if (!copied) return
-    const t = window.setTimeout(() => setCopied(false), 1500)
+    if (copyFeedback === 'idle') return
+    const t = window.setTimeout(() => setCopyFeedback('idle'), 1500)
     return () => window.clearTimeout(t)
-  }, [copied])
+  }, [copyFeedback])
 
   useEffect(() => {
     if (isDragging) setActionsOpen(false)
@@ -190,6 +203,44 @@ export function Card({
     ro.observe(el)
     return () => ro.disconnect()
   }, [hasNotes, card.notes, expanded, card.id])
+
+  /** Place the ··· panel with fixed coords so column overflow does not clip it. */
+  useLayoutEffect(() => {
+    if (!actionsOpen) {
+      setPanelStyle(undefined)
+      return
+    }
+
+    function place() {
+      const toggle = actionsToggleRef.current
+      if (!toggle) return
+      // Only needed when the phone menu is the absolute/fixed dropdown
+      if (typeof window.matchMedia === 'function') {
+        const phone = window.matchMedia('(max-width: 640px)').matches
+        if (!phone) {
+          setPanelStyle(undefined)
+          return
+        }
+      }
+      const rect = toggle.getBoundingClientRect()
+      setPanelStyle({
+        position: 'fixed',
+        top: rect.bottom + 4,
+        right: Math.max(8, window.innerWidth - rect.right),
+        left: 'auto',
+        zIndex: 50,
+      })
+    }
+
+    place()
+    window.addEventListener('resize', place)
+    // Capture scroll from nested column bodies
+    window.addEventListener('scroll', place, true)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
+    }
+  }, [actionsOpen])
 
   /** Phone ··· menu: close on outside tap or Escape (matches header menu). */
   useEffect(() => {
@@ -225,7 +276,7 @@ export function Card({
     if (!card.notes) return
     setActionsOpen(false)
     const ok = await writeClipboard(card.notes)
-    if (ok) setCopied(true)
+    setCopyFeedback(ok ? 'ok' : 'fail')
   }
 
   // Keep the 2-line clamp while collapsed so measurement and wrapping match the UI.
@@ -233,22 +284,38 @@ export function Card({
   const clampNotes = hasNotes && !expanded
   const showNotesToggle = notesOverflow || expanded
 
+  const copyLabel =
+    copyFeedback === 'ok'
+      ? 'Notes copied'
+      : copyFeedback === 'fail'
+        ? 'Copy failed'
+        : 'Copy notes to clipboard'
+  const copyTitle =
+    copyFeedback === 'ok'
+      ? 'Copied'
+      : copyFeedback === 'fail'
+        ? 'Copy failed'
+        : 'Copy notes'
+
   return (
     <article
       ref={setNodeRef}
       style={style}
       className={`card${isDragging ? ' card--dragging' : ''}${dragDisabled ? ' card--no-drag' : ''}`}
-      aria-label={card.title}
+      aria-labelledby={titleDomId}
       {...attributes}
       {...(dragDisabled ? {} : listeners)}
     >
       <div className="card__top">
-        <h3 className="card__title">{card.title}</h3>
+        <h3 id={titleDomId} className="card__title">
+          {card.title}
+        </h3>
         <div
           ref={actionsRootRef}
           className={`card__actions${actionsOpen ? ' is-open' : ''}`}
         >
           <button
+            ref={actionsToggleRef}
             type="button"
             className="btn btn--ghost btn--icon card__actions-toggle"
             aria-expanded={actionsOpen}
@@ -260,17 +327,22 @@ export function Card({
           >
             <span aria-hidden="true">···</span>
           </button>
-          <div className="card__actions-panel" role="group" aria-label="Card actions">
+          <div
+            className="card__actions-panel"
+            role="group"
+            aria-label="Card actions"
+            style={panelStyle}
+          >
             {hasNotes ? (
               <button
                 type="button"
                 className="btn btn--ghost btn--icon"
                 onClick={() => void copyNotes()}
                 onPointerDown={(e) => e.stopPropagation()}
-                aria-label={copied ? 'Notes copied' : 'Copy notes to clipboard'}
-                title={copied ? 'Copied' : 'Copy notes'}
+                aria-label={copyLabel}
+                title={copyTitle}
               >
-                {copied ? <IconCheck /> : <IconCopy />}
+                {copyFeedback === 'ok' ? <IconCheck /> : <IconCopy />}
               </button>
             ) : null}
             {canArchive ? (
@@ -326,6 +398,7 @@ export function Card({
       {hasNotes ? (
         <div className="card__notes-block">
           <p
+            id={notesDomId}
             ref={notesRef}
             className={`card__notes${clampNotes ? ' card__notes--collapsed' : ''}`}
           >
@@ -338,6 +411,7 @@ export function Card({
               onClick={() => setExpanded((v) => !v)}
               onPointerDown={(e) => e.stopPropagation()}
               aria-expanded={expanded}
+              aria-controls={notesDomId}
             >
               {expanded ? 'Collapse' : 'Expand'}
             </button>

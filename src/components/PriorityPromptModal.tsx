@@ -1,7 +1,7 @@
-import { useCallback, useId, useState } from 'react'
+import { useId, useState } from 'react'
 import { DEFAULT_PRIORITY, PRIORITY_OPTIONS_DESC } from '../data/priorities'
-import { useModalChrome } from '../hooks/useModalChrome'
 import type { Priority } from '../types'
+import { ModalShell } from './ModalShell'
 
 type Props = {
   cardTitle: string
@@ -17,56 +17,51 @@ type Props = {
 export function PriorityPromptModal({ cardTitle, onConfirm, onCancel }: Props) {
   const selectId = useId()
   const [priority, setPriority] = useState<Priority>(DEFAULT_PRIORITY)
-  const onEscape = useCallback(() => onCancel(), [onCancel])
-  useModalChrome(onEscape)
 
   return (
-    <div className="modal-backdrop" onClick={onCancel} role="presentation">
-      <div
-        className="modal modal--confirm"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="priority-modal-title"
-        aria-describedby="priority-modal-desc"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <h2 id="priority-modal-title" className="modal__title">
-          Set priority
-        </h2>
-        <p id="priority-modal-desc" className="modal__body">
-          “{cardTitle}” moved to Priority. How important is it?
-        </p>
-        <div className="field">
-          <label className="field__label" htmlFor={selectId}>
-            Priority
-          </label>
-          <select
-            id={selectId}
-            className="field__select"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value as Priority)}
-            autoFocus
-          >
-            {PRIORITY_OPTIONS_DESC.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div className="modal__actions">
-          <button type="button" className="btn btn--ghost" onClick={onCancel}>
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="btn btn--primary"
-            onClick={() => onConfirm(priority)}
-          >
-            Set priority
-          </button>
-        </div>
+    <ModalShell
+      role="dialog"
+      ariaLabelledBy="priority-modal-title"
+      ariaDescribedBy="priority-modal-desc"
+      onClose={onCancel}
+      className="modal--confirm"
+    >
+      <h2 id="priority-modal-title" className="modal__title">
+        Set priority
+      </h2>
+      <p id="priority-modal-desc" className="modal__body">
+        “{cardTitle}” moved to Priority. How important is it?
+      </p>
+      <div className="field">
+        <label className="field__label" htmlFor={selectId}>
+          Priority
+        </label>
+        <select
+          id={selectId}
+          className="field__select"
+          value={priority}
+          onChange={(e) => setPriority(e.target.value as Priority)}
+          autoFocus
+        >
+          {PRIORITY_OPTIONS_DESC.map((opt) => (
+            <option key={opt.value} value={opt.value}>
+              {opt.label}
+            </option>
+          ))}
+        </select>
       </div>
-    </div>
+      <div className="modal__actions">
+        <button type="button" className="btn btn--ghost" onClick={onCancel}>
+          Use Medium
+        </button>
+        <button
+          type="button"
+          className="btn btn--primary"
+          onClick={() => onConfirm(priority)}
+        >
+          Set priority
+        </button>
+      </div>
+    </ModalShell>
   )
 }

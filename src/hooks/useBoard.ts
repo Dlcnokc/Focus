@@ -2,9 +2,11 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import { columnDef } from '../data/placeholderBoard'
 import { applyCardMove, boardsEqual, type MoveHint } from '../lib/boardMove'
 import { normalizeCardTitle, validateCardTitle } from '../lib/cardTitle'
-import { todayIsoDate } from '../lib/dates'
+import { applyColumnTransitionRules } from '../lib/columnRules'
+import { isIsoDate } from '../lib/dates'
 import { mergeCardLists } from '../lib/boardFile'
 import {
+  BOARD_STORAGE_KEY,
   cardsInColumn,
   loadBoard,
   reindexOrders,
@@ -22,6 +24,9 @@ function newId(): string {
 
 const SAVE_ERROR =
   'Could not save the board to browser storage (quota or private mode). Changes stay on screen until you fix storage or Export a backup.'
+
+const OTHER_TAB_MSG =
+  'Board was updated in another tab. Reload to see those changes.'
 
 type AddCardInput = {
   title: string
@@ -100,6 +105,16 @@ export function useBoard() {
     persistIfAllowed(cards)
   }, [cards, persistIfAllowed])
 
+  // Soft multi-tab notice — never auto-overwrite local state
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== BOARD_STORAGE_KEY) return
+      setLoadError(OTHER_TAB_MSG)
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
   const addCard = useCallback(
     (input: AddCardInput) => {
       const titleError = validateCardTitle(input.title)
@@ -137,6 +152,10 @@ export function useBoard() {
         return { ok: false as const, error: titleError }
       }
       const title = normalizeCardTitle(input.title)
+      const completedAt =
+        input.completedAt != null && isIsoDate(input.completedAt)
+          ? input.completedAt
+          : undefined
 
       enablePersist()
       setCards((prev) =>
@@ -147,7 +166,7 @@ export function useBoard() {
                 title,
                 notes: input.notes.trim(),
                 priority: input.priority,
-                completedAt: input.completedAt,
+                completedAt,
               }
             : card,
         ),
@@ -176,32 +195,44 @@ export function useBoard() {
     [enablePersist],
   )
 
-  /** Soft-remove from the board (recoverable). */
+  /** Soft-remove from the board (recoverable). Only columns that allow archive. */
   const archiveCard = useCallback(
     (id: string) => {
       enablePersist()
-      setCards((prev) =>
-        reindexOrders(
-          prev.map((card) =>
-            card.id === id ? { ...card, archived: true } : card,
-          ),
-        ),
-      )
+      setCards((prev) => {
+        const card = prev.find((c) => c.id === id)
+        if (!card || card.archived) return prev
+        if (!columnDef(card.column).allowsArchive) return prev
+        return reindexOrders(
+          prev.map((c) => (c.id === id ? { ...c, archived: true } : c)),
+        )
+      })
     },
     [enablePersist],
   )
 
-  /** Put an archived card back on the board (same column). */
+  /** Put an archived card back on the board (same column, end of actives). */
   const restoreCard = useCallback(
     (id: string) => {
       enablePersist()
-      setCards((prev) =>
-        reindexOrders(
+      setCards((prev) => {
+        const target = prev.find((c) => c.id === id)
+        if (!target || !target.archived) return prev
+
+        const actives = prev.filter(
+          (c) => c.column === target.column && !c.archived,
+        )
+        const order =
+          actives.length === 0
+            ? 0
+            : Math.max(...actives.map((c) => c.order)) + 1
+
+        return reindexOrders(
           prev.map((card) =>
-            card.id === id ? { ...card, archived: false } : card,
+            card.id === id ? { ...card, archived: false, order } : card,
           ),
-        ),
-      )
+        )
+      })
     },
     [enablePersist],
   )
@@ -244,12 +275,11 @@ export function useBoard() {
   )
 
   /**
-   * Drop finished — apply final placement synchronously, then persist that
-   * board. Optional active/over re-applies the last drop (avoids a
-   * one-frame-stale save). Afterwards, column entry/exit rules run against
-   * the pre-drag snapshot: an unranked card entering Priority opens the
-   * rank prompt; entering Completed strips priority and stamps today's
-   * completion date; leaving Completed clears the date.
+   * Drop finished — clear drag state, optionally re-apply the last drop,
+   * run column entry/exit rules once against the pre-drag snapshot, then
+   * commit a single board (priority/date fields included). Never persist a
+   * pre-rules intermediate. Disk: cards effect when setCards runs; one
+   * explicit save when the preview already matched the final board.
    */
   const commitDrag = useCallback(
     (activeId?: string, overId?: string, hint?: MoveHint) => {
@@ -258,71 +288,41 @@ export function useBoard() {
       isDraggingRef.current = false
 
       let next = cardsRef.current
-      let persistsViaEffect = false
+
       if (activeId && overId && activeId !== overId) {
         const moved = applyCardMove(next, activeId, overId, hint)
         if (!boardsEqual(next, moved)) {
           next = moved
-          cardsRef.current = next
-          setCards(next)
-          // Persist via the cards effect — avoid a second identical write
-          persistsViaEffect = true
         }
       }
 
-      if (!persistsViaEffect && allowPersistRef.current) {
-        // Board already matched the drop (live preview); effect will not re-run
-        reportSaveResult(saveCards(next))
-      }
-
+      let promptId: string | null = null
       if (snapshot) {
-        const movedTo = (card: Card) => {
-          const before = snapshot.find((s) => s.id === card.id)
-          return before != null && before.column !== card.column
-        }
-
-        // Prompt only when a card arrives unranked in a column that requires a rank.
-        const entered = next.find(
-          (card) =>
-            !card.archived &&
-            columnDef(card.column).requiresPriority &&
-            card.priority == null &&
-            movedTo(card),
-        )
-        if (entered) {
-          setPriorityPromptCardId(entered.id)
-        }
-
-        const needsRules = next.some((card) => {
-          if (!movedTo(card)) return false
-          const def = columnDef(card.column)
-          return (
-            (def.clearsPriority && card.priority != null) ||
-            def.tracksCompletedDate ||
-            (!def.tracksCompletedDate && card.completedAt != null)
-          )
-        })
-        if (needsRules) {
-          setCards((prev) =>
-            prev.map((card) => {
-              if (!movedTo(card)) return card
-              const def = columnDef(card.column)
-              let updated = card
-              if (def.clearsPriority && updated.priority != null) {
-                updated = { ...updated, priority: undefined }
-              }
-              if (def.tracksCompletedDate) {
-                updated = { ...updated, completedAt: todayIsoDate() }
-              } else if (updated.completedAt != null) {
-                updated = { ...updated, completedAt: undefined }
-              }
-              return updated
-            }),
-          )
-        }
+        const rules = applyColumnTransitionRules(next, snapshot)
+        next = rules.cards
+        promptId = rules.priorityPromptCardId
       }
+
+      if (promptId) {
+        setPriorityPromptCardId(promptId)
+      }
+
+      // A finished drop is an intentional board change (also re-enables save
+      // after a blocked corrupt load).
+      enablePersist()
+
+      if (next !== cardsRef.current) {
+        cardsRef.current = next
+        setCards(next)
+        // Persist via the cards effect once isDragging is false
+        return
+      }
+
+      // Preview already matched final board (incl. no rule changes) —
+      // effect will not re-run; write disk once now.
+      reportSaveResult(saveCards(next))
     },
-    [reportSaveResult],
+    [enablePersist, reportSaveResult],
   )
 
   const dismissPriorityPrompt = useCallback(() => {

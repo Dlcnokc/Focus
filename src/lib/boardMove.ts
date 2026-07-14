@@ -16,12 +16,7 @@ function rebuildFromLists(lists: Record<ColumnId, Card[]>): Card[] {
 
 /** Active cards only — archived stay out of drag lists. */
 function listsFromCards(cards: Card[]): Record<ColumnId, Card[]> {
-  const lists: Record<ColumnId, Card[]> = {
-    ideas: [],
-    ready: [],
-    focus: [],
-    done: [],
-  }
+  const lists = {} as Record<ColumnId, Card[]>
   for (const id of COLUMN_IDS) {
     lists[id] = cardsInColumn(cards, id)
   }
@@ -38,6 +33,19 @@ export type MoveHint = {
   pointerY?: number
   overTop?: number
   overHeight?: number
+}
+
+/** True when pointer is in the lower half of the over rect (insert after). */
+function insertAfterFromHint(hint?: MoveHint): boolean {
+  if (
+    hint?.pointerY === undefined ||
+    hint.overTop === undefined ||
+    hint.overHeight === undefined ||
+    hint.overHeight <= 0
+  ) {
+    return false
+  }
+  return hint.pointerY > hint.overTop + hint.overHeight / 2
 }
 
 /**
@@ -98,12 +106,7 @@ export function applyCardMove(
   if (insertAt < 0) {
     targetList.push({ ...active, column: targetColumn, archived: false })
   } else {
-    if (
-      hint?.pointerY !== undefined &&
-      hint.overTop !== undefined &&
-      hint.overHeight !== undefined &&
-      hint.pointerY > hint.overTop + hint.overHeight / 2
-    ) {
+    if (insertAfterFromHint(hint)) {
       insertAt += 1
     }
     targetList.splice(insertAt, 0, {
@@ -134,15 +137,25 @@ export function boardsEqual(a: Card[], b: Card[]): boolean {
   return true
 }
 
-/** Stable key for “where would this drop?” to skip redundant previews. */
+/**
+ * Cheap attempt key for drag-over dedupe — does not run applyCardMove.
+ * Board still applies the move once via previewMove when the sig changes.
+ * Format: activeId>overId:above|below| (empty half when no pointer hint).
+ */
 export function moveSignature(
-  cards: Card[],
+  _cards: Card[],
   activeId: string,
   overId: string,
   hint?: MoveHint,
 ): string {
-  const next = applyCardMove(cards, activeId, overId, hint)
-  const active = next.find((c) => c.id === activeId)
-  if (!active) return `${activeId}>gone`
-  return `${activeId}>${active.column}:${active.order}`
+  let half = ''
+  if (
+    hint?.pointerY !== undefined &&
+    hint.overTop !== undefined &&
+    hint.overHeight !== undefined &&
+    hint.overHeight > 0
+  ) {
+    half = insertAfterFromHint(hint) ? 'below' : 'above'
+  }
+  return `${activeId}>${overId}:${half}`
 }

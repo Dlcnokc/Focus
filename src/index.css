@@ -90,6 +90,14 @@
     0 0 0 1px rgba(255, 255, 255, 0.04),
     0 2px 4px rgba(0, 0, 0, 0.35),
     0 10px 28px rgba(0, 0, 0, 0.45);
+  /* Elevated chrome (modals, overflow menus) */
+  --shadow-elevated:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 32px rgba(0, 0, 0, 0.55);
+  --shadow-modal:
+    0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 16px 48px rgba(0, 0, 0, 0.55);
+  --modal-backdrop: rgba(0, 0, 0, 0.45);
   --header-height: 3.75rem;
   --layout-pad-x: var(--space-6);
   --layout-pad-y: var(--space-5);
@@ -529,7 +537,8 @@ p {
   box-shadow: var(--shadow-card);
   /* Colors + shadow only — never transform (dnd-kit uses transform for drag) */
   transition: var(--motion-transition-colors);
-  touch-action: none;
+  /* Allow vertical scroll on phone; drag sensors use delay; none while dragging */
+  touch-action: pan-y;
   cursor: grab;
 }
 
@@ -762,10 +771,14 @@ button.app__header-more-toggle.btn--icon {
   flex-shrink: 0;
 }
 
-/* While dragging: calm cursor + no text selection */
+/* While dragging: calm cursor + no text selection; kill pan on cards */
 body.is-dragging {
   cursor: grabbing;
   user-select: none;
+}
+
+body.is-dragging .card {
+  touch-action: none;
 }
 
 /* While a modal is open: avoid scrolling the board under the overlay */
@@ -799,6 +812,13 @@ body.modal-open {
   outline-offset: 2px;
 }
 
+.btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  pointer-events: none;
+}
+
 .btn--primary {
   background: var(--color-accent);
   color: var(--color-accent-on);
@@ -820,6 +840,24 @@ body.modal-open {
   color: var(--color-text);
   border-color: var(--color-accent-ring);
   background: var(--color-accent-soft);
+}
+
+/* Solid muted danger primary (confirm Delete / Archive / Replace) */
+.btn--danger {
+  background: color-mix(in srgb, var(--color-danger) 78%, #1a0a0a);
+  color: #fff;
+  border-color: color-mix(in srgb, var(--color-danger) 55%, transparent);
+}
+
+.btn--danger:hover {
+  background: color-mix(in srgb, var(--color-danger) 88%, #1a0a0a);
+  border-color: var(--color-danger-border);
+}
+
+.btn--danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .btn--danger-ghost {
@@ -875,7 +913,7 @@ body.modal-open {
   align-items: center;
   justify-content: center;
   padding: var(--space-5);
-  background: rgba(0, 0, 0, 0.45);
+  background: var(--modal-backdrop);
   backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
 }
@@ -885,9 +923,7 @@ body.modal-open {
   background: var(--color-elevated);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  box-shadow:
-    0 0 0 1px rgba(255, 255, 255, 0.04),
-    0 16px 48px rgba(0, 0, 0, 0.55);
+  box-shadow: var(--shadow-modal);
   padding: var(--space-5);
   display: flex;
   flex-direction: column;
@@ -1440,12 +1476,11 @@ body.modal-open {
     background: var(--color-elevated);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.04),
-      0 12px 32px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--shadow-elevated);
     z-index: 30;
   }
 
+  /* Fixed placement (inline style from App) still needs flex when open */
   .app__header-more.is-open .app__header-more-panel {
     display: flex;
   }
@@ -1664,11 +1699,10 @@ body.modal-open {
     background: var(--color-elevated);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
-    box-shadow:
-      0 0 0 1px rgba(255, 255, 255, 0.04),
-      0 10px 28px rgba(0, 0, 0, 0.55);
+    box-shadow: var(--shadow-elevated);
   }
 
+  /* Fixed placement (inline style from Card) still needs flex when open */
   .card__actions.is-open .card__actions-panel {
     display: flex;
   }

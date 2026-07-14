@@ -3,12 +3,17 @@ import {
   columnDef,
   isColumnId,
 } from '../data/placeholderBoard'
-import { DEFAULT_PRIORITY, isPriority } from '../data/priorities'
+import {
+  DEFAULT_PRIORITY,
+  comparePriorityThenOrder,
+  isPriority,
+} from '../data/priorities'
 import { clampCardTitle } from './cardTitle'
-import { isIsoDate } from './dates'
+import { compareCompletedDateThenOrder, isIsoDate } from './dates'
+import { isReservedCardId } from './dnd'
 import type { Card, ColumnId } from '../types'
 
-const BOARD_STORAGE_KEY = 'focus.board.v1'
+export const BOARD_STORAGE_KEY = 'focus.board.v1'
 /** Last good raw payload when the main key fails to parse or drops rows. */
 const BOARD_STORAGE_BACKUP_KEY = 'focus.board.v1.bak'
 
@@ -32,7 +37,7 @@ type NormalizeResult = {
 /**
  * Parse and normalize stored board data.
  * Older cards without `order` / `archived` get defaults.
- * Empty titles dropped; reserved column ids cannot be card ids; duplicate ids keep last.
+ * Empty titles dropped; reserved droppable ids cannot be card ids; duplicate ids keep last.
  * Column priority/date rules are enforced here too, so imports and old saves
  * can't sneak past them: Completed strips priority and keeps only valid
  * completion dates, Priority defaults unranked cards to Medium.
@@ -57,8 +62,8 @@ export function normalizeCards(raw: unknown): NormalizeResult {
     }
 
     const id = rec.id.trim()
-    // Empty or reserved ids clash with column droppables in @dnd-kit
-    if (!id || isColumnId(id)) {
+    // Empty or reserved ids clash with column / tab droppables in @dnd-kit
+    if (!id || isReservedCardId(id)) {
       skippedInvalid += 1
       return
     }
@@ -224,12 +229,19 @@ export function saveCards(cards: Card[]): boolean {
   }
 }
 
-/** Active (non-archived) cards in a column, sorted by order. */
+/**
+ * Active (non-archived) cards in a column, sorted like Column display:
+ * Completed → completion date newest-first; otherwise priority then order.
+ * Drag lists and visual order stay aligned.
+ */
 export function cardsInColumn(cards: Card[], columnId: ColumnId): Card[] {
+  const compare = columnDef(columnId).tracksCompletedDate
+    ? compareCompletedDateThenOrder
+    : comparePriorityThenOrder
   return cards
     .filter((c) => c.column === columnId && !c.archived)
     .slice()
-    .sort((a, b) => a.order - b.order)
+    .sort(compare)
 }
 
 /** Soft-archived cards (any column), title sort for a stable list UI. */

@@ -1,9 +1,11 @@
 import {
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
   type ChangeEvent,
+  type CSSProperties,
 } from 'react'
 import { ArchiveConfirmModal } from './components/ArchiveConfirmModal'
 import { ArchiveListModal } from './components/ArchiveListModal'
@@ -52,8 +54,12 @@ function App() {
   const [importError, setImportError] = useState<string | null>(null)
   const [titleQuery, setTitleQuery] = useState('')
   const [headerMenuOpen, setHeaderMenuOpen] = useState(false)
+  const [headerPanelStyle, setHeaderPanelStyle] = useState<
+    CSSProperties | undefined
+  >()
   const fileInputRef = useRef<HTMLInputElement>(null)
   const headerMoreRef = useRef<HTMLDivElement>(null)
+  const headerMoreToggleRef = useRef<HTMLButtonElement>(null)
 
   const archivedCards = useMemo(() => listArchivedCards(cards), [cards])
   const activeCardCount = useMemo(
@@ -231,6 +237,42 @@ function App() {
     }
   }, [priorityPromptCardId, priorityPromptCard, dismissPriorityPrompt])
 
+  /** Place header ··· panel fixed so it is not clipped by layout overflow. */
+  useLayoutEffect(() => {
+    if (!headerMenuOpen) {
+      setHeaderPanelStyle(undefined)
+      return
+    }
+
+    function place() {
+      const toggle = headerMoreToggleRef.current
+      if (!toggle) return
+      if (typeof window.matchMedia === 'function') {
+        const phone = window.matchMedia('(max-width: 640px)').matches
+        if (!phone) {
+          setHeaderPanelStyle(undefined)
+          return
+        }
+      }
+      const rect = toggle.getBoundingClientRect()
+      setHeaderPanelStyle({
+        position: 'fixed',
+        top: rect.bottom + 6,
+        right: Math.max(8, window.innerWidth - rect.right),
+        left: 'auto',
+        zIndex: 50,
+      })
+    }
+
+    place()
+    window.addEventListener('resize', place)
+    window.addEventListener('scroll', place, true)
+    return () => {
+      window.removeEventListener('resize', place)
+      window.removeEventListener('scroll', place, true)
+    }
+  }, [headerMenuOpen])
+
   /** Close mobile header menu on outside click or Escape. */
   useEffect(() => {
     if (!headerMenuOpen) return
@@ -287,6 +329,7 @@ function App() {
             className={`app__header-more${headerMenuOpen ? ' is-open' : ''}`}
           >
             <button
+              ref={headerMoreToggleRef}
               type="button"
               className="btn btn--ghost btn--icon app__header-more-toggle"
               aria-expanded={headerMenuOpen}
@@ -301,6 +344,7 @@ function App() {
               className="app__header-more-panel"
               role="group"
               aria-label="Board file actions"
+              style={headerPanelStyle}
             >
               <button
                 type="button"

@@ -3,13 +3,12 @@ import {
   SortableContext,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
-import { comparePriorityThenOrder } from '../data/priorities'
-import { compareCompletedDateThenOrder } from '../lib/dates'
 import type { Card as CardType, ColumnDef } from '../types'
 import { Card } from './Card'
 
 type Props = {
   column: ColumnDef
+  /** Already display-sorted (priority / completed date) via `cardsInColumn`. */
   cards: CardType[]
   dragDisabled?: boolean
   /** Light up as a valid drop target while dragging (includes source column). */
@@ -36,18 +35,7 @@ export function Column({
   // Whole column is the droppable so the cursor anywhere inside counts.
   const { setNodeRef } = useDroppable({ id: column.id })
 
-  // Parent passes cardsInColumn (order-sorted); the policy sort still runs
-  // here: Completed sorts by completion date (newest first); every other
-  // column auto-sorts by importance. Undated/unranked cards keep manual
-  // drag order below the sorted ones.
-  const sorted = cards
-    .slice()
-    .sort(
-      column.tracksCompletedDate
-        ? compareCompletedDateThenOrder
-        : comparePriorityThenOrder,
-    )
-  const itemIds = sorted.map((c) => c.id)
+  const itemIds = cards.map((c) => c.id)
   const canAdd = column.allowsDirectAdd
 
   return (
@@ -83,7 +71,7 @@ export function Column({
 
       <div className="column__body">
         <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
-          {sorted.length === 0 ? (
+          {cards.length === 0 ? (
             <div className="column__empty">
               <p className="column__empty-text">Nothing here yet</p>
               {canAdd ? (
@@ -97,7 +85,7 @@ export function Column({
               ) : null}
             </div>
           ) : (
-            sorted.map((card) => (
+            cards.map((card) => (
               <Card
                 key={card.id}
                 card={card}

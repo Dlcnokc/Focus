@@ -11,7 +11,7 @@ import {
   type DragStartEvent,
 } from '@dnd-kit/core'
 import { snapCenterToCursor } from '@dnd-kit/modifiers'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { COLUMNS } from '../data/placeholderBoard'
 import { PriorityBadge } from './PriorityBadge'
 import {
@@ -52,12 +52,22 @@ function moveHintFromEvent(
   const over = event.over
   if (!over) return undefined
 
-  // Prefer pointer from activator + transform when translated rect is missing
-  const translated = event.active.rect.current.translated
-  const initial = event.active.rect.current.initial
-  const rect = translated ?? initial
-  const pointerY =
-    rect != null ? rect.top + rect.height / 2 : undefined
+  // Prefer live pointer Y (activator + delta) when available
+  let pointerY: number | undefined
+  const activator = event.activatorEvent
+  if (
+    activator &&
+    'clientY' in activator &&
+    typeof (activator as { clientY: unknown }).clientY === 'number' &&
+    event.delta
+  ) {
+    pointerY = (activator as { clientY: number }).clientY + event.delta.y
+  } else {
+    const translated = event.active.rect.current.translated
+    const initial = event.active.rect.current.initial
+    const rect = translated ?? initial
+    pointerY = rect != null ? rect.top + rect.height / 2 : undefined
+  }
 
   return {
     pointerY,
@@ -118,6 +128,15 @@ export function Board({
   const lastPreviewSigRef = useRef<string | null>(null)
   const cardsRef = useRef(cards)
   cardsRef.current = cards
+
+  // One pass per board update — drop chips, selector, and columns share lists
+  const cardsByColumn = useMemo(() => {
+    const map = {} as Record<ColumnId, Card[]>
+    for (const column of COLUMNS) {
+      map[column.id] = cardsInColumn(cards, column.id)
+    }
+    return map
+  }, [cards])
 
   const sensors = useSensors(
     useSensor(MouseSensor, {
@@ -249,7 +268,7 @@ export function Board({
               <BoardColumnDropTarget
                 key={column.id}
                 column={column}
-                count={cardsInColumn(cards, column.id).length}
+                count={cardsByColumn[column.id].length}
                 isActive={mobileColumnId === column.id}
               />
             ))}
@@ -264,7 +283,7 @@ export function Board({
               aria-label="Select column"
             >
               {COLUMNS.map((column) => {
-                const count = cardsInColumn(cards, column.id).length
+                const count = cardsByColumn[column.id].length
                 return (
                   <option key={column.id} value={column.id}>
                     {column.label} ({count})
@@ -286,7 +305,7 @@ export function Board({
             <Column
               key={column.id}
               column={column}
-              cards={cardsInColumn(cards, column.id)}
+              cards={cardsByColumn[column.id]}
               dragDisabled={dragDisabled}
               showDropHighlight={showDropHighlight}
               mobileActive={isMobileActive}

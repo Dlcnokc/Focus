@@ -14,10 +14,10 @@ Instructions for coding agents. Prefer this file + `PRODUCT.md` + `README.md` ov
    git status
    ```
    Confirm branch + clean/expected dirty state. Do **not** force-checkout `main` while unmerged work lives on a feature branch.
-3. Read **`PRODUCT.md`** (model, non-goals). Skim this file.
+3. Read **`PRODUCT.md`** (current model). Skim this file.
 4. For run/deploy/smoke: **`README.md`**.
 5. If changing code: `pnpm run dev` from repo root.
-6. Implement the **smallest** requested slice. No multi-user or backend unless asked.
+6. Implement the **smallest** requested slice.
 
 If `PRODUCT.md` conflicts with a user request, **ask once** before implementing the conflict.
 
@@ -25,10 +25,10 @@ If `PRODUCT.md` conflicts with a user request, **ask once** before implementing 
 
 ## Product snapshot
 
-Solo kanban: **Ideas → Ready → Priority → Completed** (ids `ideas/ready/focus/done`).
+Kanban: **Ideas → Ready → Priority → Completed** (ids `ideas/ready/focus/done`).
 
-- Cards: title (**max 20**), notes, priority, `completedAt`, `archived`
-- Sort: priority on Ideas/Ready/Priority; date newest-first on Completed
+- Cards: title (**max 20**), notes, priority, `completedAt`, `archived`, `order`
+- Display sort: priority on Ideas/Ready/Priority; date newest-first on Completed; manual `order` is the **tiebreaker**
 - Drag + live preview; persist `localStorage` key `focus.board.v1`
 - Full product rules: **`PRODUCT.md`**
 
@@ -36,29 +36,26 @@ Solo kanban: **Ideas → Ready → Priority → Completed** (ids `ideas/ready/fo
 
 ## Owner & communication
 
-- Learning real app development; values clean, simple UI; often wants theme tweaks.
-- Targets **only themselves** for v1.
+- Values clean, simple UI; often wants theme tweaks.
 - After meaningful work: say **what** changed and **how to try it**.
 - Plain English; small reviewable diffs; product language (“your board,” “a card”).
+- Do not teach or over-explain unless asked.
 
 ---
 
-## Constraints (do not violate without asking)
+## Current architecture (match what exists)
 
-1. **v1 scope** — four fixed columns; title + notes + priority; DnD; browser persistence; calm dark greyscale + white accent; Source Code Pro.
-2. **No multi-user** / cooperative features until requested.
-3. **No feature bloat** — tags, due dates, assignees, attachments, charts, notifications stay out unless asked.
-4. **One board only.**
-5. **Browser-only persistence** — no backend, auth, or cloud sync unless asked.
-6. **Theme tokens** — colors/fonts/spacing via CSS variables in `src/index.css`; no scattered hard-coded colors.
-7. **Modals** — themed + blurred backdrop (not `alert`/`confirm`, not a drawer). Desktop: centered. Phone: bottom sheet; add/edit tall + **×** + Cancel.
-8. **No keyboard shortcuts** unless asked.
+1. **Four fixed columns** — title + notes + priority; DnD; `localStorage` persistence.
+2. **One board** in the browser; no backend, auth, or cloud sync in code today.
+3. **Theme tokens** — colors/fonts/spacing via CSS variables in `src/index.css`; no scattered hard-coded colors.
+4. **Modals** — shared `ModalShell` (focus trap + restore, Escape, scroll lock); themed + blurred backdrop. Desktop: centered. Phone: bottom sheet; add/edit tall + **×** + Cancel. Not `alert`/`confirm`.
+5. **No keyboard shortcuts** in the app today.
 
 ---
 
 ## Design & UX rules
 
-- Mood: calm dark greyscale; white accent. Semantic color only for muted danger/edit/archive, priority ramp, required asterisk.
+- Mood: calm dark greyscale; white accent. Semantic color: muted danger/edit/archive, priority ramp, required asterisk.
 - Type weights, board overrides, form fields: **`src/index.css`** (do not invent a second system).
 - Header: ring + **Focus** only; favicon matches ring.
 - Columns quieter than cards; empty columns = quiet text (no dashed placeholder card).
@@ -79,15 +76,18 @@ Solo kanban: **Ideas → Ready → Priority → Completed** (ids `ideas/ready/fo
 | Title max / validate / clamp | `src/lib/cardTitle.ts` + form + load clamp |
 | Export / import | `src/lib/boardFile.ts` + header + import modals |
 | Archive / restore | `useBoard` + archive modals |
-| Priority rank / sort | `src/data/priorities.ts` + `PriorityBadge` / `PriorityPromptModal` |
-| completedAt / date sort | `src/lib/dates.ts` |
-| Drag collision / phone drop ids | `src/lib/dnd.ts` |
+| Priority rank / sort | `src/data/priorities.ts` (`comparePriorityThenOrder`) + `PriorityBadge` / `PriorityPromptModal` |
+| completedAt / date sort | `src/lib/dates.ts` (`compareCompletedDateThenOrder`, `isIsoDate`) |
+| Display sort applied | `cardsInColumn` in `storage.ts` (Column + Board consume sorted lists) |
+| Column enter/leave rules | `src/lib/columnRules.ts` + flags in `placeholderBoard.ts` (wired from `useBoard` commit) |
+| Drag collision / phone drop ids | `src/lib/dnd.ts` (`isReservedCardId`) |
 | Pure move / reorder | `src/lib/boardMove.ts` |
 | DnD UI / selector / overlay | `src/components/Board.tsx` |
 | Notes measure / Expand | `src/components/Card.tsx` |
 | Theme / layout CSS | `src/index.css` |
 | Column defs + flags | `src/data/placeholderBoard.ts` |
-| Modal Escape / scroll lock | `src/hooks/useModalChrome.ts` |
+| Modal shell (focus trap / restore) | `src/components/ModalShell.tsx` + `useModalChrome.ts` |
+| Crash screen | `src/components/ErrorBoundary.tsx` |
 
 Card shape: **`src/types.ts`**.
 
@@ -95,14 +95,16 @@ Card shape: **`src/types.ts`**.
 
 ## Quality bar
 
-- After meaningful changes: app must **run**; say how to open/test. Prefer `pnpm run build` when touching types or drag.
-- Drag order and column placement must **survive refresh**.
+- After meaningful changes: app must **run**; say how to open/test. Prefer **`pnpm run test` + `pnpm run build`** after logic changes; always build when touching types or drag.
+- **Column placement** must survive refresh. **Display order** is priority/date first; manual `order` is a **tiebreaker** and survives among equal rank/date only.
+- Drag commit is **atomic**: column transition rules (priority clear, `completedAt` stamp/clear) apply before the committed board is saved. **No mid-drag persist** — save on commit / cancel restore / non-drag mutations only.
+- Reserved droppable ids (column ids, `tab:…` phone chips) **must not** be used as card ids.
+- `isIsoDate` must be **calendar-valid** (`YYYY-MM-DD` that is a real date), not format-only.
 - **Never wipe** `localStorage` without migration or explicit approval.
-- Corrupt load: backup to `focus.board.v1.bak` on hard failure; **block save** until the user changes the board (do not write `[]` over bad data).
-- **No mid-drag persist** — save on commit / cancel restore / non-drag mutations only.
+- Corrupt load: backup to `focus.board.v1.bak` on hard failure; **block save** until the user changes the board (do not write `[]` over bad data); surface load-error banner; `ErrorBoundary` for render crashes.
 - Title search: **disable drag** while filter active.
 - Title empty or **>20 chars**: reject with red message + shake; form `n/20` + `maxLength={20}`; load/import **clamps** long titles.
-- Destructive confirms: focus **Cancel** first. Priority prompt focuses select (Cancel → Medium).
+- Destructive confirms: focus **Cancel** first. Priority prompt focuses select (**Use Medium** applies Medium).
 - Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; no reshuffle on same-column chrome only.
 - No secrets in the repo.
 
@@ -127,16 +129,12 @@ Card shape: **`src/types.ts`**.
 
 ---
 
-## Out of scope unless requested
-
-Team boards, invites, roles · Cloud sync, accounts, OAuth · Backend · Native apps · Analytics · Heavy PM (sprints, points) · Seed/sample cards · Other products (tax/tools hub) in this repo
-
----
-
 ## Commands
 
 ```powershell
 pnpm install
 pnpm run dev
+pnpm run test
+pnpm run lint
 pnpm run build
 ```

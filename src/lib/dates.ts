@@ -2,12 +2,18 @@ import type { Card } from '../types'
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/
 
-/** Valid YYYY-MM-DD string (the shape <input type="date"> produces). */
+/**
+ * Valid calendar YYYY-MM-DD (the shape <input type="date"> produces).
+ * Rejects impossible dates like 2024-02-30 (string parse alone accepts them).
+ */
 export function isIsoDate(value: unknown): value is string {
+  if (typeof value !== 'string' || !ISO_DATE.test(value)) return false
+  const [y, m, d] = value.split('-').map(Number)
+  const date = new Date(y, m - 1, d)
   return (
-    typeof value === 'string' &&
-    ISO_DATE.test(value) &&
-    !Number.isNaN(Date.parse(value))
+    date.getFullYear() === y &&
+    date.getMonth() === m - 1 &&
+    date.getDate() === d
   )
 }
 
