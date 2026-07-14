@@ -18,16 +18,16 @@ Use **this git clone only** (not a second folder or ZIP).
 
 ```powershell
 cd <your local clone>
-git checkout ui-polish    # active work branch — confirm with: git branch
-git pull origin ui-polish
+git checkout dlcnokc    # experimental work branch — confirm with: git branch
+git pull origin dlcnokc
 git status
 ```
 
-- Stay on **`ui-polish`** until you intentionally merge to **`main`**.
-- **Netlify** deploys **`main` only**. Do not force-checkout `main` if unmerged work is on `ui-polish`.
+- Stay on **`dlcnokc`** for day-to-day features until you intentionally merge to **`main`**.
+- **Netlify** deploys **`main` only**. Do not force-checkout `main` if unmerged work is on `dlcnokc`.
 - What’s unmerged: `git log main..HEAD --oneline`
 
-When you want the **live site** updated: merge `ui-polish` → `main`, push `main`.
+When you want the **live site** updated: merge `dlcnokc` → `main`, push `main`.
 
 ---
 
@@ -59,7 +59,7 @@ Open the URL Vite prints (usually `http://localhost:5173`).
 2. Push **`main`** on GitHub  
 3. Netlify builds and publishes `dist` (uses pnpm from the lockfile)
 
-**CI:** pushes and PRs to `main` / `ui-polish` run lint, tests, and build (`.github/workflows/ci.yml`).  
+**CI:** pushes and PRs to `main` / `dlcnokc` run lint, tests, and build (`.github/workflows/ci.yml`).  
 **Docs-only commits:** add **`[skip ci]`** to the commit message so Netlify does not rebuild.
 
 ---

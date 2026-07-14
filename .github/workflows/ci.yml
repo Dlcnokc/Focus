@@ -2,9 +2,9 @@ name: CI
 
 on:
   push:
-    branches: [main, ui-polish]
+    branches: [main, dlcnokc]
   pull_request:
-    branches: [main, ui-polish]
+    branches: [main, dlcnokc]
 
 jobs:
   build:

@@ -13,11 +13,11 @@
 ## Status
 
 - **v1** is usable daily. Export weekly as a backup.
-- **Active work branch:** `ui-polish` (confirm with `git branch` / `git status`).
+- **Active / experimental work branch:** `dlcnokc` (confirm with `git branch` / `git status`). Ongoing features land here; no need for a new branch per feature unless you want isolation.
 - **Live site** tracks **`main` only** → https://coruscating-travesseiro-be1b90.netlify.app/
 - **Code:** https://github.com/Dlcnokc/Focus (private)
-- What’s unmerged: `git log main..HEAD --oneline` (on `ui-polish`)
-- To update the live site: merge `ui-polish` → `main` and push `main`.
+- What’s unmerged: `git log main..HEAD --oneline` (on `dlcnokc`)
+- To update the live site: merge `dlcnokc` → `main` and push `main`.
 
 ---
 

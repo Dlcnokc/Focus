@@ -7,10 +7,10 @@ Instructions for coding agents. Prefer this file + `PRODUCT.md` + `README.md` ov
 ## Session start
 
 1. **One clone only** (this repo folder). Do not edit a ZIP or second copy.
-2. **Sync the active branch** (default **`ui-polish`** unless the owner says otherwise):
+2. **Sync the active branch** (default **`dlcnokc`** — experimental work branch — unless the owner says otherwise):
    ```powershell
-   git checkout ui-polish
-   git pull origin ui-polish
+   git checkout dlcnokc
+   git pull origin dlcnokc
    git status
    ```
    Confirm branch + clean/expected dirty state. Do **not** force-checkout `main` while unmerged work lives on a feature branch.
@@ -107,7 +107,7 @@ Card shape: **`src/types.ts`**.
 - Destructive confirms: focus **Cancel** first (`btn--danger` primary). Priority prompt focuses select (**Use Medium** applies Medium).
 - Form create/edit: **submit lock** after a successful submit (no double cards).
 - Avoid `onDragOver` setState loops (blank screen risk). Skip no-op previews; no reshuffle on same-column chrome only.
-- Pure board logic has unit tests under `src/lib/*.test.ts`. CI (`.github/workflows/ci.yml`) runs lint + test + build on `main` / `ui-polish`.
+- Pure board logic has unit tests under `src/lib/*.test.ts`. CI (`.github/workflows/ci.yml`) runs lint + test + build on `main` / `dlcnokc`.
 - No secrets in the repo.
 
 ---
